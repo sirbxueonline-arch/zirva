@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -8,7 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 
 const SPRING_SMOOTH = { type: 'spring' as const, stiffness: 200, damping: 25 }
 
-export default function LoginPage() {
+// useSearchParams must live inside a Suspense boundary in Next.js 15
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') || '/dashboard'
@@ -222,5 +223,13 @@ export default function LoginPage() {
         </p>
       </motion.div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
