@@ -211,7 +211,7 @@ export default function Hero() {
           <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>+</span>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: 'rgba(16,163,127,0.12)', border: '1px solid rgba(16,163,127,0.28)', color: '#6EE7C7' }}>
-            <ChatGPTIcon size={11} color="#10A37F" />
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: '#10A37F', display: 'inline-block' }} />
             ChatGPT
           </div>
         </motion.div>
