@@ -25,14 +25,14 @@ export default function Navbar() {
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         animate={{
-          backgroundColor: scrolled ? 'rgba(245,245,255,0.92)' : 'rgba(245,245,255,0)',
+          backgroundColor: scrolled ? 'rgba(7,7,26,0.88)' : 'rgba(7,7,26,0)',
           backdropFilter: scrolled ? 'blur(20px)' : 'blur(0px)',
         }}
-        style={{ borderBottom: scrolled ? '1px solid rgba(123,110,246,0.12)' : '1px solid transparent' }}
+        style={{ borderBottom: scrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent' }}
       >
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="font-display font-bold text-2xl text-primary tracking-tight">
+          <Link href="/" className="font-display font-bold text-2xl tracking-tight" style={{ color: '#FFFFFF' }}>
             Zirva
           </Link>
 
@@ -42,7 +42,10 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-text-secondary hover:text-text-primary text-sm font-medium transition-colors duration-200"
+                className="text-sm font-medium transition-colors duration-200"
+                style={{ color: 'rgba(255,255,255,0.55)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
               >
                 {link.label}
               </a>
@@ -53,7 +56,8 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm text-text-secondary hover:text-text-primary transition-colors font-medium"
+              className="text-sm font-medium transition-colors"
+              style={{ color: 'rgba(255,255,255,0.55)' }}
             >
               Daxil Ol
             </Link>

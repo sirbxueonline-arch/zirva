@@ -6,89 +6,103 @@ import { motion, AnimatePresence } from 'framer-motion'
 const LETTERS = 'Zirva'.split('')
 
 export default function PageIntro() {
-  const [phase, setPhase] = useState<'in' | 'hold' | 'out' | 'done'>('in')
+  const [visible, setVisible] = useState(true)
+  const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in')
 
   useEffect(() => {
-    // Skip replay within the same session
     if (sessionStorage.getItem('zirva_intro_seen')) {
-      setPhase('done')
+      setVisible(false)
       return
     }
 
-    // Letters animate in → hold → curtain lifts
-    const t1 = setTimeout(() => setPhase('hold'), 900)
-    const t2 = setTimeout(() => setPhase('out'),  1500)
+    // in → hold → out (content fades) → visible=false (triggers exit slide-up)
+    const t1 = setTimeout(() => setPhase('hold'), 1000)
+    const t2 = setTimeout(() => setPhase('out'),  1800)
     const t3 = setTimeout(() => {
-      setPhase('done')
+      setVisible(false)
       sessionStorage.setItem('zirva_intro_seen', '1')
-    }, 2200)
+    }, 2800) // exit animation is 0.9s, fires at 1.9s → done at 2.8s
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [])
 
-  if (phase === 'done') return null
-
   return (
     <AnimatePresence>
-      <motion.div
+      {visible && (
+        <motion.div
           key="intro"
           className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
           style={{ background: '#0D0D1A' }}
           exit={{
             y: '-100%',
-            transition: { duration: 0.65, ease: [0.76, 0, 0.24, 1] },
+            transition: { duration: 0.9, ease: [0.76, 0, 0.24, 1] },
           }}
         >
-          {/* Ambient glow — pulses while visible */}
+          {/* Ambient purple glow */}
           <motion.div
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: 480, height: 480,
-              background: 'radial-gradient(circle, rgba(123,110,246,0.22) 0%, transparent 70%)',
-              filter: 'blur(40px)',
+              width: 560, height: 560,
+              background: 'radial-gradient(circle, rgba(123,110,246,0.26) 0%, transparent 70%)',
+              filter: 'blur(50px)',
             }}
-            animate={{ scale: [0.8, 1.15, 0.95, 1.05, 1], opacity: [0, 1, 0.85, 1, 0.9] }}
-            transition={{ duration: 1.6, ease: 'easeOut' }}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: [0.7, 1.1, 0.95, 1.05, 1], opacity: [0, 1, 0.85, 1, 0.95] }}
+            transition={{ duration: 2, ease: 'easeOut' }}
           />
 
-          {/* Second orb — teal accent */}
+          {/* Teal accent orb */}
           <motion.div
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: 280, height: 280,
-              background: 'radial-gradient(circle, rgba(0,201,167,0.14) 0%, transparent 70%)',
-              filter: 'blur(50px)',
-              top: '55%', left: '55%',
+              width: 320, height: 320,
+              background: 'radial-gradient(circle, rgba(0,201,167,0.18) 0%, transparent 70%)',
+              filter: 'blur(60px)',
+              top: '52%', left: '54%',
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: phase === 'hold' ? 1 : 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
           />
 
-          {/* Logo */}
-          <div className="relative z-10 text-center select-none">
-            {/* Letters stagger in */}
-            <div className="flex items-end justify-center gap-[0.03em] mb-4">
+          {/* Soft grid overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.04]"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+              backgroundSize: '48px 48px',
+            }}
+          />
+
+          {/* Logo + tagline */}
+          <motion.div
+            className="relative z-10 text-center select-none"
+            animate={{ opacity: phase === 'out' ? 0 : 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
+            {/* Letter stagger */}
+            <div className="flex items-end justify-center gap-[0.02em] mb-5">
               {LETTERS.map((char, i) => (
                 <motion.span
                   key={i}
                   className="font-display font-bold"
                   style={{
-                    fontSize: 'clamp(56px, 10vw, 80px)',
+                    fontSize: 'clamp(60px, 11vw, 88px)',
                     lineHeight: 1,
-                    background: 'linear-gradient(135deg, #FFFFFF 30%, #C4BCFF 70%, #7B6EF6 100%)',
+                    background: 'linear-gradient(135deg, #FFFFFF 20%, #C4BCFF 60%, #7B6EF6 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     display: 'inline-block',
+                    filter: 'drop-shadow(0 0 40px rgba(123,110,246,0.5))',
                   }}
-                  initial={{ y: 30, opacity: 0, rotateX: 40 }}
-                  animate={{ y: 0, opacity: 1, rotateX: 0 }}
+                  initial={{ y: 40, opacity: 0, rotateX: 50, scale: 0.85 }}
+                  animate={{ y: 0, opacity: 1, rotateX: 0, scale: 1 }}
                   transition={{
                     type: 'spring',
-                    stiffness: 300,
-                    damping: 22,
-                    delay: 0.1 + i * 0.07,
+                    stiffness: 220,
+                    damping: 18,
+                    delay: 0.1 + i * 0.08,
                   }}
                 >
                   {char}
@@ -96,36 +110,60 @@ export default function PageIntro() {
               ))}
             </div>
 
+            {/* Accent line */}
+            <motion.div
+              className="mx-auto rounded-full"
+              style={{
+                height: 2,
+                background: 'linear-gradient(90deg, transparent, #7B6EF6, #00C9A7, transparent)',
+              }}
+              initial={{ width: 0, opacity: 0 }}
+              animate={{
+                width: phase !== 'in' ? 180 : 0,
+                opacity: phase !== 'in' ? 1 : 0,
+              }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+            />
+
             {/* Tagline */}
             <motion.p
-              className="text-sm font-medium tracking-[0.22em] uppercase"
-              style={{ color: 'rgba(255,255,255,0.38)' }}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: phase !== 'in' ? 1 : 0, y: phase !== 'in' ? 0 : 8 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="mt-4 text-sm font-medium tracking-[0.28em] uppercase"
+              style={{ color: 'rgba(255,255,255,0.35)' }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{
+                opacity: phase !== 'in' ? 1 : 0,
+                y: phase !== 'in' ? 0 : 10,
+              }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
             >
               Google · ChatGPT · Zirva
             </motion.p>
+          </motion.div>
 
-            {/* Thin accent line under wordmark */}
-            <motion.div
-              className="mx-auto mt-5 rounded-full"
-              style={{ height: 2, background: 'linear-gradient(90deg, transparent, #7B6EF6, #00C9A7, transparent)' }}
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: phase !== 'in' ? 160 : 0, opacity: phase !== 'in' ? 1 : 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
-            />
-          </div>
-
-          {/* Progress bar at very bottom */}
+          {/* Progress bar */}
           <motion.div
-            className="absolute bottom-0 left-0 h-[2px] rounded-full"
-            style={{ background: 'linear-gradient(90deg, #7B6EF6, #00C9A7)' }}
+            className="absolute bottom-0 left-0 h-[2px]"
+            style={{
+              background: 'linear-gradient(90deg, #7B6EF6, #9B8FF8, #00C9A7)',
+              borderRadius: '0 2px 2px 0',
+            }}
             initial={{ width: '0%' }}
-            animate={{ width: phase === 'out' ? '100%' : phase === 'hold' ? '70%' : '30%' }}
-            transition={{ duration: phase === 'hold' ? 0.6 : phase === 'out' ? 0.5 : 0.8, ease: 'easeInOut' }}
+            animate={{
+              width: phase === 'out' ? '100%' : phase === 'hold' ? '68%' : '28%',
+            }}
+            transition={{
+              duration: phase === 'hold' ? 0.7 : phase === 'out' ? 0.55 : 0.9,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          />
+
+          {/* Shimmer line at top of exit — slides up with the curtain */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(123,110,246,0.6), rgba(0,201,167,0.6), transparent)' }}
           />
         </motion.div>
+      )}
     </AnimatePresence>
   )
 }

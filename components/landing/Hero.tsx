@@ -1,488 +1,301 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Globe, ArrowRight, CheckCircle, Star, Search } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowRight, CheckCircle } from 'lucide-react'
 
-const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
-
-/* ── Rotating phrases in the headline ── */
-const ROTATING = ['title teqlər', 'meta açıqlama', 'schema markup', 'hreflang teqlər']
-
-/* ── Simulated output fields for the product mockup ── */
-const PREVIEW_FIELDS = [
-  { label: 'Title Tag AZ', value: 'Bakı Restoran | Ən Yaxşı Azərbaycanlı Mətbəxi' },
-  { label: 'Meta Description', value: 'Bakıda ən yaxşı restoran. Autentik milli yemək...' },
-  { label: 'Schema Markup', value: 'Restaurant · LocalBusiness · Menu' },
-]
-
-/* ── Helper ── */
-function delay(ms: number) {
-  return new Promise<void>(resolve => setTimeout(resolve, ms))
-}
-
-function useCountUp(target: number, duration = 1500, start = true) {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    if (!start) return
-    const t0 = performance.now()
-    const raf = requestAnimationFrame(function tick(now) {
-      const p = Math.min((now - t0) / duration, 1)
-      setCount(Math.round((1 - Math.pow(1 - p, 3)) * target))
-      if (p < 1) requestAnimationFrame(tick)
-    })
-    return () => cancelAnimationFrame(raf)
-  }, [target, duration, start])
-  return count
-}
-
-/* ════════════════════════════════════════
-   Animated product mockup card
-   ════════════════════════════════════════ */
-function ProductCard() {
-  const [phase, setPhase] = useState<'typing' | 'scanning' | 'done'>('typing')
-  const [progress, setProgress] = useState(0)
-  const [shown, setShown] = useState(0)
-  const mounted = useRef(true)
-
-  useEffect(() => {
-    mounted.current = true
-    const run = async () => {
-      while (mounted.current) {
-        setPhase('typing'); setProgress(0); setShown(0)
-        await delay(1200)
-
-        if (!mounted.current) break
-        setPhase('scanning')
-        for (let p = 0; p <= 100; p += 3) {
-          if (!mounted.current) break
-          setProgress(p)
-          await delay(40)
-        }
-
-        if (!mounted.current) break
-        setPhase('done')
-        for (let i = 1; i <= PREVIEW_FIELDS.length; i++) {
-          if (!mounted.current) break
-          setShown(i)
-          await delay(380)
-        }
-        await delay(3200)
-      }
-    }
-    run()
-    return () => { mounted.current = false }
-  }, [])
-
-  return (
-    <motion.div
-      className="relative w-full max-w-[420px] rounded-2xl overflow-hidden"
-      style={{
-        background: '#FFFFFF',
-        border: '1px solid rgba(123,110,246,0.14)',
-        boxShadow: '0 32px 80px rgba(123,110,246,0.18), 0 8px 24px rgba(13,13,26,0.07)',
-      }}
-      initial={{ y: 40, opacity: 0, rotateX: 4 }}
-      animate={{ y: 0, opacity: 1, rotateX: 0 }}
-      transition={{ ...SPRING, delay: 0.55 }}
-    >
-      {/* Browser chrome */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b"
-        style={{ borderColor: 'rgba(123,110,246,0.08)', background: '#F8F7FF' }}>
-        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: '#F25C54' }} />
-        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: '#F5A623' }} />
-        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: '#00C9A7' }} />
-        <div className="flex-1 mx-3 rounded-md px-3 py-1 text-xs font-mono flex items-center gap-1.5"
-          style={{ background: '#EEEEFF', color: '#9B9EBB' }}>
-          <Globe size={10} strokeWidth={2} />
-          meybistro.az
-        </div>
-      </div>
-
-      <div className="p-5">
-        {/* URL row */}
-        <div className="flex items-center gap-2 rounded-xl p-3 mb-4"
-          style={{ background: '#F5F5FF', border: '1px solid rgba(123,110,246,0.14)' }}>
-          <Search size={13} style={{ color: '#7B6EF6', flexShrink: 0 }} />
-          <span className="flex-1 text-xs font-mono truncate" style={{ color: '#3D4060' }}>
-            https://meybistro.az
-          </span>
-          <motion.div
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)' }}
-            animate={phase === 'scanning' ? { opacity: [1, 0.5, 1] } : { opacity: 1 }}
-            transition={{ duration: 0.6, repeat: phase === 'scanning' ? Infinity : 0 }}
-          >
-            <Zap size={9} strokeWidth={2.5} />
-            Analiz
-          </motion.div>
-        </div>
-
-        {/* Dynamic content area */}
-        <div className="min-h-[160px]">
-          <AnimatePresence mode="wait">
-
-            {/* Scanning phase */}
-            {phase === 'scanning' && (
-              <motion.div key="scanning"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <div className="flex items-center gap-2 text-xs text-text-muted mb-3">
-                  <motion.span
-                    className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: '#7B6EF6' }}
-                    animate={{ opacity: [1, 0.2, 1] }}
-                    transition={{ duration: 0.7, repeat: Infinity }}
-                  />
-                  Sayt analiz edilir...
-                </div>
-                <div className="h-1.5 rounded-full overflow-hidden mb-4"
-                  style={{ background: 'rgba(123,110,246,0.1)' }}>
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, #7B6EF6, #9B8FF8)', width: `${progress}%` }}
-                  />
-                </div>
-                {/* Skeleton rows */}
-                {[80, 60, 72].map((w, i) => (
-                  <div key={i} className="skeleton h-8 rounded-lg mb-2" style={{ width: `${w}%` }} />
-                ))}
-              </motion.div>
-            )}
-
-            {/* Done phase */}
-            {phase === 'done' && (
-              <motion.div key="done"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {/* Score */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#9B9EBB' }}>SEO Balı</span>
-                  <motion.div
-                    className="flex items-baseline gap-1"
-                    initial={{ scale: 0.6, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-                  >
-                    <span className="font-display font-bold text-2xl" style={{ color: '#00C9A7' }}>87</span>
-                    <span className="text-xs text-text-muted">/100</span>
-                  </motion.div>
-                </div>
-
-                {/* Output fields */}
-                <div className="space-y-2">
-                  {PREVIEW_FIELDS.map((f, i) => (
-                    <AnimatePresence key={f.label}>
-                      {i < shown && (
-                        <motion.div
-                          initial={{ x: -10, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={SPRING}
-                          className="rounded-lg p-2.5"
-                          style={{ background: '#F5F5FF', border: '1px solid rgba(123,110,246,0.1)' }}
-                        >
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className="text-xs font-semibold" style={{ color: '#7B6EF6' }}>{f.label}</span>
-                            <CheckCircle size={11} strokeWidth={2.5} style={{ color: '#00C9A7' }} />
-                          </div>
-                          <p className="text-xs truncate" style={{ color: '#3D4060' }}>{f.value}</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-          </AnimatePresence>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
-/* ════════════════════════════════════════
-   Floating badge chips beside the card
-   ════════════════════════════════════════ */
-function FloatingBadge({ children, style, delay: d }: {
-  children: React.ReactNode
-  style: React.CSSProperties
-  delay: number
+/* ─── Google SERP mini-mockup ─────────────────────── */
+function GoogleResult({ rank, title, url, desc, highlight }: {
+  rank: number; title: string; url: string; desc: string; highlight?: boolean
 }) {
   return (
+    <div className={`rounded-xl p-3 transition-all ${highlight ? 'ring-2 ring-[#7B6EF6]/60' : ''}`}
+      style={{ background: highlight ? 'rgba(123,110,246,0.08)' : 'transparent' }}>
+      <div className="flex items-start gap-2.5">
+        <span className="text-xs font-bold mt-0.5 w-4 flex-shrink-0"
+          style={{ color: highlight ? '#7B6EF6' : '#9B9EBB' }}>
+          {rank}
+        </span>
+        <div className="min-w-0">
+          <div className="text-xs text-[#4B5563] truncate mb-0.5">{url}</div>
+          <div className="text-sm font-semibold leading-tight mb-1 truncate"
+            style={{ color: highlight ? '#1a1aff' : '#1a0dab' }}>
+            {title}
+          </div>
+          <div className="text-xs leading-relaxed line-clamp-2" style={{ color: '#4B5563' }}>
+            {desc}
+          </div>
+          {highlight && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <CheckCircle size={10} style={{ color: '#7B6EF6' }} />
+              <span className="text-[10px] font-semibold" style={{ color: '#7B6EF6' }}>Zirva ilə optimallaşdırılıb</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── ChatGPT mini-mockup ─────────────────────────── */
+function ChatResult({ name, rec, highlight }: {
+  name: string; rec: string; highlight?: boolean
+}) {
+  return (
+    <div className={`flex items-start gap-2.5 rounded-xl p-3 ${highlight ? 'ring-2 ring-[#10A37F]/50' : ''}`}
+      style={{ background: highlight ? 'rgba(16,163,127,0.07)' : 'transparent' }}>
+      <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+        style={{ background: highlight ? 'rgba(16,163,127,0.2)' : 'rgba(255,255,255,0.08)' }}>
+        <span className="text-[9px] font-bold" style={{ color: highlight ? '#10A37F' : '#9B9EBB' }}>
+          {highlight ? '★' : '·'}
+        </span>
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold mb-0.5" style={{ color: '#E5E7EB' }}>{name}</div>
+        <div className="text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>{rec}</div>
+        {highlight && (
+          <div className="flex items-center gap-1 mt-1.5">
+            <CheckCircle size={10} style={{ color: '#10A37F' }} />
+            <span className="text-[10px] font-semibold" style={{ color: '#10A37F' }}>AI tərəfindən tövsiyə edilir</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Dual-platform mockup ────────────────────────── */
+function DualMockup() {
+  return (
     <motion.div
-      className="absolute text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none hidden xl:flex items-center gap-1.5"
-      style={{
-        background: '#FFFFFF',
-        border: '1px solid rgba(123,110,246,0.18)',
-        boxShadow: '0 4px 16px rgba(123,110,246,0.12)',
-        color: '#0D0D1A',
-        whiteSpace: 'nowrap',
-        ...style,
-      }}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: [0, -6, 0] }}
-      transition={{
-        opacity: { delay: d, duration: 0.4 },
-        y: { delay: d, duration: 3.5, repeat: Infinity, ease: 'easeInOut' },
-      }}
+      className="w-full grid md:grid-cols-2 gap-px rounded-2xl overflow-hidden"
+      style={{ background: 'rgba(255,255,255,0.06)' }}
+      initial={{ y: 48, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
     >
-      {children}
+      {/* Google panel */}
+      <div className="p-5" style={{ background: '#FFFFFF' }}>
+        {/* Chrome bar */}
+        <div className="flex items-center gap-1.5 mb-4">
+          <div className="flex gap-1">
+            <div className="w-2 h-2 rounded-full bg-[#F25C54]" />
+            <div className="w-2 h-2 rounded-full bg-[#F5A623]" />
+            <div className="w-2 h-2 rounded-full bg-[#00C9A7]" />
+          </div>
+          <div className="flex-1 flex items-center gap-1.5 mx-2 rounded px-2 py-1 text-[10px] font-mono"
+            style={{ background: '#F3F4F6', color: '#6B7280' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="#6B7280" strokeWidth="2"/>
+              <path d="m21 21-4.35-4.35" stroke="#6B7280" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            Bakıda ən yaxşı restoran
+          </div>
+        </div>
+
+        {/* Platform label */}
+        <div className="flex items-center gap-1.5 mb-3">
+          <svg width="14" height="14" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span className="text-xs font-semibold text-[#6B7280]">Google Axtarış</span>
+        </div>
+
+        <div className="space-y-1">
+          <GoogleResult rank={1} highlight
+            title="Mey Bistro | Bakının Ən Yaxşı Restoranı"
+            url="meybistro.az"
+            desc="Bakıda 10 ildir fəaliyyət göstərən milli mətbəx restoranı. Rezervasiya edin →"
+          />
+          <GoogleResult rank={2}
+            title="Çinar Restaurant – Bakı, Neftçilər"
+            url="cinar.az"
+            desc="Azərbaycanlı mətbəx restoranı. Nizami rayonu, hər gün 10:00–23:00"
+          />
+          <GoogleResult rank={3}
+            title="Old City Baku – Tarixi mərkəzdə nahar"
+            url="oldcitybaku.com"
+            desc="İçərişəhərdə yerləşən restoran. Milli yemək, şəhər mənzərəsi."
+          />
+        </div>
+      </div>
+
+      {/* ChatGPT panel */}
+      <div className="p-5" style={{ background: '#1A1A2E' }}>
+        {/* Header */}
+        <div className="flex items-center gap-1.5 mb-4">
+          <div className="w-5 h-5 rounded flex items-center justify-center"
+            style={{ background: '#10A37F' }}>
+            <svg width="10" height="10" viewBox="0 0 41 41" fill="none">
+              <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.212-2.972 10.079 10.079 0 0 0-10.4 4.858 9.963 9.963 0 0 0-6.67 4.792 10.079 10.079 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.212 2.972 10.078 10.078 0 0 0 10.4-4.857 9.966 9.966 0 0 0 6.67-4.793 10.079 10.079 0 0 0-1.24-11.816z" fill="white"/>
+            </svg>
+          </div>
+          <span className="text-xs font-semibold" style={{ color: '#9CA3AF' }}>ChatGPT</span>
+        </div>
+
+        {/* User message */}
+        <div className="mb-3 flex justify-end">
+          <div className="text-xs px-3 py-2 rounded-xl max-w-[75%]"
+            style={{ background: 'rgba(255,255,255,0.1)', color: '#E5E7EB' }}>
+            Bakıda ən yaxşı restoran?
+          </div>
+        </div>
+
+        {/* AI response */}
+        <div className="text-xs mb-3 leading-relaxed" style={{ color: '#9CA3AF' }}>
+          Bakıda bir neçə əla restoran var, lakin ən çox tövsiyə edilən:
+        </div>
+
+        <div className="space-y-1">
+          <ChatResult name="Mey Bistro" highlight
+            rec="Milli mətbəx, əla xidmət, Google-da ən yüksək reytinq. Geniş menyu, rezervasiya mümkün."
+          />
+          <ChatResult name="Çinar Restaurant"
+            rec="Rahat atmosfer, mərkəzi yer, yerli yeməklər."
+          />
+          <ChatResult name="Old City Baku"
+            rec="Tarixi mühit, şəhər mənzərəsi, turistlər üçün ideal."
+          />
+        </div>
+      </div>
     </motion.div>
   )
 }
 
-/* ════════════════════════════════════════
-   Main Hero
-   ════════════════════════════════════════ */
+/* ─── Main Hero ───────────────────────────────────── */
 export default function Hero() {
-  const [rotIdx, setRotIdx] = useState(0)
-  const [statsVisible, setStatsVisible] = useState(false)
-  const statsRef = useRef<HTMLDivElement>(null)
-
-  /* Cycle rotating headline phrase */
-  useEffect(() => {
-    const id = setInterval(() => setRotIdx(i => (i + 1) % ROTATING.length), 2400)
-    return () => clearInterval(id)
-  }, [])
-
-  /* IntersectionObserver for stats */
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      e => { if (e[0].isIntersecting) setStatsVisible(true) },
-      { threshold: 0.3 }
-    )
-    if (statsRef.current) obs.observe(statsRef.current)
-    return () => obs.disconnect()
-  }, [])
-
-  const gen  = useCountUp(500,  1500, statsVisible)
-  const user = useCountUp(200,  1500, statsVisible)
-  const sat  = useCountUp(98,   1200, statsVisible)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden pt-16">
-
-      {/* ── Background ── */}
-      {/* Subtle dot grid */}
-      <div
-        className="absolute inset-0 pointer-events-none"
+    <section
+      className="relative pt-24 pb-0 overflow-hidden"
+      style={{ background: '#07071A' }}
+    >
+      {/* Noise texture */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
         style={{
-          backgroundImage: 'radial-gradient(circle, rgba(123,110,246,0.18) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%)',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '128px 128px',
         }}
       />
 
-      {/* Orbs */}
-      <motion.div className="absolute rounded-full pointer-events-none"
-        style={{ width: 640, height: 640, background: 'rgba(123,110,246,0.09)', top: '-15%', left: '-12%', filter: 'blur(80px)' }}
-        animate={{ x: [-40, 40, -40], y: [-30, 30, -30] }}
-        transition={{ duration: 22, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+      {/* Glow orbs */}
+      <div className="absolute pointer-events-none"
+        style={{ width: 700, height: 700, top: '-20%', left: '50%', transform: 'translateX(-50%)',
+          background: 'radial-gradient(circle, rgba(123,110,246,0.18) 0%, transparent 65%)',
+          filter: 'blur(1px)' }}
       />
-      <motion.div className="absolute rounded-full pointer-events-none"
-        style={{ width: 480, height: 480, background: 'rgba(0,201,167,0.08)', bottom: '-5%', right: '-8%', filter: 'blur(70px)' }}
-        animate={{ x: [30, -30, 30], y: [20, -40, 20] }}
-        transition={{ duration: 16, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+      <div className="absolute pointer-events-none"
+        style={{ width: 400, height: 400, bottom: '10%', right: '-5%',
+          background: 'radial-gradient(circle, rgba(0,201,167,0.1) 0%, transparent 65%)',
+          filter: 'blur(1px)' }}
       />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20">
-        <div className="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-center">
+      <div className="relative z-10 max-w-5xl mx-auto px-6">
 
-          {/* ════════ LEFT — Copy ════════ */}
-          <div className="max-w-2xl">
-
-            {/* Badge */}
-            <motion.div
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-sm font-semibold mb-7"
-              style={{ background: 'rgba(123,110,246,0.09)', borderColor: 'rgba(123,110,246,0.25)', color: '#7B6EF6' }}
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.05 }}
-            >
-              <Zap size={13} strokeWidth={2.5} />
-              Azərbaycan bazarı üçün hazırlanmış
-            </motion.div>
-
-            {/* H1 */}
-            <motion.h1
-              className="font-display font-bold text-5xl md:text-6xl lg:text-[64px] leading-[1.12] tracking-tight text-text-primary mb-6"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.15 }}
-            >
-              Saytınız üçün{' '}
-              <span className="inline-block relative">
-                {/* Gradient highlight */}
-                <span
-                  className="relative z-10"
-                  style={{
-                    background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 50%, #00C9A7 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  mükəmməl SEO
-                </span>
-                {/* Underline accent */}
-                <motion.span
-                  className="absolute -bottom-1 left-0 right-0 h-1 rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #7B6EF6, #00C9A7)' }}
-                  initial={{ scaleX: 0, originX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ ...SPRING, delay: 0.7 }}
-                />
-              </span>
-              <br />
-              30 saniyə içində
-            </motion.h1>
-
-            {/* Rotating capability line */}
-            <motion.div
-              className="flex items-center gap-2 mb-5"
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.28 }}
-            >
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #7B6EF6, #00C9A7)' }} />
-              <span className="text-text-secondary text-base">
-                AI ilə{' '}
-                <span className="inline-block overflow-hidden align-bottom" style={{ height: '1.4em', minWidth: '130px' }}>
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={rotIdx}
-                      className="inline-block font-semibold"
-                      style={{ color: '#7B6EF6' }}
-                      initial={{ y: 14, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -14, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: 'easeOut' }}
-                    >
-                      {ROTATING[rotIdx]}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
-                {' '}yaradın
-              </span>
-            </motion.div>
-
-            {/* Subheadline */}
-            <motion.p
-              className="text-text-secondary text-lg leading-relaxed mb-10"
-              style={{ maxWidth: '54ch' }}
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.38 }}
-            >
-              URL-i yapışdırın, süni intellekt title teq, meta açıqlama, Open
-              Graph, schema markup və hreflang&nbsp;— hamısını Azərbaycan
-              dilində, Google standartına uyğun hazırlasın.
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              className="flex flex-col sm:flex-row gap-3 mb-10"
-              initial={{ y: 16, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.48 }}
-            >
-              <Link
-                href="/signup"
-                className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl text-base font-bold text-white transition-all duration-200 hover:scale-[1.03]"
-                style={{ background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)', boxShadow: '0 6px 24px rgba(123,110,246,0.35)' }}
-              >
-                Pulsuz Başla
-                <ArrowRight size={16} strokeWidth={2.5} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl text-base font-semibold text-text-primary transition-all duration-200 hover:scale-[1.01]"
-                style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.2)', boxShadow: '0 2px 8px rgba(13,13,26,0.04)' }}
-              >
-                Necə işləyir?
-              </a>
-            </motion.div>
-
-            {/* Social proof */}
-            <motion.div
-              className="flex items-center gap-3"
-              initial={{ y: 12, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ ...SPRING, delay: 0.58 }}
-            >
-              {/* Avatar stack */}
-              <div className="flex -space-x-2">
-                {['#7B6EF6','#00C9A7','#F25C54','#F5A623','#9B8FF8'].map((color, i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                    style={{ background: color, zIndex: 5 - i }}
-                  >
-                    {['A','B','C','D','E'][i]}
-                  </div>
-                ))}
-              </div>
-              {/* Stars + text */}
-              <div>
-                <div className="flex items-center gap-0.5 mb-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={12} strokeWidth={0} fill="#F5A623" style={{ color: '#F5A623' }} />
-                  ))}
-                </div>
-                <p className="text-xs text-text-muted"><span className="font-semibold text-text-secondary">200+</span> istifadəçi məmnundur</p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ════════ RIGHT — Product mockup ════════ */}
-          <div className="relative hidden lg:flex items-center justify-center flex-shrink-0">
-
-            {/* Floating badges */}
-            <FloatingBadge style={{ top: '-28px', left: '-30px' }} delay={1.2}>
-              <CheckCircle size={12} style={{ color: '#00C9A7' }} />
-              Google.az optimizasiyası
-            </FloatingBadge>
-            <FloatingBadge style={{ bottom: '60px', left: '-50px' }} delay={1.6}>
-              <Zap size={12} style={{ color: '#7B6EF6' }} />
-              30 saniyə
-            </FloatingBadge>
-            <FloatingBadge style={{ top: '80px', right: '-40px' }} delay={2.0}>
-              <Star size={12} fill="#F5A623" style={{ color: '#F5A623' }} />
-              SEO balı 87/100
-            </FloatingBadge>
-
-            <ProductCard />
-          </div>
-
-        </div>
-
-        {/* ════════ Stats row ════════ */}
+        {/* Platform pills */}
         <motion.div
-          ref={statsRef}
-          className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-8 mt-16 pt-8 border-t"
-          style={{ borderColor: 'rgba(123,110,246,0.1)' }}
+          className="flex items-center justify-center gap-2 mb-10"
           initial={{ y: 16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ ...SPRING, delay: 0.7 }}
+          animate={mounted ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.6, ease: 'easeOut', delay: 0.05 }}
         >
-          {[
-            { value: gen,  suffix: '+', label: 'SEO paketi yaradılıb' },
-            { value: user, suffix: '+', label: 'aktiv istifadəçi' },
-            { value: sat,  suffix: '%', label: 'müştəri razılığı' },
-          ].map((stat, i) => (
-            <div key={stat.label} className="flex items-center gap-3">
-              {i > 0 && <div className="hidden sm:block w-px h-8 self-center" style={{ background: 'rgba(123,110,246,0.12)' }} />}
-              <div>
-                <div className="font-display font-bold text-3xl text-text-primary tabular-nums">
-                  {stat.value}{stat.suffix}
-                </div>
-                <div className="text-text-muted text-sm">{stat.label}</div>
-              </div>
-            </div>
-          ))}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{ background: 'rgba(66,133,244,0.12)', border: '1px solid rgba(66,133,244,0.25)', color: '#93B8FB' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google
+          </div>
+          <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.2)' }}>+</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{ background: 'rgba(16,163,127,0.12)', border: '1px solid rgba(16,163,127,0.25)', color: '#6EE7C7' }}>
+            <svg width="12" height="12" viewBox="0 0 41 41" fill="none">
+              <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.212-2.972 10.079 10.079 0 0 0-10.4 4.858 9.963 9.963 0 0 0-6.67 4.792 10.079 10.079 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.212 2.972 10.078 10.078 0 0 0 10.4-4.857 9.966 9.966 0 0 0 6.67-4.793 10.079 10.079 0 0 0-1.24-11.816z" fill="#10A37F"/>
+            </svg>
+            ChatGPT
+          </div>
         </motion.div>
 
+        {/* Headline */}
+        <motion.h1
+          className="text-center font-display font-bold tracking-tight mb-6"
+          style={{ fontSize: 'clamp(42px, 6.5vw, 78px)', lineHeight: 1.08, color: '#FFFFFF' }}
+          initial={{ y: 24, opacity: 0 }}
+          animate={mounted ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+        >
+          Saytınız Google-da da,{' '}
+          <br />
+          <span style={{
+            background: 'linear-gradient(90deg, #7B6EF6 0%, #A78BFA 45%, #10A37F 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            ChatGPT-də də #1
+          </span>
+        </motion.h1>
+
+        {/* Subtext */}
+        <motion.p
+          className="text-center mx-auto mb-10 text-lg leading-relaxed"
+          style={{ maxWidth: '52ch', color: 'rgba(255,255,255,0.45)' }}
+          initial={{ y: 20, opacity: 0 }}
+          animate={mounted ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.7, ease: 'easeOut', delay: 0.22 }}
+        >
+          URL-i yapışdırın. 30 saniyə ərzində title teq, meta, schema markup
+          və hreflang — hər ikisi üçün tam optimallaşdırılmış.
+        </motion.p>
+
+        {/* CTAs */}
+        <motion.div
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16"
+          initial={{ y: 20, opacity: 0 }}
+          animate={mounted ? { y: 0, opacity: 1 } : {}}
+          transition={{ duration: 0.7, ease: 'easeOut', delay: 0.32 }}
+        >
+          <Link
+            href="/signup"
+            className="group flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.03] hover:shadow-2xl"
+            style={{
+              background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)',
+              boxShadow: '0 0 0 1px rgba(123,110,246,0.4), 0 8px 32px rgba(123,110,246,0.35)',
+            }}
+          >
+            Pulsuz Başla
+            <ArrowRight size={15} strokeWidth={2.5} className="group-hover:translate-x-0.5 transition-transform duration-200" />
+          </Link>
+          <a
+            href="#how-it-works"
+            className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01]"
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.65)',
+            }}
+          >
+            Necə işləyir?
+          </a>
+        </motion.div>
+
+        {/* Dual mockup — flush to bottom */}
+        <DualMockup />
+
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #07071A)' }}
+        />
       </div>
     </section>
   )
