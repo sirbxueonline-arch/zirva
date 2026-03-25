@@ -1,4 +1,5 @@
 import Navbar       from '@/components/landing/Navbar'
+import PageIntro    from '@/components/landing/PageIntro'
 import Hero          from '@/components/landing/Hero'
 import DualVisibility from '@/components/landing/DualVisibility'
 import HowItWorks   from '@/components/landing/HowItWorks'
@@ -12,6 +13,7 @@ import Footer       from '@/components/landing/Footer'
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-bg">
+      <PageIntro />
       <Navbar />
       <Hero />
       <DualVisibility />
