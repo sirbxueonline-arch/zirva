@@ -21,8 +21,8 @@ const config: Config = {
         'text-muted':    '#737599',
       },
       fontFamily: {
-        display: ['Clash Display', 'sans-serif'],
-        body:    ['Satoshi', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'sans-serif'],
+        body:    ['Outfit', 'sans-serif'],
         mono:    ['JetBrains Mono', 'monospace'],
       },
       /* #6 — 4px-base spacing scale additions */
