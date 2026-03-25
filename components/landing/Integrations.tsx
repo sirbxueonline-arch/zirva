@@ -5,15 +5,20 @@ import { motion, useInView } from 'framer-motion'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
-const PLATFORMS = [
-  { name: 'WordPress',   domain: 'wordpress.org'   },
-  { name: 'Shopify',     domain: 'shopify.com'     },
-  { name: 'Wix',         domain: 'wix.com'         },
-  { name: 'Webflow',     domain: 'webflow.com'     },
-  { name: 'Next.js',     domain: 'nextjs.org'      },
-  { name: 'HubSpot',     domain: 'hubspot.com'     },
-  { name: 'Squarespace', domain: 'squarespace.com' },
-  { name: 'Ghost',       domain: 'ghost.org'       },
+// Row 1 — 5 platforms
+const PLATFORMS_R1 = [
+  { name: 'WordPress',   domain: 'wordpress.org'  },
+  { name: 'Shopify',     domain: 'shopify.com'    },
+  { name: 'Wix',         domain: 'wix.com'        },
+  { name: 'Webflow',     domain: 'webflow.com'    },
+  { name: 'Notion',      domain: 'notion.so'      },
+]
+// Row 2 — 4 platforms + 100+
+const PLATFORMS_R2 = [
+  { name: 'HubSpot',     domain: 'hubspot.com'    },
+  { name: 'Ghost',       domain: 'ghost.org'      },
+  { name: 'Next.js',     domain: 'nextjs.org'     },
+  { name: 'Squarespace', domain: 'squarespace.com'},
 ]
 
 // Row 1 — left to right
@@ -88,61 +93,83 @@ export default function Integrations() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-            {PLATFORMS.map((p, i) => (
+          {/* Row 1 — 5 platforms */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+            {PLATFORMS_R1.map((p, i) => (
               <motion.div
                 key={p.domain}
-                className="flex flex-col items-center gap-3 p-5 rounded-2xl cursor-default"
+                className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
                 style={{
-                  background: '#F5F5FF',
-                  border: '1.5px solid rgba(123,110,246,0.08)',
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(13,13,26,0.07)',
+                  boxShadow: '0 2px 12px rgba(13,13,26,0.05)',
                 }}
                 initial={{ y: 20, opacity: 0 }}
                 animate={inView ? { y: 0, opacity: 1 } : {}}
-                transition={{ ...SPRING, delay: 0.06 + i * 0.06 }}
-                whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(123,110,246,0.12)' }}
+                transition={{ ...SPRING, delay: 0.05 + i * 0.06 }}
+                whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(123,110,246,0.1)' }}
               >
-                {/* Logo container */}
-                <div
-                  className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center overflow-hidden"
-                  style={{ boxShadow: '0 2px 8px rgba(13,13,26,0.08)' }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=64`}
-                    alt={p.name}
-                    width={36}
-                    height={36}
-                    style={{ width: 36, height: 36, objectFit: 'contain' }}
-                  />
-                </div>
-                <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>
-                  {p.name}
-                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=128`}
+                  alt={p.name}
+                  width={52}
+                  height={52}
+                  style={{ width: 52, height: 52, objectFit: 'contain' }}
+                />
+                <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Row 2 — 4 platforms + 100+ */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            {PLATFORMS_R2.map((p, i) => (
+              <motion.div
+                key={p.domain}
+                className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(13,13,26,0.07)',
+                  boxShadow: '0 2px 12px rgba(13,13,26,0.05)',
+                }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={inView ? { y: 0, opacity: 1 } : {}}
+                transition={{ ...SPRING, delay: 0.29 + i * 0.06 }}
+                whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(123,110,246,0.1)' }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=128`}
+                  alt={p.name}
+                  width={52}
+                  height={52}
+                  style={{ width: 52, height: 52, objectFit: 'contain' }}
+                />
+                <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
               </motion.div>
             ))}
 
-            {/* +100 more */}
+            {/* 100+ tile in same row */}
             <motion.div
-              className="flex flex-col items-center gap-3 p-5 rounded-2xl cursor-default"
+              className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
               style={{
-                background: '#F5F5FF',
-                border: '1.5px dashed rgba(123,110,246,0.25)',
+                background: '#FFFFFF',
+                border: '1.5px dashed rgba(123,110,246,0.28)',
+                boxShadow: '0 2px 12px rgba(13,13,26,0.03)',
               }}
               initial={{ y: 20, opacity: 0 }}
               animate={inView ? { y: 0, opacity: 1 } : {}}
-              transition={{ ...SPRING, delay: 0.06 + PLATFORMS.length * 0.06 }}
-              whileHover={{ y: -4 }}
+              transition={{ ...SPRING, delay: 0.53 }}
+              whileHover={{ y: -3 }}
             >
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center font-display font-bold text-sm"
-                style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}
+                className="w-13 h-13 flex items-center justify-center font-display font-bold text-sm"
+                style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}
               >
                 100+
               </div>
-              <span className="text-xs font-semibold text-center" style={{ color: '#737599' }}>
-                Digər alətlər
-              </span>
+              <span className="text-xs font-semibold text-center" style={{ color: '#737599' }}>Digər alətlər</span>
             </motion.div>
           </div>
         </div>
