@@ -177,7 +177,7 @@ export default function CTABanner() {
             ))}
           </div>
           <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.9)' }}>
-            <span className="font-bold">500+</span> Azərbaycanlı sahibkar artıq istifadə edir
+            <span className="font-bold">500+</span> sahibkar artıq istifadə edir
           </p>
         </motion.div>
       </div>
