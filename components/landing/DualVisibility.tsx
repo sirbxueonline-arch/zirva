@@ -5,12 +5,9 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Star, Code, Globe, Hash } from 'lucide-react'
 
+// eslint-disable-next-line @next/next/no-img-element
 function ChatGPTLogo({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fillRule="evenodd" clipRule="evenodd" d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.212-2.972 10.079 10.079 0 0 0-10.4 4.858 9.963 9.963 0 0 0-6.67 4.792 10.079 10.079 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.212 2.972 10.078 10.078 0 0 0 10.4-4.857 9.966 9.966 0 0 0 6.67-4.793 10.079 10.079 0 0 0-1.24-11.816zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103L16.4 33.591a7.504 7.504 0 0 1-10.008-2.585zm-2.455-17.16a7.47 7.47 0 0 1 3.903-3.292A.065.065 0 0 1 7.84 10.6v9.199a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-3.107-10.014zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l7.694 4.443a7.498 7.498 0 0 1-1.158 13.528v-9.199a1.293 1.293 0 0 0-.293-.202zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l7.584-4.38a7.504 7.504 0 0 1 11.6 4.497zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.501 7.501 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.5v4.999l-4.331 2.5-4.331-2.5V18.226z" fill="white"/>
-    </svg>
-  )
+  return <img src="/chatgpticon.png" alt="ChatGPT" width={size} height={size} style={{ objectFit: 'contain' }} />
 }
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
@@ -157,14 +154,7 @@ function ChatGPTMockup() {
         className="flex items-center gap-3 px-4 py-3 border-b"
         style={{ borderColor: 'rgba(255,255,255,0.08)', background: '#171717' }}
       >
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: '#10a37f' }}
-        >
-          <svg width="18" height="18" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fillRule="evenodd" clipRule="evenodd" d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.212-2.972 10.079 10.079 0 0 0-10.4 4.858 9.963 9.963 0 0 0-6.67 4.792 10.079 10.079 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.212 2.972 10.078 10.078 0 0 0 10.4-4.857 9.966 9.966 0 0 0 6.67-4.793 10.079 10.079 0 0 0-1.24-11.816zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103L16.4 33.591a7.504 7.504 0 0 1-10.008-2.585zm-2.455-17.16a7.47 7.47 0 0 1 3.903-3.292A.065.065 0 0 1 7.84 10.6v9.199a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-3.107-10.014zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l7.694 4.443a7.498 7.498 0 0 1-1.158 13.528v-9.199a1.293 1.293 0 0 0-.293-.202zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l7.584-4.38a7.504 7.504 0 0 1 11.6 4.497zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.501 7.501 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.5v4.999l-4.331 2.5-4.331-2.5V18.226z" fill="white"/>
-          </svg>
-        </div>
+        <ChatGPTLogo size={28} />
         <span className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>ChatGPT</span>
         <span className="text-xs ml-auto" style={{ color: 'rgba(255,255,255,0.4)' }}>GPT-4o</span>
       </div>
@@ -182,12 +172,7 @@ function ChatGPTMockup() {
 
         {/* ChatGPT response */}
         <div className="flex gap-2.5">
-          <div
-            className="w-7 h-7 rounded-lg flex-shrink-0 mt-0.5 flex items-center justify-center"
-            style={{ background: '#10a37f' }}
-          >
-            <ChatGPTLogo size={16} />
-          </div>
+          <ChatGPTLogo size={28} />
           <div className="flex-1 space-y-2">
             <p className="text-sm" style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }}>
               Bakıda bir neçə yüksək reytinqli gözəllik salonu var. Müştəri rəylərinə və onlayn məlumatlara əsasən:
@@ -352,9 +337,7 @@ export default function DualVisibility() {
             transition={{ ...SPRING, delay: 0.25 }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: '#10a37f' }}>
-                <ChatGPTLogo size={14} />
-              </div>
+              <ChatGPTLogo size={20} />
               <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>ChatGPT Cavabı</span>
             </div>
             <ChatGPTMockup />
