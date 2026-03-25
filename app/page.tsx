@@ -4,7 +4,6 @@ import Hero            from '@/components/landing/Hero'
 import Features        from '@/components/landing/Features'
 import Integrations    from '@/components/landing/Integrations'
 import Testimonials    from '@/components/landing/Testimonials'
-import Pricing         from '@/components/landing/Pricing'
 import PlanComparison  from '@/components/landing/PlanComparison'
 import CTABanner       from '@/components/landing/CTABanner'
 import FAQ             from '@/components/landing/FAQ'
@@ -19,7 +18,6 @@ export default function LandingPage() {
       <Features />
       <Integrations />
       <Testimonials />
-      <Pricing />
       <PlanComparison />
       <CTABanner />
       <FAQ />
