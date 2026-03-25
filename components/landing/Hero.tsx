@@ -165,7 +165,7 @@ export default function Hero() {
   })
 
   return (
-    <section className="relative pt-28 pb-0 overflow-hidden" style={{ background: '#07071A' }}>
+    <section className="relative pt-24 sm:pt-28 pb-0 overflow-hidden" style={{ background: '#07071A' }}>
 
       {/* Noise */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.022]"
@@ -177,18 +177,18 @@ export default function Hero() {
 
       {/* Orbs */}
       <div className="absolute pointer-events-none" style={{
-        width: 800, height: 800, top: '-30%', left: '50%', transform: 'translateX(-50%)',
-        background: 'radial-gradient(circle, rgba(123,110,246,0.15) 0%, transparent 60%)',
+        width: 700, height: 700, top: '-25%', left: '50%', transform: 'translateX(-50%)',
+        background: 'radial-gradient(circle, rgba(123,110,246,0.18) 0%, transparent 60%)',
       }} />
-      <div className="absolute pointer-events-none" style={{
+      <div className="absolute pointer-events-none hidden sm:block" style={{
         width: 400, height: 400, bottom: '5%', right: '-5%',
         background: 'radial-gradient(circle, rgba(16,163,127,0.1) 0%, transparent 65%)',
       }} />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
 
         {/* Platform pills */}
-        <motion.div className="flex items-center justify-center gap-2 mb-10" {...stagger(0)}>
+        <motion.div className="flex items-center justify-center gap-2 mb-7 sm:mb-10" {...stagger(0)}>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{ background: 'rgba(66,133,244,0.12)', border: '1px solid rgba(66,133,244,0.25)', color: '#93B8FB' }}>
             <svg width="11" height="11" viewBox="0 0 24 24">
@@ -209,12 +209,12 @@ export default function Hero() {
 
         {/* Headline */}
         <motion.h1
-          className="text-center font-display font-bold tracking-tight mb-5"
-          style={{ fontSize: 'clamp(40px, 6.5vw, 76px)', lineHeight: 1.1, color: '#fff' }}
+          className="text-center font-display font-bold tracking-tight mb-4 sm:mb-5 px-2"
+          style={{ fontSize: 'clamp(34px, 7vw, 76px)', lineHeight: 1.1, color: '#fff' }}
           {...stagger(1)}
         >
           Saytınız Google-da da,{' '}
-          <br />
+          <br className="hidden sm:block" />
           <span style={{
             background: 'linear-gradient(100deg, #A78BFA 0%, #7B6EF6 40%, #10A37F 100%)',
             WebkitBackgroundClip: 'text',
@@ -227,8 +227,8 @@ export default function Hero() {
 
         {/* Sub */}
         <motion.p
-          className="text-center mx-auto mb-10"
-          style={{ maxWidth: '50ch', fontSize: 17, lineHeight: 1.7, color: 'rgba(255,255,255,0.42)' }}
+          className="text-center mx-auto mb-8 sm:mb-10 px-2"
+          style={{ maxWidth: '46ch', fontSize: 'clamp(14px, 2.5vw, 17px)', lineHeight: 1.7, color: 'rgba(255,255,255,0.42)' }}
           {...stagger(2)}
         >
           URL-i daxil edin — 30 saniyə ərzində title teq, meta, schema markup
@@ -236,10 +236,10 @@ export default function Hero() {
         </motion.p>
 
         {/* CTAs */}
-        <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16" {...stagger(3)}>
+        <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-12 sm:mb-16 px-4 sm:px-0" {...stagger(3)}>
           <Link
             href="/signup"
-            className="group flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.04]"
+            className="group flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.03]"
             style={{
               background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)',
               boxShadow: '0 0 0 1px rgba(123,110,246,0.5), 0 8px 32px rgba(123,110,246,0.4)',
@@ -250,14 +250,14 @@ export default function Hero() {
           </Link>
           <a
             href="#how-it-works"
-            className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
+            className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01]"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
           >
             Necə işləyir?
           </a>
         </motion.div>
 
-        {/* Dual mockup */}
+        {/* Dual mockup — stacks on mobile */}
         <motion.div
           className="flex flex-col md:flex-row gap-3"
           initial={{ y: 56, opacity: 0 }}
@@ -268,7 +268,7 @@ export default function Hero() {
           <ChatGPTPanel />
         </motion.div>
 
-        {/* Bottom fade into next section */}
+        {/* Bottom fade */}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-20"
           style={{ background: 'linear-gradient(to bottom, transparent, #07071A)' }} />
       </div>
