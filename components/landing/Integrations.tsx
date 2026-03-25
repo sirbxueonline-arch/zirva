@@ -201,39 +201,37 @@ export default function Integrations() {
         </div>
 
         {/* Row 1 — left to right */}
-        <div className="mb-3 overflow-hidden">
-          <div
-            className="flex gap-3"
-            style={{ animation: 'marquee 38s linear infinite', width: 'max-content' }}
-          >
+        <div style={{ overflow: 'hidden', width: '100%', marginBottom: 12 }}>
+          <div style={{ display: 'flex', gap: 12, width: 'max-content', animation: 'marquee 38s linear infinite' }}>
             {MARQUEE_ITEMS.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0"
                 style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 14px', borderRadius: 999,
+                  whiteSpace: 'nowrap', flexShrink: 0,
                   background: '#FFFFFF',
                   border: '1.5px solid rgba(123,110,246,0.1)',
                   boxShadow: '0 2px 8px rgba(13,13,26,0.04)',
                 }}
               >
                 <FlagImg cc={m.cc} name={m.name} />
-                <span className="text-sm font-medium" style={{ color: '#3D4060' }}>{m.name}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#3D4060' }}>{m.name}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Row 2 — right to left */}
-        <div className="overflow-hidden">
-          <div
-            className="flex gap-3"
-            style={{ animation: 'marquee-reverse 42s linear infinite', width: 'max-content' }}
-          >
+        <div style={{ overflow: 'hidden', width: '100%' }}>
+          <div style={{ display: 'flex', gap: 12, width: 'max-content', animation: 'marquee-reverse 42s linear infinite' }}>
             {MARQUEE_REV.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0"
                 style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 14px', borderRadius: 999,
+                  whiteSpace: 'nowrap', flexShrink: 0,
                   background: '#FFFFFF',
                   border: '1.5px solid rgba(123,110,246,0.1)',
                   boxShadow: '0 2px 8px rgba(13,13,26,0.04)',

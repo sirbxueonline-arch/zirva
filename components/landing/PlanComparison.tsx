@@ -15,12 +15,12 @@ interface Row {
 }
 
 const ROWS: Row[] = [
-  { label: 'Saniyələr içində hazır',        zirva: true,  agency: false, diy: false },
-  { label: 'Yüksək SEO balı',               zirva: true,  agency: true,  diy: false },
-  { label: 'Azərbaycanca optimallaşdırma',  zirva: true,  agency: true,  diy: false },
-  { label: 'Asan quraşdırma, sıfır iş',     zirva: true,  agency: false, diy: false },
-  { label: 'Çoxdilli teq dəstəyi',          zirva: true,  agency: false, diy: false },
-  { label: 'Sərfəli qiymət',                zirva: true,  agency: false, diy: false },
+  { label: 'Saniyələr içində hazır',  zirva: true,  agency: false, diy: false },
+  { label: 'Yüksək SEO balı',         zirva: true,  agency: true,  diy: false },
+  { label: 'Azərb. optimallaşdırma',  zirva: true,  agency: true,  diy: false },
+  { label: 'Asan quraşdırma',         zirva: true,  agency: false, diy: false },
+  { label: 'Çoxdilli dəstək',         zirva: true,  agency: false, diy: false },
+  { label: 'Sərfəli qiymət',          zirva: true,  agency: false, diy: false },
 ]
 
 function Tick({ yes }: { yes: boolean }) {
