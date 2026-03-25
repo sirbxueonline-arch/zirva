@@ -8,8 +8,13 @@ import { Zap, ArrowRight, Play } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
-const AVATAR_COLORS = ['#7B6EF6', '#00C9A7', '#F25C54', '#F5A623', '#9B8FF8']
-const AVATAR_INITIALS = ['A', 'R', 'N', 'T', 'L']
+const COMPANY_LOGOS = [
+  { name: 'Google',   domain: 'google.com'   },
+  { name: 'Shopify',  domain: 'shopify.com'  },
+  { name: 'Airbnb',   domain: 'airbnb.com'   },
+  { name: 'Spotify',  domain: 'spotify.com'  },
+  { name: 'Slack',    domain: 'slack.com'    },
+]
 
 export default function CTABanner() {
   const ref = useRef<HTMLDivElement>(null)
@@ -160,19 +165,26 @@ export default function CTABanner() {
           animate={inView ? { y: 0, opacity: 1 } : {}}
           transition={{ ...SPRING, delay: 0.36 }}
         >
-          {/* Avatar stack */}
+          {/* Company logo stack */}
           <div className="flex -space-x-2.5">
-            {AVATAR_COLORS.map((color, i) => (
+            {COMPANY_LOGOS.map((co, i) => (
               <div
-                key={i}
-                className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-white text-xs font-bold"
+                key={co.domain}
+                className="w-9 h-9 rounded-full border-2 overflow-hidden flex items-center justify-center bg-white"
                 style={{
-                  background: color,
-                  borderColor: 'rgba(255,255,255,0.5)',
+                  borderColor: 'rgba(255,255,255,0.6)',
                   zIndex: 5 - i,
                 }}
+                title={co.name}
               >
-                {AVATAR_INITIALS[i]}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://logo.clearbit.com/${co.domain}`}
+                  alt={co.name}
+                  width={28}
+                  height={28}
+                  style={{ objectFit: 'contain' }}
+                />
               </div>
             ))}
           </div>
