@@ -105,8 +105,7 @@ function ChatGPTPanel() {
 
         {/* AI prelude */}
         <div className="flex items-start gap-2.5 mb-3">
-          <div className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5"
-            style={{ background: '#10A37F' }} />
+          <ChatGPTIcon size={24} />
           <p className="text-[13px] leading-relaxed pt-0.5" style={{ color: '#9CA3AF' }}>
             Bakıda bir neçə yüksək reytinqli gözəllik salonu var. Müştəri rəylərinə və onlayn məlumatlara əsasən:
           </p>
