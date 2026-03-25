@@ -3,26 +3,24 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const LETTERS = 'Zirva'.split('')
+const WORD = 'Zirva'
 
 export default function PageIntro() {
-  const [visible, setVisible] = useState(true)
-  const [phase, setPhase] = useState<'in' | 'hold' | 'out'>('in')
+  const [visible, setVisible]   = useState(true)
+  const [phase,   setPhase]     = useState<'build' | 'hold' | 'out'>('build')
 
   useEffect(() => {
     if (sessionStorage.getItem('zirva_intro_seen')) {
       setVisible(false)
       return
     }
-
-    // in → hold → out (content fades) → visible=false (triggers exit slide-up)
-    const t1 = setTimeout(() => setPhase('hold'), 1000)
-    const t2 = setTimeout(() => setPhase('out'),  1800)
+    // build (letters reveal) → hold → out (content dissolves) → overlay lifts
+    const t1 = setTimeout(() => setPhase('hold'), 1100)
+    const t2 = setTimeout(() => setPhase('out'),  2100)
     const t3 = setTimeout(() => {
       setVisible(false)
       sessionStorage.setItem('zirva_intro_seen', '1')
-    }, 2800) // exit animation is 0.9s, fires at 1.9s → done at 2.8s
-
+    }, 3000)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [])
 
@@ -31,116 +29,97 @@ export default function PageIntro() {
       {visible && (
         <motion.div
           key="intro"
-          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
-          style={{ background: '#0D0D1A' }}
-          exit={{
-            y: '-100%',
-            transition: { duration: 0.9, ease: [0.76, 0, 0.24, 1] },
-          }}
+          className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden"
+          style={{ background: '#06061A' }}
+          exit={{ y: '-100%', transition: { duration: 1, ease: [0.76, 0, 0.24, 1] } }}
         >
-          {/* Ambient purple glow */}
+          {/* ── radial glow that builds up ── */}
           <motion.div
-            className="absolute rounded-full pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              width: 560, height: 560,
-              background: 'radial-gradient(circle, rgba(123,110,246,0.26) 0%, transparent 70%)',
-              filter: 'blur(50px)',
+              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(123,110,246,0.22) 0%, transparent 70%)',
             }}
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: [0.7, 1.1, 0.95, 1.05, 1], opacity: [0, 1, 0.85, 1, 0.95] }}
-            transition={{ duration: 2, ease: 'easeOut' }}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
           />
 
-          {/* Teal accent orb */}
+          {/* teal bottom-right accent */}
           <motion.div
-            className="absolute rounded-full pointer-events-none"
+            className="absolute pointer-events-none"
             style={{
-              width: 320, height: 320,
-              background: 'radial-gradient(circle, rgba(0,201,167,0.18) 0%, transparent 70%)',
-              filter: 'blur(60px)',
-              top: '52%', left: '54%',
+              width: 500, height: 500,
+              bottom: '-10%', right: '-5%',
+              background: 'radial-gradient(circle, rgba(0,201,167,0.13) 0%, transparent 65%)',
+              filter: 'blur(20px)',
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: phase === 'hold' ? 1 : 0 }}
-            transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
           />
 
-          {/* Soft grid overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.04]"
-            style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
-              backgroundSize: '48px 48px',
-            }}
-          />
-
-          {/* Logo + tagline */}
+          {/* ── wordmark ── */}
           <motion.div
-            className="relative z-10 text-center select-none"
-            animate={{ opacity: phase === 'out' ? 0 : 1 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="relative z-10 flex flex-col items-center select-none"
+            animate={{ opacity: phase === 'out' ? 0 : 1, y: phase === 'out' ? -12 : 0 }}
+            transition={{ duration: 0.55, ease: 'easeInOut' }}
           >
-            {/* Letter stagger */}
-            <div className="flex items-end justify-center gap-[0.02em] mb-5">
-              {LETTERS.map((char, i) => (
-                <motion.span
-                  key={i}
-                  className="font-display font-bold"
-                  style={{
-                    fontSize: 'clamp(60px, 11vw, 88px)',
-                    lineHeight: 1,
-                    background: 'linear-gradient(135deg, #FFFFFF 20%, #C4BCFF 60%, #7B6EF6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block',
-                    filter: 'drop-shadow(0 0 40px rgba(123,110,246,0.5))',
-                  }}
-                  initial={{ y: 40, opacity: 0, rotateX: 50, scale: 0.85 }}
-                  animate={{ y: 0, opacity: 1, rotateX: 0, scale: 1 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 220,
-                    damping: 18,
-                    delay: 0.1 + i * 0.08,
-                  }}
-                >
-                  {char}
-                </motion.span>
+            {/* each letter is in an overflow-hidden clip so it "rises" into view */}
+            <div className="flex items-end justify-center gap-[0.01em]">
+              {WORD.split('').map((char, i) => (
+                <div key={i} style={{ overflow: 'hidden', lineHeight: 1, paddingBottom: '0.06em' }}>
+                  <motion.span
+                    className="block font-display font-bold"
+                    style={{
+                      fontSize: 'clamp(64px, 12vw, 100px)',
+                      lineHeight: 1,
+                      background: 'linear-gradient(160deg, #FFFFFF 10%, #D4CEFF 55%, #7B6EF6 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      filter: 'drop-shadow(0 0 48px rgba(123,110,246,0.55))',
+                    }}
+                    initial={{ y: '110%' }}
+                    animate={{ y: '0%' }}
+                    transition={{
+                      duration: 0.75,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: 0.1 + i * 0.07,
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                </div>
               ))}
             </div>
 
-            {/* Accent line */}
+            {/* accent line — draws left → right */}
             <motion.div
-              className="mx-auto rounded-full"
+              className="mt-4 rounded-full"
               style={{
                 height: 2,
                 background: 'linear-gradient(90deg, transparent, #7B6EF6, #00C9A7, transparent)',
               }}
               initial={{ width: 0, opacity: 0 }}
-              animate={{
-                width: phase !== 'in' ? 180 : 0,
-                opacity: phase !== 'in' ? 1 : 0,
-              }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+              animate={{ width: phase !== 'build' ? 200 : 0, opacity: phase !== 'build' ? 1 : 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             />
 
-            {/* Tagline */}
-            <motion.p
-              className="mt-4 text-sm font-medium tracking-[0.28em] uppercase"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{
-                opacity: phase !== 'in' ? 1 : 0,
-                y: phase !== 'in' ? 0 : 10,
-              }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-            >
-              Google · ChatGPT · Zirva
-            </motion.p>
+            {/* tagline */}
+            <div style={{ overflow: 'hidden', marginTop: 14 }}>
+              <motion.p
+                className="text-xs font-semibold tracking-[0.32em] uppercase"
+                style={{ color: 'rgba(255,255,255,0.32)' }}
+                initial={{ y: '120%' }}
+                animate={{ y: phase !== 'build' ? '0%' : '120%' }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+              >
+                Google · ChatGPT · Zirva
+              </motion.p>
+            </div>
           </motion.div>
 
-          {/* Progress bar */}
+          {/* ── progress bar ── */}
           <motion.div
             className="absolute bottom-0 left-0 h-[2px]"
             style={{
@@ -149,18 +128,9 @@ export default function PageIntro() {
             }}
             initial={{ width: '0%' }}
             animate={{
-              width: phase === 'out' ? '100%' : phase === 'hold' ? '68%' : '28%',
+              width: phase === 'out' ? '100%' : phase === 'hold' ? '70%' : '25%',
             }}
-            transition={{
-              duration: phase === 'hold' ? 0.7 : phase === 'out' ? 0.55 : 0.9,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          />
-
-          {/* Shimmer line at top of exit — slides up with the curtain */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(123,110,246,0.6), rgba(0,201,167,0.6), transparent)' }}
+            transition={{ duration: phase === 'hold' ? 0.8 : 0.6, ease: [0.22, 1, 0.36, 1] }}
           />
         </motion.div>
       )}
