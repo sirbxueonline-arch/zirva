@@ -1,0 +1,516 @@
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import ScoreCircle from './ScoreCircle'
+import { ToastContainer } from '@/components/shared/Toast'
+import type { Generation } from '@/types'
+import { flowLabel, flowBadgeColor, formatDate, scoreColor } from '@/lib/utils'
+import { Lightbulb, RotateCcw, ChevronRight } from 'lucide-react'
+
+const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
+
+interface ToastItem { id: string; message: string; type?: 'success' | 'error' | 'info' }
+type ResultTab = 'az' | 'ru' | 'schema' | 'tips' | 'content'
+
+function CopyButton({ text, small }: { text: string; small?: boolean }) {
+  const [copied, setCopied] = useState(false)
+  async function copy() {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <motion.button
+      onClick={copy}
+      whileTap={{ scale: 0.94 }}
+      className={`flex items-center gap-1.5 font-medium transition-all rounded-lg ${small ? 'text-xs px-2.5 py-1' : 'text-xs px-3 py-1.5'}`}
+      style={{
+        background: copied ? 'rgba(0,201,167,0.1)' : 'rgba(123,110,246,0.08)',
+        border: `1px solid ${copied ? 'rgba(0,201,167,0.3)' : 'rgba(123,110,246,0.2)'}`,
+        color: copied ? '#00C9A7' : '#7B6EF6',
+      }}
+    >
+      {copied ? (
+        <><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> Kopyalandı</>
+      ) : (
+        <><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M4 4V2.5A1.5 1.5 0 0 1 5.5 1H9.5A1.5 1.5 0 0 1 11 2.5V7A1.5 1.5 0 0 1 9.5 8.5H8" stroke="currentColor" strokeWidth="1.2"/></svg> Kopyala</>
+      )}
+    </motion.button>
+  )
+}
+
+function TagCard({ label, value, charMin, charMax, mono }: { label: string; value: string; charMin?: number; charMax?: number; mono?: boolean }) {
+  const len = value?.length ?? 0
+  const overLimit = charMax ? len > charMax : false
+  const underLimit = charMin ? len < charMin : false
+  const warn = charMax ? len >= charMax - 5 && len <= charMax : false
+  const countColor = overLimit || underLimit ? '#F25C54' : warn ? '#F5A623' : '#00C9A7'
+
+  return (
+    <div
+      className="rounded-xl border p-4 group"
+      style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
+    >
+      <div className="flex items-start justify-between gap-3 mb-2.5">
+        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>{label}</span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {charMin && charMax && (
+            <span className="text-xs font-mono" style={{ color: countColor }}>{len}/{charMax}</span>
+          )}
+          <CopyButton text={value} small />
+        </div>
+      </div>
+      <p className={`text-text-primary text-sm leading-relaxed ${mono ? 'font-mono text-xs' : ''}`}>{value || '—'}</p>
+      {charMin && charMax && (
+        <div className="mt-2.5 h-0.5 rounded-full overflow-hidden" style={{ background: 'rgba(123,110,246,0.08)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${Math.min((len / charMax) * 100, 100)}%`, background: countColor }}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function ResultCard({ generation, isPro }: { generation: Generation; isPro: boolean }) {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<ResultTab>('az')
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const seo = generation.output_data
+
+  function addToast(message: string, type: ToastItem['type'] = 'success') {
+    const id = Math.random().toString(36).slice(2)
+    setToasts(prev => [...prev, { id, message, type }])
+  }
+
+  function downloadHTML() {
+    const head = `<title>${seo.title_tag_az}</title>
+<meta name="description" content="${seo.meta_description_az}">
+<meta property="og:title" content="${seo.og_title}">
+<meta property="og:description" content="${seo.og_description}">
+<meta property="og:type" content="${seo.og_type}">
+<meta name="twitter:card" content="${seo.twitter_card}">
+<meta name="twitter:title" content="${seo.twitter_title}">
+<meta name="twitter:description" content="${seo.twitter_description}">
+<link rel="canonical" href="${seo.canonical_url}">
+<meta name="robots" content="${seo.robots}">
+${seo.hreflang.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.url}">`).join('\n')}
+<script type="application/ld+json">
+${JSON.stringify(seo.schema_markup, null, 2)}
+</script>`
+    const blob = new Blob([head], { type: 'text/html' })
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'zirva-seo.html' })
+    a.click(); URL.revokeObjectURL(a.href)
+    addToast('HTML faylı yükləndi')
+  }
+
+  function downloadJSON() {
+    const blob = new Blob([JSON.stringify(seo, null, 2)], { type: 'application/json' })
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'zirva-seo.json' })
+    a.click(); URL.revokeObjectURL(a.href)
+    addToast('JSON faylı yükləndi')
+  }
+
+  async function handleDelete() {
+    if (!confirm('Bu paketi silmək istədiyinizə əminsiniz?')) return
+    const res = await fetch(`/api/generate?id=${generation.id}`, { method: 'DELETE' })
+    if (res.ok) router.push('/history')
+    else addToast('Silmə zamanı xəta baş verdi', 'error')
+  }
+
+  const hasContent = (seo.post_hashtags?.length ?? 0) > 0 || (seo.post_captions?.length ?? 0) > 0
+
+  const TABS: { id: ResultTab; label: string }[] = [
+    { id: 'az', label: 'Azərbaycanca' },
+    { id: 'ru', label: 'Rusca' },
+    { id: 'schema', label: 'Schema' },
+    { id: 'tips', label: 'Tövsiyələr' },
+    ...(hasContent ? [{ id: 'content' as ResultTab, label: '# Kontent' }] : []),
+  ]
+
+  const scoreCol = scoreColor(seo.seo_score)
+
+  return (
+    <>
+      <ToastContainer toasts={toasts} removeToast={id => setToasts(p => p.filter(t => t.id !== id))} />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* ── Hero banner ── */}
+        <motion.div
+          className="rounded-2xl p-6 mb-6 relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F5F5FF 100%)', border: '1px solid rgba(123,110,246,0.15)', boxShadow: '0 4px 24px rgba(123,110,246,0.08)' }}
+          initial={{ y: 16, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={SPRING}
+        >
+          {/* Decorative blob */}
+          <div className="absolute right-0 top-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: `${scoreCol}08`, filter: 'blur(40px)', transform: 'translate(30%, -30%)' }} />
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative z-10">
+            {/* Score circle */}
+            <div className="flex-shrink-0">
+              <ScoreCircle score={seo.seo_score} />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              {/* Business + badge */}
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span
+                  className="text-xs font-medium px-2.5 py-1 rounded-full"
+                  style={{ background: `${flowBadgeColor(generation.flow_type)}15`, color: flowBadgeColor(generation.flow_type), border: `1px solid ${flowBadgeColor(generation.flow_type)}30` }}
+                >
+                  {flowLabel(generation.flow_type)}
+                </span>
+                <span
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{ background: `${scoreCol}12`, color: scoreCol, border: `1px solid ${scoreCol}30` }}
+                >
+                  {seo.seo_score >= 75 ? 'Əla' : seo.seo_score >= 50 ? 'Orta' : 'Zəif'}
+                </span>
+              </div>
+
+              <h1 className="font-display font-bold text-2xl sm:text-3xl text-text-primary truncate mb-1">
+                {generation.business_name || 'SEO Paketi'}
+              </h1>
+              <p className="text-text-muted text-sm mb-4">{formatDate(generation.created_at)}</p>
+
+              {/* Quick stats */}
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { label: 'Başlıq', val: seo.title_tag_az?.length + ' simvol' },
+                  { label: 'Meta', val: seo.meta_description_az?.length + ' simvol' },
+                  { label: 'Açar sözlər', val: (seo.keywords_az?.length ?? 0) + ' söz' },
+                ].map(s => (
+                  <div key={s.label}>
+                    <div className="text-text-muted text-xs">{s.label}</div>
+                    <div className="text-text-primary text-sm font-semibold">{s.val}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action buttons top-right */}
+            <div className="flex sm:flex-col gap-2 flex-shrink-0">
+              {isPro ? (
+                <>
+                  <button
+                    onClick={downloadHTML}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium border transition-all hover:bg-surface-hover"
+                    style={{ borderColor: 'rgba(123,110,246,0.2)', color: '#5A5D7A', background: '#FFFFFF' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    HTML
+                  </button>
+                  <button
+                    onClick={downloadJSON}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium border transition-all hover:bg-surface-hover"
+                    style={{ borderColor: 'rgba(123,110,246,0.2)', color: '#5A5D7A', background: '#FFFFFF' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    JSON
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/settings/billing"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                  style={{ background: 'rgba(123,110,246,0.1)', border: '1px solid rgba(123,110,246,0.25)', color: '#7B6EF6' }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Pro — İxrac et
+                </Link>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── Tabs ── */}
+        <motion.div
+          className="flex gap-1 mb-5 p-1 rounded-xl"
+          style={{ background: 'rgba(123,110,246,0.06)' }}
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ ...SPRING, delay: 0.1 }}
+        >
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 relative"
+              style={{
+                background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
+                color: activeTab === tab.id ? '#7B6EF6' : '#9B9EBB',
+                boxShadow: activeTab === tab.id ? '0 1px 4px rgba(123,110,246,0.12)' : 'none',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* ── Tab content ── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -6, opacity: 0 }}
+            transition={SPRING}
+          >
+            {activeTab === 'az' && (
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <TagCard label="Başlıq teqi (AZ)" value={seo.title_tag_az} charMin={50} charMax={60} />
+                </div>
+                <div className="sm:col-span-2">
+                  <TagCard label="Meta açıqlama (AZ)" value={seo.meta_description_az} charMin={150} charMax={160} />
+                </div>
+                <TagCard label="OG başlıq" value={seo.og_title} charMin={40} charMax={90} />
+                <TagCard label="OG açıqlama" value={seo.og_description} />
+                <TagCard label="Twitter başlıq" value={seo.twitter_title} charMin={1} charMax={70} />
+                <TagCard label="Twitter açıqlama" value={seo.twitter_description} />
+                <TagCard label="Canonical URL" value={seo.canonical_url} mono />
+                <TagCard label="Robots" value={seo.robots} mono />
+                {/* Hreflang */}
+                <div
+                  className="sm:col-span-2 rounded-xl border p-4"
+                  style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Hreflang teqləri</span>
+                    <CopyButton text={seo.hreflang.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.url}">`).join('\n')} small />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {seo.hreflang.map(h => (
+                      <span
+                        key={h.lang}
+                        className="text-xs font-mono px-3 py-1.5 rounded-lg"
+                        style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.15)', color: '#7B6EF6' }}
+                      >
+                        {h.lang}: {h.url}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ru' && (
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <TagCard label="Başlıq teqi (RU)" value={seo.title_tag_ru} charMin={50} charMax={60} />
+                </div>
+                <div className="sm:col-span-2">
+                  <TagCard label="Meta açıqlama (RU)" value={seo.meta_description_ru} charMin={150} charMax={160} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'schema' && (
+              <div
+                className="rounded-xl border overflow-hidden"
+                style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
+              >
+                <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(123,110,246,0.08)', background: '#F5F5FF' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                    <span className="text-xs font-mono text-text-muted ml-2">schema.json</span>
+                  </div>
+                  <CopyButton text={JSON.stringify(seo.schema_markup, null, 2)} small />
+                </div>
+                <pre className="font-mono text-xs text-text-secondary overflow-auto max-h-96 p-5 leading-relaxed">
+                  {JSON.stringify(seo.schema_markup, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {activeTab === 'tips' && (
+              <div className="space-y-4">
+                {/* Keywords */}
+                <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#9B9EBB' }}>Açar sözlər (AZ)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {seo.keywords_az?.map(kw => (
+                      <span key={kw} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(123,110,246,0.08)', border: '1px solid rgba(123,110,246,0.18)', color: '#7B6EF6' }}>
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#9B9EBB' }}>Açar sözlər (RU)</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {seo.keywords_ru?.map(kw => (
+                      <span key={kw} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.2)', color: '#00C9A7' }}>
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: '#9B9EBB' }}>Rəqiblər</h3>
+                  {seo.competitors && seo.competitors.length > 0 ? (
+                    <div className="space-y-3">
+                      {seo.competitors.map((c, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'rgba(123,110,246,0.04)', border: '1px solid rgba(123,110,246,0.1)' }}>
+                          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: '#f0f0f8', border: '1px solid rgba(123,110,246,0.12)' }}>
+                            <img
+                              src={`https://www.google.com/s2/favicons?domain=${c.domain}&sz=32`}
+                              alt={c.name}
+                              width={20}
+                              height={20}
+                              onError={e => {
+                                const t = e.currentTarget
+                                t.style.display = 'none'
+                                const fb = t.nextElementSibling as HTMLElement | null
+                                if (fb) fb.style.display = 'flex'
+                              }}
+                            />
+                            <span className="hidden w-full h-full items-center justify-center text-xs font-bold text-white rounded-lg" style={{ background: `hsl(${i * 55 + 240}, 65%, 60%)` }}>
+                              {c.name[0]}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              <span className="text-sm font-semibold text-text-primary">{c.name}</span>
+                              <a href={`https://${c.domain}`} target="_blank" rel="noopener noreferrer"
+                                className="text-xs font-mono px-2 py-0.5 rounded-full transition-all hover:opacity-80"
+                                style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>
+                                {c.domain}
+                              </a>
+                            </div>
+                            <p className="text-xs text-text-muted leading-relaxed">{c.why}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <ol className="space-y-3">
+                      {seo.competitor_tips?.map((tip, i) => (
+                        <li key={i} className="flex gap-3 text-sm text-text-secondary">
+                          <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: '#7B6EF6' }}>{i + 1}</span>
+                          {tip}
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {seo.competitor_tips && seo.competitor_tips.length > 0 && seo.competitors && seo.competitors.length > 0 && (
+                    <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: 'rgba(123,110,246,0.08)' }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#9B9EBB' }}>Rəqibləri üstələmək üçün</p>
+                      {seo.competitor_tips.map((tip, i) => (
+                        <div key={i} className="flex gap-2 text-xs text-text-secondary">
+                          <ChevronRight size={12} strokeWidth={2.5} className="flex-shrink-0 mt-0.5" style={{ color: '#7B6EF6' }} />
+                          {tip}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#9B9EBB' }}>İnkişaf tövsiyələri</h3>
+                  <ol className="space-y-3">
+                    {seo.improvement_tips?.map((tip, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-text-secondary">
+                        <Lightbulb size={15} strokeWidth={1.8} className="flex-shrink-0 mt-0.5" style={{ color: '#F5A623' }} />
+                        {tip}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'content' && (
+              <div className="space-y-4">
+                {/* Hashtags */}
+                {(seo.post_hashtags?.length ?? 0) > 0 && (
+                  <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>
+                        Post Hashtagları ({seo.post_hashtags!.length})
+                      </h3>
+                      <CopyButton text={seo.post_hashtags!.map(h => `#${h.replace(/^#/, '')}`).join(' ')} small />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {seo.post_hashtags!.map(tag => (
+                        <span
+                          key={tag}
+                          className="text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-all hover:scale-105"
+                          style={{ background: 'rgba(123,110,246,0.08)', border: '1px solid rgba(123,110,246,0.18)', color: '#7B6EF6' }}
+                          onClick={() => { navigator.clipboard.writeText(`#${tag.replace(/^#/, '')}`); addToast('Kopyalandı!') }}
+                        >
+                          #{tag.replace(/^#/, '')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Captions */}
+                {(seo.post_captions?.length ?? 0) > 0 && (
+                  <div className="space-y-3">
+                    {seo.post_captions!.map((cap, i) => (
+                      <div key={i} className="rounded-xl border overflow-hidden" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
+                        <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(123,110,246,0.08)', background: 'rgba(123,110,246,0.03)' }}>
+                          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#7B6EF6' }}>{cap.type}</span>
+                          <CopyButton text={cap.text} small />
+                        </div>
+                        <div className="p-5">
+                          <p className="text-text-primary text-sm leading-relaxed whitespace-pre-line">{cap.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* ── Bottom action bar ── */}
+        <motion.div
+          className="sticky bottom-4 mt-8 flex flex-wrap items-center gap-2 p-3 rounded-2xl border backdrop-blur-xl"
+          style={{ background: 'rgba(255,255,255,0.95)', borderColor: 'rgba(123,110,246,0.18)', boxShadow: '0 8px 32px rgba(123,110,246,0.12)' }}
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ ...SPRING, delay: 0.2 }}
+        >
+          <Link
+            href="/history"
+            className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium border transition-all hover:bg-surface-hover"
+            style={{ borderColor: 'rgba(123,110,246,0.2)', color: '#5A5D7A' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Tarixçə
+          </Link>
+          <div className="flex-1" />
+          <button
+            onClick={() => router.push(`/generate?flow=${generation.flow_type}`)}
+            className="flex items-center gap-2 py-2.5 px-5 rounded-xl text-sm font-medium text-white transition-all"
+            style={{ background: '#7B6EF6' }}
+          >
+            <RotateCcw size={14} strokeWidth={2} />
+            Yenidən yarat
+          </button>
+          <button
+            onClick={handleDelete}
+            className="py-2.5 px-4 rounded-xl text-sm font-medium transition-all hover:bg-red-50"
+            style={{ color: '#F25C54' }}
+          >
+            Sil
+          </button>
+        </motion.div>
+      </div>
+    </>
+  )
+}
