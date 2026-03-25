@@ -1,7 +1,6 @@
 import Navbar          from '@/components/landing/Navbar'
 import PageIntro       from '@/components/landing/PageIntro'
 import Hero            from '@/components/landing/Hero'
-import DualVisibility  from '@/components/landing/DualVisibility'
 import HowItWorks      from '@/components/landing/HowItWorks'
 import Features        from '@/components/landing/Features'
 import Integrations    from '@/components/landing/Integrations'
@@ -18,7 +17,6 @@ export default function LandingPage() {
       <PageIntro />
       <Navbar />
       <Hero />
-      <DualVisibility />
       <HowItWorks />
       <Features />
       <Integrations />

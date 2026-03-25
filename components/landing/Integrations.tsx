@@ -109,23 +109,11 @@ export default function Integrations() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`https://logo.clearbit.com/${p.domain}`}
+                    src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=64`}
                     alt={p.name}
-                    width={40}
-                    height={40}
-                    style={{ width: 40, height: 40, objectFit: 'contain' }}
-                    onError={(e) => {
-                      // Fallback: show first letter
-                      const target = e.currentTarget as HTMLImageElement
-                      target.style.display = 'none'
-                      const parent = target.parentElement
-                      if (parent && !parent.querySelector('span')) {
-                        const span = document.createElement('span')
-                        span.textContent = p.name[0]
-                        span.style.cssText = 'font-weight:700;font-size:20px;color:#7B6EF6'
-                        parent.appendChild(span)
-                      }
-                    }}
+                    width={36}
+                    height={36}
+                    style={{ width: 36, height: 36, objectFit: 'contain' }}
                   />
                 </div>
                 <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>
