@@ -16,8 +16,8 @@ const PLATFORMS = [
   { name: 'Ghost',       domain: 'ghost.org'       },
 ]
 
-// cc = ISO 3166-1 alpha-2 country code for flagcdn.com
-const MARKETS = [
+// Row 1 — left to right
+const ROW1 = [
   { cc: 'az', name: 'Azərbaycan' },
   { cc: 'ru', name: 'Rusiya'     },
   { cc: 'gb', name: 'İngiltərə' },
@@ -28,6 +28,12 @@ const MARKETS = [
   { cc: 'es', name: 'İspaniya'  },
   { cc: 'it', name: 'İtaliya'   },
   { cc: 'pl', name: 'Polşa'     },
+  { cc: 'cn', name: 'Çin'       },
+  { cc: 'in', name: 'Hindistan' },
+]
+
+// Row 2 — right to left (completely different countries)
+const ROW2 = [
   { cc: 'ua', name: 'Ukrayna'   },
   { cc: 'kz', name: 'Qazaxstan' },
   { cc: 'uz', name: 'Özbəkistan'},
@@ -38,10 +44,12 @@ const MARKETS = [
   { cc: 'br', name: 'Braziliya' },
   { cc: 'jp', name: 'Yaponiya'  },
   { cc: 'kr', name: 'Koreya'    },
+  { cc: 'mx', name: 'Meksika'   },
+  { cc: 'ca', name: 'Kanada'    },
 ]
 
-const MARQUEE_ITEMS  = [...MARKETS, ...MARKETS]
-const MARQUEE_REV    = [...MARKETS, ...MARKETS].reverse()
+const MARQUEE_ITEMS = [...ROW1, ...ROW1]
+const MARQUEE_REV   = [...ROW2, ...ROW2]
 
 function FlagImg({ cc, name }: { cc: string; name: string }) {
   return (
