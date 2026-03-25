@@ -4,7 +4,6 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Bot } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
@@ -122,10 +121,6 @@ export default function Footer() {
         >
           <p className="text-sm" style={{ color: '#737599' }}>
             &copy; 2025 Zirva. Bütün hüquqlar qorunur.
-          </p>
-          <p className="text-sm flex items-center gap-1.5" style={{ color: '#737599' }}>
-            <Bot size={14} strokeWidth={2} style={{ color: '#737599' }} />
-            GPT-4o ilə hazırlanmışdır
           </p>
         </div>
       </div>
