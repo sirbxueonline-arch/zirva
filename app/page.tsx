@@ -1,7 +1,6 @@
 import Navbar          from '@/components/landing/Navbar'
 import PageIntro       from '@/components/landing/PageIntro'
 import Hero            from '@/components/landing/Hero'
-import HowItWorks      from '@/components/landing/HowItWorks'
 import Features        from '@/components/landing/Features'
 import Integrations    from '@/components/landing/Integrations'
 import Testimonials    from '@/components/landing/Testimonials'
@@ -17,7 +16,6 @@ export default function LandingPage() {
       <PageIntro />
       <Navbar />
       <Hero />
-      <HowItWorks />
       <Features />
       <Integrations />
       <Testimonials />
