@@ -57,7 +57,7 @@ const PLANS: Plan[] = [
     },
     features: [
       { text: '3 domen',                         included: true },
-      { text: 'Ayda 50 SEO + SMO paketi',         included: true },
+      { text: 'Ayda 50 SEO paketi',         included: true },
       { text: 'Bütün axışlar',                   included: true },
       { text: 'AZ + RU + EN teqləri',            included: true },
       { text: 'Bütün teq növləri',               included: true },
@@ -78,7 +78,7 @@ const PLANS: Plan[] = [
     },
     features: [
       { text: '10 domen',                        included: true },
-      { text: 'Limitsiz SEO + SMO paketi',       included: true },
+      { text: 'Limitsiz SEO paketi',       included: true },
       { text: 'Pro-nun hər şeyi',                included: true },
       { text: 'Çoxlu sayt idarəetməsi',          included: true },
       { text: 'API girişi (tezliklə)',            included: true },

@@ -6,12 +6,8 @@ import { scoreColor, flowLabel, flowBadgeColor, timeAgo } from '@/lib/utils'
 import type { Generation } from '@/types'
 import { FileText, Plus, Trash2, ChevronRight } from 'lucide-react'
 
-function isSMO(gen: Generation) {
-  return (gen.input_data as Record<string, unknown>)?._type === 'smo'
-}
-
 function resultHref(gen: Generation) {
-  return isSMO(gen) ? `/smo/result/${gen.id}` : `/result/${gen.id}`
+  return `/result/${gen.id}`
 }
 
 interface HistoryTableProps {
@@ -82,11 +78,11 @@ export default function HistoryTable({ generations, onDelete }: HistoryTableProp
             {/* #12 — color communicates type */}
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
               style={{
-                background: isSMO(gen) ? 'rgba(225,48,108,0.1)' : `${flowBadgeColor(gen.flow_type)}18`,
-                color:      isSMO(gen) ? '#E1306C'               : flowBadgeColor(gen.flow_type),
-                border:    `1px solid ${isSMO(gen) ? 'rgba(225,48,108,0.22)' : flowBadgeColor(gen.flow_type) + '30'}`,
+                background: `${flowBadgeColor(gen.flow_type)}18`,
+                color:      flowBadgeColor(gen.flow_type),
+                border:     `1px solid ${flowBadgeColor(gen.flow_type)}30`,
               }}>
-              {isSMO(gen) ? 'SMO' : flowLabel(gen.flow_type)}
+              {flowLabel(gen.flow_type)}
             </span>
 
             {/* #3 — strong/muted weight contrast */}

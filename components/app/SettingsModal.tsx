@@ -31,7 +31,7 @@ const PLAN_FEATURES: Record<string, PlanFeature[]> = {
   ],
   pro:    [
     { Icon: Globe,         text: '3 domen' },
-    { Icon: Package,       text: 'Ayda 50 SEO + SMO paketi' },
+    { Icon: Package,       text: 'Ayda 50 SEO paketi' },
     { Icon: Globe,         text: 'Bütün axışlar' },
     { Icon: Languages,     text: 'AZ + RU + EN teqləri' },
     { Icon: ClipboardList, text: 'Bütün teq növləri' },
@@ -41,7 +41,7 @@ const PLAN_FEATURES: Record<string, PlanFeature[]> = {
   ],
   agency: [
     { Icon: Globe,         text: '10 domen' },
-    { Icon: Package,       text: 'Limitsiz SEO + SMO paketi' },
+    { Icon: Package,       text: 'Limitsiz SEO paketi' },
     { Icon: CheckCircle,   text: 'Pro-nun hər şeyi' },
     { Icon: Globe,         text: 'Çoxlu sayt idarəetməsi' },
     { Icon: Plug,          text: 'API girişi (tezliklə)' },

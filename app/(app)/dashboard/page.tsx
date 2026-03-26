@@ -271,7 +271,7 @@ export default async function DashboardPage() {
               {gens.map((g, i) => (
                 <Link
                   key={g.id}
-                  href={`/${g.flow_type === 'social' ? 'smo' : 'result'}/${g.id}`}
+                  href={`/result/${g.id}`}
                   className="group flex items-center gap-4 px-5 py-4 transition-all hover:bg-[#F5F5FF]"
                   style={{ borderTop: i > 0 ? '1px solid rgba(123,110,246,0.06)' : 'none' }}
                 >

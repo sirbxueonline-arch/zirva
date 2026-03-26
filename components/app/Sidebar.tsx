@@ -9,7 +9,6 @@ import { PLAN_NAMES } from '@/types'
 import {
   LayoutDashboard,
   Search,
-  Share2,
   Clock,
   LogOut,
   Settings2,
@@ -22,7 +21,6 @@ const SPRING_SNAPPY = { type: 'spring' as const, stiffness: 400, damping: 30 }
 const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; proOnly?: boolean }[] = [
   { label: 'Dashboard',    href: '/dashboard',  Icon: LayoutDashboard },
   { label: 'SEO Paketi',   href: '/generate',   Icon: Search },
-  { label: 'SMO Paketi',   href: '/smo',        Icon: Share2, proOnly: true },
   { label: 'Tarixçə',      href: '/history',    Icon: Clock },
 ]
 
