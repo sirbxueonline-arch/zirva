@@ -18,32 +18,39 @@ import {
   Target,
   Star,
   ArrowRight,
+  Lock,
   type LucideIcon,
 } from 'lucide-react'
 
-interface PlanFeature { Icon: LucideIcon; text: string }
+interface PlanFeature { Icon: LucideIcon; text: string; locked?: boolean }
 
 const PLAN_FEATURES: Record<string, PlanFeature[]> = {
   free: [
-    { Icon: Globe,         text: '1 domen' },
     { Icon: Package,       text: 'Ayda 5 SEO paketi' },
-    { Icon: Globe,         text: 'URL axışı' },
-    { Icon: Languages,     text: 'Azərbaycan dili teqləri' },
-    { Icon: ClipboardList, text: 'Bütün teq növləri' },
+    { Icon: Globe,         text: 'Yalnız URL axışı' },
+    { Icon: Languages,     text: 'Yalnız Azərbaycan dili' },
+    { Icon: ClipboardList, text: 'Yalnız başlıq + meta (3 açar söz)' },
+    { Icon: Lock,          text: 'OG / Twitter teqləri yoxdur', locked: true },
+    { Icon: Lock,          text: 'Schema Markup yoxdur', locked: true },
+    { Icon: Lock,          text: 'Hreflang yoxdur', locked: true },
+    { Icon: Lock,          text: 'Rəqib analizi yoxdur', locked: true },
+    { Icon: Lock,          text: 'İxrac (JSON/HTML) yoxdur', locked: true },
   ],
   pro: [
-    { Icon: Globe,         text: '3 domen' },
+    { Icon: Globe,         text: '10 brend' },
     { Icon: Package,       text: 'Ayda 50 SEO paketi' },
-    { Icon: Globe,         text: 'Bütün axışlar' },
-    { Icon: Languages,     text: 'AZ + RU + EN teqləri' },
-    { Icon: ClipboardList, text: 'Bütün teq növləri' },
-    { Icon: Search,        text: 'Rəqib analizi' },
+    { Icon: Globe,         text: 'Bütün axışlar (URL, sosial, manual)' },
+    { Icon: Languages,     text: 'AZ + RU teqləri' },
+    { Icon: ClipboardList, text: 'Tam teq paketi (8 açar söz)' },
+    { Icon: CheckCircle,   text: 'OG + Twitter + Hreflang teqləri' },
+    { Icon: CheckCircle,   text: 'Schema Markup (JSON-LD)' },
+    { Icon: Search,        text: 'Rəqib analizi + üstələmə tövsiyələri' },
     { Icon: Download,      text: 'JSON / HTML ixracı' },
     { Icon: Zap,           text: 'Prioritet dəstək' },
   ],
   agency: [
-    { Icon: Globe,         text: '10 domen' },
-    { Icon: Package,       text: 'Limitsiz SEO paketi' },
+    { Icon: Globe,         text: '20 brend' },
+    { Icon: Package,       text: 'Ayda 300 SEO paketi' },
     { Icon: CheckCircle,   text: 'Pro-nun hər şeyi' },
     { Icon: Globe,         text: 'Çoxlu sayt idarəetməsi' },
     { Icon: Plug,          text: 'API girişi (tezliklə)' },
@@ -160,9 +167,9 @@ export default function BillingPage() {
         {/* Features */}
         <div className="grid grid-cols-2 gap-1.5 relative z-10">
           {PLAN_FEATURES[plan]?.map(f => (
-            <div key={f.text} className="flex items-center gap-2 text-sm text-text-secondary py-1">
-              <f.Icon size={15} strokeWidth={1.8} className="flex-shrink-0" style={{ color: planColor }} />
-              <span>{f.text}</span>
+            <div key={f.text} className="flex items-center gap-2 text-sm py-1" style={{ color: f.locked ? '#C5C7D8' : undefined }}>
+              <f.Icon size={15} strokeWidth={1.8} className="flex-shrink-0" style={{ color: f.locked ? '#D0D2E0' : planColor }} />
+              <span className={f.locked ? 'line-through' : ''}>{f.text}</span>
             </div>
           ))}
         </div>
@@ -193,6 +200,28 @@ export default function BillingPage() {
       {/* Upgrade cards */}
       {plan === 'free' && (
         <>
+          {/* What you're missing banner */}
+          <div className="rounded-2xl p-5 mb-6" style={{ background: 'rgba(242,92,84,0.05)', border: '1px solid rgba(242,92,84,0.18)' }}>
+            <p className="text-sm font-bold mb-3" style={{ color: '#F25C54' }}>🔒 Pulsuz planda bu xüsusiyyətlər yoxdur:</p>
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
+              {[
+                'OG teqləri (Facebook / WhatsApp paylaşımı)',
+                'Twitter Card teqləri',
+                'Hreflang (çoxdilli hədəfləmə)',
+                'Schema Markup / JSON-LD',
+                'Rusca teqlər (35% axtarış auditoriyası)',
+                'Rəqib analizi və üstələmə tövsiyələri',
+                '8 açar söz (yalnız 3 verilir)',
+                'JSON / HTML ixracı',
+              ].map(item => (
+                <div key={item} className="flex items-center gap-2 text-xs" style={{ color: '#8B5E5B' }}>
+                  <Lock size={11} strokeWidth={2.5} className="flex-shrink-0" style={{ color: '#F25C54' }} />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <p className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-4">Planı Yüksəlt</p>
           <div className="grid sm:grid-cols-2 gap-4">
 

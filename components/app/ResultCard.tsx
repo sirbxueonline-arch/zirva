@@ -323,7 +323,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
 
         {/* ── Hero banner ── */}
         <motion.div
-          className="rounded-2xl p-6 mb-6 relative overflow-hidden"
+          className="rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F5F5FF 100%)', border: '1px solid rgba(123,110,246,0.15)', boxShadow: '0 4px 24px rgba(123,110,246,0.08)' }}
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -355,7 +355,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                 </span>
               </div>
 
-              <h1 className="font-display font-bold text-2xl sm:text-3xl text-text-primary truncate mb-1">
+              <h1 className="font-display font-bold text-xl sm:text-3xl text-text-primary truncate mb-1">
                 {generation.business_name || 'SEO Paketi'}
               </h1>
               <p className="text-text-muted text-sm mb-4">{formatDate(generation.created_at)}</p>
@@ -412,26 +412,28 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
 
         {/* ── Tabs ── */}
         <motion.div
-          className="flex gap-1 mb-5 p-1 rounded-xl"
+          className="mb-5 p-1 rounded-xl overflow-x-auto scrollbar-hide"
           style={{ background: 'rgba(123,110,246,0.06)' }}
           initial={{ y: 12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...SPRING, delay: 0.1 }}
         >
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 relative"
-              style={{
-                background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
-                color: activeTab === tab.id ? '#7B6EF6' : '#9B9EBB',
-                boxShadow: activeTab === tab.id ? '0 1px 4px rgba(123,110,246,0.12)' : 'none',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          <div className="flex gap-1 min-w-max sm:min-w-0">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="flex-shrink-0 sm:flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 relative whitespace-nowrap"
+                style={{
+                  background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
+                  color: activeTab === tab.id ? '#7B6EF6' : '#9B9EBB',
+                  boxShadow: activeTab === tab.id ? '0 1px 4px rgba(123,110,246,0.12)' : 'none',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </motion.div>
 
         {/* ── Tab content ── */}
@@ -451,33 +453,49 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                 <div className="sm:col-span-2">
                   <TagCard label="Meta açıqlama (AZ)" value={seo.meta_description_az} charMin={150} charMax={160} />
                 </div>
-                <TagCard label="OG başlıq" value={seo.og_title} charMin={40} charMax={90} />
-                <TagCard label="OG açıqlama" value={seo.og_description} />
-                <TagCard label="Twitter başlıq" value={seo.twitter_title} charMin={1} charMax={70} />
-                <TagCard label="Twitter açıqlama" value={seo.twitter_description} />
                 <TagCard label="Canonical URL" value={seo.canonical_url} mono />
                 <TagCard label="Robots" value={seo.robots} mono />
-                {/* Hreflang */}
-                <div
-                  className="sm:col-span-2 rounded-xl border p-4"
-                  style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Hreflang teqləri</span>
-                    <CopyButton text={seo.hreflang.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.url}">`).join('\n')} small />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {seo.hreflang.map(h => (
-                      <span
-                        key={h.lang}
-                        className="text-xs font-mono px-3 py-1.5 rounded-lg"
-                        style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.15)', color: '#7B6EF6' }}
-                      >
-                        {h.lang}: {h.url}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+
+                {isPro ? (
+                  <>
+                    <TagCard label="OG başlıq" value={seo.og_title} charMin={40} charMax={90} />
+                    <TagCard label="OG açıqlama" value={seo.og_description} />
+                    <TagCard label="Twitter başlıq" value={seo.twitter_title} charMin={1} charMax={70} />
+                    <TagCard label="Twitter açıqlama" value={seo.twitter_description} />
+                    {/* Hreflang */}
+                    <div
+                      className="sm:col-span-2 rounded-xl border p-4"
+                      style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Hreflang teqləri</span>
+                        <CopyButton text={seo.hreflang.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.url}">`).join('\n')} small />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {seo.hreflang.map(h => (
+                          <span
+                            key={h.lang}
+                            className="text-xs font-mono px-3 py-1.5 rounded-lg"
+                            style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.15)', color: '#7B6EF6' }}
+                          >
+                            {h.lang}: {h.url}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <Link href="/settings/billing"
+                    className="sm:col-span-2 flex items-center gap-4 p-4 rounded-xl transition-all hover:opacity-90"
+                    style={{ background: 'rgba(123,110,246,0.04)', border: '1.5px dashed rgba(123,110,246,0.2)' }}
+                  >
+                    <span style={{ fontSize: 26 }}>🔒</span>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: '#7B6EF6' }}>OG, Twitter və Hreflang teqləri — Pro</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Sosial media paylaşımları və çoxdilli hədəfləmə üçün Pro planına keçin</p>
+                    </div>
+                  </Link>
+                )}
               </div>
             )}
 
@@ -493,36 +511,61 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
             )}
 
             {activeTab === 'schema' && (
-              <div
-                className="rounded-xl border overflow-hidden"
-                style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
-              >
-                <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(123,110,246,0.08)', background: '#F5F5FF' }}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-                    <span className="text-xs font-mono text-text-muted ml-2">schema.json</span>
+              isPro ? (
+                <div
+                  className="rounded-xl border overflow-hidden"
+                  style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
+                >
+                  <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'rgba(123,110,246,0.08)', background: '#F5F5FF' }}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                      <span className="text-xs font-mono text-text-muted ml-2">schema.json</span>
+                    </div>
+                    <CopyButton text={JSON.stringify(seo.schema_markup, null, 2)} small />
                   </div>
-                  <CopyButton text={JSON.stringify(seo.schema_markup, null, 2)} small />
+                  <pre className="font-mono text-xs text-text-secondary overflow-auto max-h-96 p-5 leading-relaxed">
+                    {JSON.stringify(seo.schema_markup, null, 2)}
+                  </pre>
                 </div>
-                <pre className="font-mono text-xs text-text-secondary overflow-auto max-h-96 p-5 leading-relaxed">
-                  {JSON.stringify(seo.schema_markup, null, 2)}
-                </pre>
-              </div>
+              ) : (
+                <Link href="/settings/billing"
+                  className="flex flex-col items-center justify-center gap-3 py-16 rounded-2xl text-center transition-all hover:opacity-90"
+                  style={{ background: 'rgba(123,110,246,0.04)', border: '1.5px dashed rgba(123,110,246,0.2)' }}
+                >
+                  <span style={{ fontSize: 40 }}>🔒</span>
+                  <div>
+                    <p className="text-base font-bold" style={{ color: '#7B6EF6' }}>Schema Markup — Pro xüsusiyyəti</p>
+                    <p className="text-sm mt-1" style={{ color: '#9B9EBB' }}>Google üçün strukturlu məlumat teqləri Pro planında mövcuddur</p>
+                  </div>
+                  <span className="text-xs font-semibold px-4 py-2 rounded-xl mt-1" style={{ background: '#7B6EF6', color: '#fff' }}>Pro-ya keçin</span>
+                </Link>
+              )
             )}
 
             {activeTab === 'tips' && (
               <div className="space-y-4">
                 {/* Keywords */}
                 <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#9B9EBB' }}>Açar sözlər (AZ)</h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Açar sözlər (AZ)</h3>
+                    {!isPro && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>3 / 8</span>}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {seo.keywords_az?.map(kw => (
                       <span key={kw} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(123,110,246,0.08)', border: '1px solid rgba(123,110,246,0.18)', color: '#7B6EF6' }}>
                         {kw}
                       </span>
                     ))}
+                    {!isPro && (
+                      <Link href="/settings/billing"
+                        className="text-xs px-3 py-1.5 rounded-full font-medium transition-all hover:opacity-80"
+                        style={{ background: 'rgba(123,110,246,0.04)', border: '1px dashed rgba(123,110,246,0.25)', color: '#9B9EBB' }}
+                      >
+                        🔒 +5 Pro ilə
+                      </Link>
+                    )}
                   </div>
                 </div>
 
@@ -623,6 +666,17 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                       </li>
                     ))}
                   </ol>
+                  {!isPro && (
+                    <Link href="/settings/billing"
+                      className="flex items-center gap-3 mt-4 p-3 rounded-xl transition-all hover:opacity-90"
+                      style={{ background: 'rgba(123,110,246,0.05)', border: '1px dashed rgba(123,110,246,0.2)' }}
+                    >
+                      <span style={{ fontSize: 18 }}>🔒</span>
+                      <p className="text-xs" style={{ color: '#7B6EF6' }}>
+                        <strong>+2 əlavə tövsiyə</strong> Pro planında açılır
+                      </p>
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

@@ -124,12 +124,34 @@ export async function POST(req: Request) {
 
     // Strip pro-only data for free users
     if (!isPaidPlan) {
-      seoPackage.competitors = []
-      seoPackage.competitor_tips = []
-      // Free plan: Azerbaijani only — clear Russian tags
+      // Keywords: limit to 3 (pro gets all 8+)
+      seoPackage.keywords_az = seoPackage.keywords_az.slice(0, 3)
+      seoPackage.keywords_ru = []
+
+      // Russian tags: free gets AZ only
       seoPackage.title_tag_ru = ''
       seoPackage.meta_description_ru = ''
-      seoPackage.keywords_ru = []
+
+      // OG / Twitter / Social tags: pro only
+      seoPackage.og_title = ''
+      seoPackage.og_description = ''
+      seoPackage.og_type = ''
+      seoPackage.twitter_card = ''
+      seoPackage.twitter_title = ''
+      seoPackage.twitter_description = ''
+
+      // hreflang: pro only
+      seoPackage.hreflang = []
+
+      // Schema markup: pro only
+      seoPackage.schema_markup = {}
+
+      // Competitor analysis: pro only
+      seoPackage.competitors = []
+      seoPackage.competitor_tips = []
+
+      // Improvement tips: limit to 1
+      seoPackage.improvement_tips = seoPackage.improvement_tips.slice(0, 1)
     }
 
     // Save to generations table
