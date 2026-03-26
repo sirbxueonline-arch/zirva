@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ScoreCircle from './ScoreCircle'
 import { ToastContainer } from '@/components/shared/Toast'
-import type { Generation } from '@/types'
+import type { Generation, SEOPackage } from '@/types'
 import { flowLabel, flowBadgeColor, formatDate, scoreColor } from '@/lib/utils'
-import { Lightbulb, RotateCcw, ChevronRight } from 'lucide-react'
+import { Lightbulb, RotateCcw, ChevronRight, Code2, CheckCircle2 } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
 interface ToastItem { id: string; message: string; type?: 'success' | 'error' | 'info' }
-type ResultTab = 'az' | 'ru' | 'schema' | 'tips' | 'content'
+type ResultTab = 'az' | 'ru' | 'schema' | 'tips' | 'content' | 'install'
 
 function CopyButton({ text, small }: { text: string; small?: boolean }) {
   const [copied, setCopied] = useState(false)
@@ -76,6 +76,155 @@ function TagCard({ label, value, charMin, charMax, mono }: { label: string; valu
   )
 }
 
+type Platform = 'html' | 'wordpress' | 'webflow' | 'shopify' | 'wix'
+
+const PLATFORMS: { id: Platform; label: string; logo: string }[] = [
+  { id: 'html',      label: 'HTML',      logo: '🌐' },
+  { id: 'wordpress', label: 'WordPress', logo: '🔷' },
+  { id: 'webflow',   label: 'Webflow',   logo: '🔵' },
+  { id: 'shopify',   label: 'Shopify',   logo: '🟢' },
+  { id: 'wix',       label: 'Wix',       logo: '⬛' },
+]
+
+function InstallTab({ seo, isPro, addToast }: { seo: SEOPackage; isPro: boolean; addToast: (msg: string, type?: 'success'|'error'|'info') => void }) {
+  const [platform, setPlatform] = useState<Platform>('html')
+  const [copied, setCopied] = useState(false)
+
+  const headCode = `<!-- Zirva SEO Teqləri -->
+<title>${seo.title_tag_az}</title>
+<meta name="description" content="${seo.meta_description_az}">
+<meta name="robots" content="${seo.robots}">
+<link rel="canonical" href="${seo.canonical_url}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="${seo.og_title}">
+<meta property="og:description" content="${seo.og_description}">
+<meta property="og:type" content="${seo.og_type}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="${seo.twitter_card}">
+<meta name="twitter:title" content="${seo.twitter_title}">
+<meta name="twitter:description" content="${seo.twitter_description}">
+${seo.hreflang?.map(h => `<link rel="alternate" hreflang="${h.lang}" href="${h.url}">`).join('\n')}
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+${JSON.stringify(seo.schema_markup, null, 2)}
+</script>`
+
+  async function copyCode() {
+    await navigator.clipboard.writeText(headCode)
+    setCopied(true)
+    addToast('Kod kopyalandı!', 'success')
+    setTimeout(() => setCopied(false), 2500)
+  }
+
+  const STEPS: Record<Platform, { step: string; desc: string }[]> = {
+    html: [
+      { step: '1. index.html faylını açın',         desc: 'Saytınızın əsas HTML faylını redaktor ilə açın.' },
+      { step: '2. <head> teqini tapın',              desc: 'Faylda <head> ... </head> bölməsini tapın.' },
+      { step: '3. Kodu yapışdırın',                  desc: 'Aşağıdakı kodu </head> teqindən əvvəl əlavə edin.' },
+      { step: '4. Faylı saxlayın və yükləyin',       desc: 'Dəyişiklikləri saxlayın və servera yükləyin.' },
+    ],
+    wordpress: [
+      { step: '1. "SEOPress" və ya "Rank Math" quraşdırın', desc: 'WordPress idarə panelinə daxil olun → Plaginlər → Yeni əlavə et.' },
+      { step: '2. Plagin parametrlərinə keçin',             desc: 'Plagin quraşdırıldıqdan sonra açın və sayt URL-inizi daxil edin.' },
+      { step: '3. YA DA manual üsul:',                      desc: 'Görünüş → Tema Redaktoru → header.php faylını açın.' },
+      { step: '4. Kodu </head> dan əvvəl yapışdırın',       desc: 'Aşağıdakı kodu kopyalayın və </head> teqindən əvvəl əlavə edin.' },
+    ],
+    webflow: [
+      { step: '1. Webflow Designer\'ı açın',              desc: 'Layihənizə daxil olun.' },
+      { step: '2. Layihə Parametrlərinə keçin',           desc: 'Sol panel → Pages → Öz səhifənizi seçin → Page Settings.' },
+      { step: '3. "Custom Code" bölməsini tapın',         desc: '"Head Code" sahəsinə gedin.' },
+      { step: '4. Kodu yapışdırın və Publish edin',       desc: 'Aşağıdakı kodu kopyalayıb ora yapışdırın, sonra Publish edin.' },
+    ],
+    shopify: [
+      { step: '1. Shopify Admin panelini açın',           desc: 'Online Store → Themes → Edit Code.' },
+      { step: '2. theme.liquid faylını tapın',            desc: 'Layout qovluğunda theme.liquid faylını seçin.' },
+      { step: '3. </head> teqini axtarın',                desc: 'Ctrl+F ilə </head> yazın.' },
+      { step: '4. Kodu yapışdırın və yadda saxlayın',     desc: 'Aşağıdakı kodu </head> dan əvvəl əlavə edin, Save edin.' },
+    ],
+    wix: [
+      { step: '1. Wix Editor\'ı açın',                   desc: 'Saytınıza daxil olun → Edit Site.' },
+      { step: '2. Wix SEO Settings\'ə keçin',            desc: 'Sol panel → SEO Tools → Edit SEO Tags.' },
+      { step: '3. Custom Meta Tags əlavə edin',           desc: 'Advanced SEO bölməsindən custom teqlər əlavə edin.' },
+      { step: '4. Embed Code istifadə edin',              desc: 'Add → Embed → Custom Code → Head bölməsinə yapışdırın.' },
+    ],
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07), rgba(123,110,246,0.03))', border: '1px solid rgba(123,110,246,0.15)' }}>
+        <div className="flex items-center gap-3 mb-1">
+          <Code2 size={18} strokeWidth={1.8} style={{ color: '#7B6EF6' }} />
+          <h3 className="font-bold text-text-primary">Saytınıza tətbiq edin</h3>
+        </div>
+        <p className="text-sm text-text-muted ml-8">Aşağıdakı kodu saytınızın <code className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ background: 'rgba(123,110,246,0.12)', color: '#7B6EF6' }}>&lt;head&gt;</code> bölməsinə yapışdırın — Google-da indexlənmə başlayacaq.</p>
+      </div>
+
+      {/* Platform selector */}
+      <div className="flex gap-2 flex-wrap">
+        {PLATFORMS.map(p => (
+          <button key={p.id} onClick={() => setPlatform(p.id)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all"
+            style={{
+              background: platform === p.id ? '#7B6EF6' : 'rgba(123,110,246,0.07)',
+              color: platform === p.id ? '#FFFFFF' : '#5A5D7A',
+              border: `1px solid ${platform === p.id ? '#7B6EF6' : 'rgba(123,110,246,0.15)'}`,
+            }}
+          >
+            <span>{p.logo}</span> {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Steps */}
+      <div className="rounded-xl border p-5 space-y-3" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)' }}>
+        <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#9B9EBB' }}>Addım-addım təlimat</h4>
+        {STEPS[platform].map((s, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white mt-0.5" style={{ background: '#7B6EF6' }}>{i + 1}</div>
+            <div>
+              <div className="text-sm font-semibold text-text-primary">{s.step}</div>
+              <div className="text-xs text-text-muted mt-0.5">{s.desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Code block */}
+      <div className="rounded-xl border overflow-hidden" style={{ background: '#0D0D1A', borderColor: 'rgba(123,110,246,0.2)' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+            <span className="text-xs font-mono ml-2" style={{ color: 'rgba(255,255,255,0.4)' }}>head-teqlər.html</span>
+          </div>
+          <button onClick={copyCode}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+            style={{ background: copied ? 'rgba(0,201,167,0.2)' : 'rgba(123,110,246,0.25)', color: copied ? '#00C9A7' : '#C4BDFA' }}
+          >
+            {copied ? <><CheckCircle2 size={12} strokeWidth={2.5} /> Kopyalandı!</> : <>📋 Kopyala</>}
+          </button>
+        </div>
+        <pre className="text-xs leading-relaxed overflow-x-auto p-5 font-mono" style={{ color: '#C4BDFA', maxHeight: 340 }}>
+          {headCode}
+        </pre>
+      </div>
+
+      {/* Tip */}
+      <div className="flex gap-3 p-4 rounded-xl" style={{ background: 'rgba(245,166,35,0.07)', border: '1px solid rgba(245,166,35,0.2)' }}>
+        <Lightbulb size={16} strokeWidth={1.8} className="flex-shrink-0 mt-0.5" style={{ color: '#F5A623' }} />
+        <p className="text-xs text-text-secondary leading-relaxed">
+          Kodu əlavə etdikdən sonra <strong>Google Search Console</strong>-da URL-i inspect edin və indeksləməni tələb edin. 24-48 saat ərzində nəticə görünəcək.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function ResultCard({ generation, isPro }: { generation: Generation; isPro: boolean }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<ResultTab>('az')
@@ -130,6 +279,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
     { id: 'schema', label: 'Schema' },
     { id: 'tips', label: 'Tövsiyələr' },
     ...(hasContent ? [{ id: 'content' as ResultTab, label: '# Kontent' }] : []),
+    { id: 'install', label: '⚡ Tətbiq et' },
   ]
 
   const scoreCol = scoreColor(seo.seo_score)
@@ -489,6 +639,9 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                   </div>
                 )}
               </div>
+            )}
+            {activeTab === 'install' && (
+              <InstallTab seo={seo} isPro={isPro} addToast={addToast} />
             )}
           </motion.div>
         </AnimatePresence>
