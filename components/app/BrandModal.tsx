@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Globe, Instagram, Facebook, Loader2 } from 'lucide-react'
+import { X, Globe, Loader2 } from 'lucide-react'
 import type { Brand } from '@/types'
 
 interface Props {
@@ -114,7 +114,7 @@ export default function BrandModal({ open, onClose, onSaved, initial }: Props) {
                 <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#9B9EBB' }}>Sosial Media</label>
                 <div className="space-y-2">
                   <div className="relative">
-                    <Instagram size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#E1306C' }} />
+                    <svg className="absolute left-3.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E1306C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#E1306C" stroke="none"/></svg>
                     <input value={form.instagram_url} onChange={e => set('instagram_url', e.target.value)} placeholder="instagram.com/brandname"
                       className={inputCls + ' pl-9'} style={inputStyle}
                       onFocus={e => (e.target.style.borderColor = '#7B6EF6')}
@@ -129,7 +129,7 @@ export default function BrandModal({ open, onClose, onSaved, initial }: Props) {
                       onBlur={e  => (e.target.style.borderColor = 'rgba(123,110,246,0.15)')} />
                   </div>
                   <div className="relative">
-                    <Facebook size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#1877F2' }} />
+                    <svg className="absolute left-3.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
                     <input value={form.facebook_url} onChange={e => set('facebook_url', e.target.value)} placeholder="facebook.com/brandname"
                       className={inputCls + ' pl-9'} style={inputStyle}
                       onFocus={e => (e.target.style.borderColor = '#7B6EF6')}

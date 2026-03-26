@@ -23,7 +23,8 @@ export async function POST(req: Request) {
 
   // Check brand limit
   const { data: profile } = await supabase.from('profiles').select('plan, brands_limit').eq('id', user.id).single()
-  const limit = profile?.brands_limit ?? BRAND_LIMITS[profile?.plan ?? 'free']
+  const plan = (profile?.plan ?? 'free') as 'free' | 'pro' | 'agency'
+  const limit = profile?.brands_limit ?? BRAND_LIMITS[plan]
   const { count } = await supabase.from('brands').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
   if ((count ?? 0) >= limit) {
     return Response.json({ error: 'Brend limitinə çatdınız. Planı yüksəldin.', upgrade: true }, { status: 403 })

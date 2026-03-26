@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Globe, Instagram, Facebook, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Globe, Pencil, Trash2 } from 'lucide-react'
 import BrandModal from '@/components/app/BrandModal'
 import type { Brand } from '@/types'
 
@@ -103,7 +103,7 @@ export default function BrandsPage() {
                     )}
                     {b.instagram_url && (
                       <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <Instagram size={11} strokeWidth={1.8} /> Instagram
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
                       </span>
                     )}
                     {b.tiktok_url && (
@@ -114,7 +114,7 @@ export default function BrandsPage() {
                     )}
                     {b.facebook_url && (
                       <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <Facebook size={11} strokeWidth={1.8} /> Facebook
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
                       </span>
                     )}
                     {b.category && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}>{b.category}</span>}
