@@ -7,7 +7,7 @@ import type { Generation, Profile } from '@/types'
 import { PLAN_NAMES } from '@/types'
 import {
   Plus, ChevronRight, Zap, ArrowRight, FileText, TrendingUp,
-  Globe, PenLine, Sparkles, CalendarDays, BarChart3,
+  Globe, PenLine, Sparkles, CalendarDays, BarChart3, Lock,
 } from 'lucide-react'
 import DashboardHero from '@/components/app/DashboardHero'
 
@@ -54,10 +54,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F5FF' }}>
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
 
         {/* ── Greeting ── */}
-        <div className="flex items-end justify-between mb-8 gap-4">
+        <div className="flex items-end justify-between mb-5 sm:mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: `${planColor}18`, color: planColor, border: `1px solid ${planColor}28` }}>
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
               </span>
               <span className="text-xs" style={{ color: '#9B9EBB' }}>{dateStr} · {dayStr}</span>
             </div>
-            <h1 className="font-display font-bold text-4xl leading-tight" style={{ color: '#0D0D1A' }}>
+            <h1 className="font-display font-bold text-2xl sm:text-4xl leading-tight" style={{ color: '#0D0D1A' }}>
               Salam, {firstName} 👋
             </h1>
           </div>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         {/* ── Hero: Website status ── */}
         {(websiteUrl || hasBrand) ? (
           <div
-            className="rounded-2xl p-6 mb-6 relative overflow-hidden"
+            className="rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 32px rgba(123,110,246,0.28)' }}
           >
             <div className="absolute right-0 top-0 w-64 h-64 rounded-full pointer-events-none opacity-10"
@@ -114,16 +114,16 @@ export default async function DashboardPage() {
         )}
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
 
           {/* Monthly usage */}
-          <div className="col-span-2 rounded-2xl p-5 relative overflow-hidden"
+          <div className="col-span-2 rounded-2xl p-4 sm:p-5 relative overflow-hidden"
             style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#9B9EBB' }}>Bu ay nəşr edildi</p>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-display font-bold text-4xl" style={{ color: '#0D0D1A' }}>{used}</span>
+                  <span className="font-display font-bold text-3xl sm:text-4xl" style={{ color: '#0D0D1A' }}>{used}</span>
                   <span className="text-base font-medium" style={{ color: '#9B9EBB' }}>/ {limit} məqalə</span>
                 </div>
               </div>
@@ -134,13 +134,24 @@ export default async function DashboardPage() {
             <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(123,110,246,0.08)' }}>
               <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: usageColor }} />
             </div>
-            <p className="text-xs font-semibold" style={{ color: usageColor }}>
-              {remaining > 0 ? `${remaining} məqalə qalıb` : 'Aylıq limit dolub'}
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold" style={{ color: usageColor }}>
+                {remaining > 0 ? `${remaining} məqalə qalıb` : 'Aylıq limit dolub'}
+              </p>
+              {remaining === 0 && (
+                <Link
+                  href="/settings/billing"
+                  className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white flex-shrink-0 transition-all hover:scale-[1.03]"
+                  style={{ background: '#7B6EF6', boxShadow: '0 2px 8px rgba(123,110,246,0.3)' }}
+                >
+                  <Lock size={10} strokeWidth={2.5} /> Limiti artır
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Total articles */}
-          <div className="rounded-2xl p-5 flex flex-col justify-between"
+          <div className="rounded-2xl p-4 sm:p-5 flex flex-col justify-between"
             style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Ümumi məqalə</p>
@@ -149,13 +160,13 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div>
-              <div className="font-display font-bold text-4xl mb-0.5" style={{ color: '#0D0D1A' }}>{total}</div>
+              <div className="font-display font-bold text-3xl sm:text-4xl mb-0.5" style={{ color: '#0D0D1A' }}>{total}</div>
               <p className="text-xs" style={{ color: '#9B9EBB' }}>yazılmış</p>
             </div>
           </div>
 
           {/* Avg SEO score */}
-          <div className="rounded-2xl p-5 flex flex-col justify-between"
+          <div className="rounded-2xl p-4 sm:p-5 flex flex-col justify-between"
             style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Ort. SEO balı</p>
@@ -166,18 +177,21 @@ export default async function DashboardPage() {
             <div>
               {avgScore !== null ? (
                 <>
-                  <div className="font-display font-bold text-4xl mb-0.5" style={{ color: scoreColor }}>{avgScore}</div>
+                  <div className="font-display font-bold text-3xl sm:text-4xl mb-0.5" style={{ color: scoreColor }}>{avgScore}</div>
                   <p className="text-xs" style={{ color: '#9B9EBB' }}>/100 bal</p>
                 </>
               ) : (
-                <div className="font-display font-bold text-4xl" style={{ color: '#9B9EBB' }}>—</div>
+                <div>
+                  <div className="font-display font-bold text-2xl sm:text-3xl mb-0.5" style={{ color: '#C0C3D8' }}>—</div>
+                  <p className="text-xs" style={{ color: '#C0C3D8' }}>Hələ paket yoxdur</p>
+                </div>
               )}
             </div>
           </div>
         </div>
 
         {/* ── Quick actions ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
           {[
             { icon: <PenLine size={20} strokeWidth={1.8} />,   label: 'Yeni Məqalə',   sub: 'AI ilə kontent yarat',    href: '/generate',         color: '#7B6EF6' },
             { icon: <TrendingUp size={20} strokeWidth={1.8} />, label: 'SEO Analizi',   sub: 'Sayt balınızı yoxlayın', href: '/generate',         color: '#00C9A7' },
@@ -274,7 +288,7 @@ export default async function DashboardPage() {
                 <Link
                   key={g.id}
                   href={`/result/${g.id}`}
-                  className="group flex items-center gap-4 px-5 py-4 transition-all hover:bg-[#F5F5FF]"
+                  className="group flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 transition-all hover:bg-[#F5F5FF]"
                   style={{ borderTop: i > 0 ? '1px solid rgba(123,110,246,0.06)' : 'none' }}
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"

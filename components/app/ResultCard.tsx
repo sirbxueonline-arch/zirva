@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ScoreCircle from './ScoreCircle'
 import { ToastContainer } from '@/components/shared/Toast'
+import ConfirmModal from '@/components/shared/ConfirmModal'
 import type { Generation, SEOPackage } from '@/types'
 import { flowLabel, flowBadgeColor, formatDate, scoreColor } from '@/lib/utils'
 import { Lightbulb, RotateCcw, ChevronRight, Code2, CheckCircle2 } from 'lucide-react'
@@ -42,7 +43,7 @@ function CopyButton({ text, small }: { text: string; small?: boolean }) {
   )
 }
 
-function TagCard({ label, value, charMin, charMax, mono }: { label: string; value: string; charMin?: number; charMax?: number; mono?: boolean }) {
+function TagCard({ label, value, charMin, charMax, mono, hint }: { label: string; value: string; charMin?: number; charMax?: number; mono?: boolean; hint?: string }) {
   const len = value?.length ?? 0
   const overLimit = charMax ? len > charMax : false
   const underLimit = charMin ? len < charMin : false
@@ -55,10 +56,19 @@ function TagCard({ label, value, charMin, charMax, mono }: { label: string; valu
       style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}
     >
       <div className="flex items-start justify-between gap-3 mb-2.5">
-        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>{label}</span>
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>{label}</span>
+          {hint && <p className="text-xs mt-0.5" style={{ color: '#C0C3D8' }}>{hint}</p>}
+        </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {charMin && charMax && (
-            <span className="text-xs font-mono" style={{ color: countColor }}>{len}/{charMax}</span>
+            <span
+              className="text-xs font-mono"
+              style={{ color: countColor }}
+              title={overLimit ? `Limit aşıldı (${len}/${charMax})` : underLimit ? `Çox qısadır (${len}/${charMin}–${charMax})` : `${len} simvol`}
+            >
+              {len}/{charMax}
+            </span>
           )}
           <CopyButton text={value} small />
         </div>
@@ -258,8 +268,10 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
 
 export default function ResultCard({ generation, isPro }: { generation: Generation; isPro: boolean }) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<ResultTab>('az')
-  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [activeTab, setActiveTab]       = useState<ResultTab>('az')
+  const [toasts, setToasts]             = useState<ToastItem[]>([])
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting]         = useState(false)
   const seo = generation.output_data
 
   function addToast(message: string, type: ToastItem['type'] = 'success') {
@@ -296,10 +308,10 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
   }
 
   async function handleDelete() {
-    if (!confirm('Bu paketi silmək istədiyinizə əminsiniz?')) return
+    setDeleting(true)
     const res = await fetch(`/api/generate?id=${generation.id}`, { method: 'DELETE' })
     if (res.ok) router.push('/history')
-    else addToast('Silmə zamanı xəta baş verdi', 'error')
+    else { addToast('Silmə zamanı xəta baş verdi', 'error'); setDeleting(false); setConfirmDelete(false) }
   }
 
   const hasContent = (seo.post_hashtags?.length ?? 0) > 0 || (seo.post_captions?.length ?? 0) > 0
@@ -318,6 +330,15 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
   return (
     <>
       <ToastContainer toasts={toasts} removeToast={id => setToasts(p => p.filter(t => t.id !== id))} />
+      <ConfirmModal
+        open={confirmDelete}
+        title="Paketi sil"
+        message="Bu SEO paketi silinəcək. Bu əməliyyat geri qaytarıla bilməz."
+        confirmLabel="Sil"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
@@ -448,20 +469,20 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
             {activeTab === 'az' && (
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
-                  <TagCard label="Başlıq teqi (AZ)" value={seo.title_tag_az} charMin={50} charMax={60} />
+                  <TagCard label="Başlıq teqi (AZ)" value={seo.title_tag_az} charMin={50} charMax={60} hint="Google axtarışda 60 simvola qədər göstərir" />
                 </div>
                 <div className="sm:col-span-2">
-                  <TagCard label="Meta açıqlama (AZ)" value={seo.meta_description_az} charMin={150} charMax={160} />
+                  <TagCard label="Meta açıqlama (AZ)" value={seo.meta_description_az} charMin={150} charMax={160} hint="Google 160 simvola qədər göstərir" />
                 </div>
                 <TagCard label="Canonical URL" value={seo.canonical_url} mono />
                 <TagCard label="Robots" value={seo.robots} mono />
 
                 {isPro ? (
                   <>
-                    <TagCard label="OG başlıq" value={seo.og_title} charMin={40} charMax={90} />
-                    <TagCard label="OG açıqlama" value={seo.og_description} />
-                    <TagCard label="Twitter başlıq" value={seo.twitter_title} charMin={1} charMax={70} />
-                    <TagCard label="Twitter açıqlama" value={seo.twitter_description} />
+                    <TagCard label="OG başlıq" value={seo.og_title} charMin={40} charMax={90} hint="Facebook / WhatsApp paylaşımında görünür" />
+                    <TagCard label="OG açıqlama" value={seo.og_description} hint="Sosial paylaşım kartının açıqlaması" />
+                    <TagCard label="Twitter başlıq" value={seo.twitter_title} charMin={1} charMax={70} hint="Twitter / X kartında görünür" />
+                    <TagCard label="Twitter açıqlama" value={seo.twitter_description} hint="Twitter kartının açıqlaması" />
                     {/* Hreflang */}
                     <div
                       className="sm:col-span-2 rounded-xl border p-4"
@@ -502,10 +523,10 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
             {activeTab === 'ru' && (
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
-                  <TagCard label="Başlıq teqi (RU)" value={seo.title_tag_ru} charMin={50} charMax={60} />
+                  <TagCard label="Başlıq teqi (RU)" value={seo.title_tag_ru} charMin={50} charMax={60} hint="Google axtarışda 60 simvola qədər göstərir" />
                 </div>
                 <div className="sm:col-span-2">
-                  <TagCard label="Meta açıqlama (RU)" value={seo.meta_description_ru} charMin={150} charMax={160} />
+                  <TagCard label="Meta açıqlama (RU)" value={seo.meta_description_ru} charMin={150} charMax={160} hint="Google 160 simvola qədər göstərir" />
                 </div>
               </div>
             )}
@@ -757,7 +778,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
             Yenidən yarat
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => setConfirmDelete(true)}
             className="py-2.5 px-4 rounded-xl text-sm font-medium transition-all hover:bg-red-50"
             style={{ color: '#F25C54' }}
           >

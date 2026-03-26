@@ -2,31 +2,52 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Globe, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Globe, Pencil, Trash2, Loader2 } from 'lucide-react'
 import BrandModal from '@/components/app/BrandModal'
 import BrandAvatar from '@/components/app/BrandAvatar'
+import ConfirmModal from '@/components/shared/ConfirmModal'
+import { ToastContainer } from '@/components/shared/Toast'
 import type { Brand } from '@/types'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 26 }
 
+interface ToastItem { id: string; message: string; type?: 'success' | 'error' | 'info' }
+
 export default function BrandsPage() {
-  const [brands, setBrands]   = useState<Brand[]>([])
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing]     = useState<Brand | null>(null)
+  const [brands, setBrands]     = useState<Brand[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [modalOpen, setModalOpen]   = useState(false)
+  const [editing, setEditing]       = useState<Brand | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmId, setConfirmId]   = useState<string | null>(null)
+  const [toasts, setToasts]         = useState<ToastItem[]>([])
+
+  function addToast(message: string, type: ToastItem['type'] = 'success') {
+    const id = Math.random().toString(36).slice(2)
+    setToasts(prev => [...prev, { id, message, type }])
+  }
 
   async function load() {
     const res = await fetch('/api/brands')
     if (res.ok) { const { brands } = await res.json(); setBrands(brands) }
+    else addToast('Brendlər yüklənmədi', 'error')
     setLoading(false)
   }
 
   useEffect(() => { load() }, [])
 
-  async function handleDelete(id: string) {
-    if (!confirm('Bu brendi silmək istədiyinizə əminsiniz?')) return
-    await fetch(`/api/brands?id=${id}`, { method: 'DELETE' })
-    setBrands(b => b.filter(x => x.id !== id))
+  async function handleDelete() {
+    if (!confirmId) return
+    setDeletingId(confirmId)
+    const res = await fetch(`/api/brands?id=${confirmId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setBrands(b => b.filter(x => x.id !== confirmId))
+      addToast('Brend silindi')
+    } else {
+      addToast('Silmə zamanı xəta baş verdi', 'error')
+    }
+    setDeletingId(null)
+    setConfirmId(null)
   }
 
   function openCreate() { setEditing(null); setModalOpen(true) }
@@ -34,26 +55,41 @@ export default function BrandsPage() {
   function onSaved(b: Brand) {
     setBrands(prev => {
       const idx = prev.findIndex(x => x.id === b.id)
-      if (idx >= 0) { const next = [...prev]; next[idx] = b; return next }
+      if (idx >= 0) {
+        const next = [...prev]; next[idx] = b
+        addToast('Brend yeniləndi')
+        return next
+      }
+      addToast('Brend yaradıldı')
       return [b, ...prev]
     })
   }
 
   return (
     <>
+      <ToastContainer toasts={toasts} removeToast={id => setToasts(p => p.filter(t => t.id !== id))} />
+      <ConfirmModal
+        open={!!confirmId}
+        title="Brendi sil"
+        message="Bu brend və ona aid bütün məlumatlar silinəcək. Bu əməliyyat geri qaytarıla bilməz."
+        confirmLabel="Sil"
+        loading={!!deletingId}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmId(null)}
+      />
       <BrandModal open={modalOpen} onClose={() => setModalOpen(false)} onSaved={onSaved} initial={editing} />
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
           <div>
-            <h1 className="font-display font-bold text-3xl text-text-primary mb-1">Brendlər</h1>
+            <h1 className="font-display font-bold text-2xl sm:text-3xl text-text-primary mb-1">Brendlər</h1>
             <p className="text-text-muted text-sm">Saytlarınız üçün brend profilləri yaradın</p>
           </div>
           <button onClick={openCreate}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] flex-shrink-0"
             style={{ background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)', boxShadow: '0 4px 16px rgba(123,110,246,0.3)' }}
           >
-            <Plus size={16} strokeWidth={2.5} /> Yeni Brend
+            <Plus size={16} strokeWidth={2.5} /> <span className="hidden sm:inline">Yeni </span>Brend
           </button>
         </div>
 
@@ -84,10 +120,9 @@ export default function BrandsPage() {
             {brands.map((b, i) => (
               <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ ...SPRING, delay: i * 0.04 }}
-                className="flex items-center gap-4 p-5 rounded-2xl border bg-white transition-all hover:shadow-sm"
+                className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl border bg-white transition-all hover:shadow-sm"
                 style={{ borderColor: 'rgba(123,110,246,0.12)' }}
               >
-                {/* Avatar */}
                 <BrandAvatar brand={b} size={48} />
 
                 <div className="flex-1 min-w-0">
@@ -122,14 +157,20 @@ export default function BrandsPage() {
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button onClick={() => openEdit(b)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-gray-100"
+                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-gray-100"
                     title="Redaktə et">
                     <Pencil size={14} strokeWidth={1.8} style={{ color: '#9B9EBB' }} />
                   </button>
-                  <button onClick={() => handleDelete(b.id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50"
-                    title="Sil">
-                    <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
+                  <button
+                    onClick={() => setConfirmId(b.id)}
+                    disabled={deletingId === b.id}
+                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50 disabled:opacity-50"
+                    title="Sil"
+                  >
+                    {deletingId === b.id
+                      ? <Loader2 size={14} strokeWidth={2} className="animate-spin" style={{ color: '#F25C54' }} />
+                      : <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
+                    }
                   </button>
                 </div>
               </motion.div>

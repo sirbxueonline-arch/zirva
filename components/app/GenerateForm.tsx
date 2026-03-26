@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import UpgradeModal from './UpgradeModal'
 import BrandModal from './BrandModal'
 import type { Profile, Brand } from '@/types'
-import { Globe, AlertTriangle, Check, ArrowRight, ChevronDown, Plus } from 'lucide-react'
+import { Globe, AlertTriangle, Check, ArrowRight, ChevronDown, Plus, ExternalLink } from 'lucide-react'
 import BrandAvatar from './BrandAvatar'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 28 }
@@ -18,6 +18,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
   const [loading,        setLoading]        = useState(false)
   const [loadingMsgIdx,  setLoadingMsgIdx]  = useState(0)
   const [error,          setError]          = useState('')
+  const [crawlWarning,   setCrawlWarning]   = useState(false)
   const [showUpgrade,    setShowUpgrade]    = useState(false)
   const [brands,         setBrands]         = useState<Brand[]>([])
   const [selectedBrand,  setSelectedBrand]  = useState<Brand | null>(null)
@@ -59,7 +60,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
     if (!url) { setError('Seçilmiş brendin sayt URL-i yoxdur. Brendi redaktə edin.'); return }
     if (profile && profile.generations_used >= profile.generations_limit) { setShowUpgrade(true); return }
 
-    setLoading(true); setLoadingMsgIdx(0); setError('')
+    setLoading(true); setLoadingMsgIdx(0); setError(''); setCrawlWarning(false)
     const normalizedUrl = normalizeUrl(url)
 
     // Auto-crawl first, then generate
@@ -67,7 +68,8 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
     try {
       const cr = await fetch('/api/crawl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: normalizedUrl }) })
       if (cr.ok) crawl = await cr.json()
-    } catch {}
+      else setCrawlWarning(true)
+    } catch { setCrawlWarning(true) }
 
     try {
       const res = await fetch('/api/generate', {
@@ -119,15 +121,15 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
         )}
       </AnimatePresence>
 
-      <div className="max-w-xl mx-auto px-6 py-16 flex flex-col items-center text-center">
+      <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-16 flex flex-col items-center text-center">
 
         {/* Header */}
-        <motion.div className="mb-10" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={SPRING}>
+        <motion.div className="mb-6 sm:mb-10" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={SPRING}>
           <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-5"
             style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.12), rgba(0,201,167,0.08))', border: '1px solid rgba(123,110,246,0.2)' }}>
             <Globe size={28} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
           </div>
-          <h1 className="font-display font-bold text-4xl text-text-primary mb-2">SEO Paketi</h1>
+          <h1 className="font-display font-bold text-2xl sm:text-4xl text-text-primary mb-2">SEO Paketi</h1>
           <p className="text-text-muted text-base">Brendinizi seçin — Google üçün<br/>optimallaşdırılmış teqlər yaradırıq</p>
         </motion.div>
 
@@ -136,12 +138,24 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Brend</label>
 
           {brands.length === 0 ? (
-            <button onClick={() => setBrandModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold border-2 border-dashed transition-all hover:border-primary hover:text-primary"
-              style={{ borderColor: 'rgba(123,110,246,0.25)', color: '#9B9EBB' }}
-            >
-              <Plus size={16} strokeWidth={2.5} /> İlk brendi yarat
-            </button>
+            <div className="w-full rounded-2xl p-5 text-center" style={{ background: 'rgba(123,110,246,0.04)', border: '2px dashed rgba(123,110,246,0.2)' }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#0D0D1A' }}>Əvvəlcə brend yaradın</p>
+              <p className="text-xs mb-4" style={{ color: '#9B9EBB' }}>SEO paketi yaratmaq üçün ən azı bir brend tələb olunur.</p>
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <button onClick={() => setBrandModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+                  style={{ background: '#7B6EF6' }}
+                >
+                  <Plus size={14} strokeWidth={2.5} /> Brend yarat
+                </button>
+                <a href="/brands"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-all hover:bg-gray-50"
+                  style={{ borderColor: 'rgba(123,110,246,0.2)', color: '#7B6EF6' }}
+                >
+                  Brendlər <ExternalLink size={12} strokeWidth={2} />
+                </a>
+              </div>
+            </div>
           ) : (
             <>
               <button onClick={() => setDropOpen(v => !v)}
@@ -203,6 +217,18 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
             </>
           )}
         </motion.div>
+
+        {/* Crawl warning (non-blocking) */}
+        <AnimatePresence>
+          {crawlWarning && (
+            <motion.div className="w-full mb-3 text-sm py-3 px-4 rounded-xl flex items-center gap-2"
+              style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)', color: '#B87B00' }}
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            >
+              <AlertTriangle size={15} strokeWidth={2} className="flex-shrink-0" /> Sayt taranmadı — teqlər əl ilə yaradılır
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Error */}
         <AnimatePresence>
