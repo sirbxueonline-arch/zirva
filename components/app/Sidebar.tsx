@@ -12,6 +12,7 @@ import {
   Settings2, LogOut, Plus, HelpCircle, Mail,
   type LucideIcon,
 } from 'lucide-react'
+import BrandAvatar from './BrandAvatar'
 
 const SPRING = { type: 'spring' as const, stiffness: 400, damping: 30 }
 const SPRING_MENU = { type: 'spring' as const, stiffness: 320, damping: 26 }
@@ -33,12 +34,44 @@ export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
   const supabase  = createClient()
   const menuRef   = useRef<HTMLDivElement>(null)
 
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [brands,   setBrands]   = useState<Brand[]>([])
+  const [menuOpen,       setMenuOpen]       = useState(false)
+  const [brands,         setBrands]         = useState<Brand[]>([])
+  const [activeBrand,    setActiveBrand]    = useState<Brand | null>(null)
+  const [brandDropOpen,  setBrandDropOpen]  = useState(false)
+  const brandDropRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetch('/api/brands').then(r => r.ok ? r.json() : null).then(d => { if (d?.brands) setBrands(d.brands) })
+    fetch('/api/brands').then(r => r.ok ? r.json() : null).then(d => {
+      if (!d?.brands) return
+      setBrands(d.brands)
+      const savedId = localStorage.getItem('zirva_active_brand')
+      const saved   = savedId ? d.brands.find((b: Brand) => b.id === savedId) : null
+      setActiveBrand(saved ?? d.brands[0] ?? null)
+    })
   }, [])
+
+  useEffect(() => {
+    function onBrandChange(e: Event) {
+      setActiveBrand((e as CustomEvent<Brand>).detail)
+    }
+    window.addEventListener('zirva-brand-change', onBrandChange)
+    return () => window.removeEventListener('zirva-brand-change', onBrandChange)
+  }, [])
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (brandDropRef.current && !brandDropRef.current.contains(e.target as Node)) setBrandDropOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function switchBrand(b: Brand) {
+    setActiveBrand(b)
+    setBrandDropOpen(false)
+    localStorage.setItem('zirva_active_brand', b.id)
+    window.dispatchEvent(new CustomEvent('zirva-brand-change', { detail: b }))
+  }
 
   // Close on outside click
   useEffect(() => {
@@ -66,8 +99,59 @@ export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
         <Link href="/" className="font-display font-bold text-2xl text-primary">Zirva</Link>
       </div>
 
+      {/* Brand switcher */}
+      {brands.length > 0 && (
+        <div className="px-4 pt-3 pb-1 relative" ref={brandDropRef}>
+          <button
+            onClick={() => setBrandDropOpen(v => !v)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-gray-50"
+            style={{ border: '1px solid rgba(123,110,246,0.15)' }}
+          >
+            {activeBrand ? (
+              <>
+                <BrandAvatar brand={activeBrand} size={24} />
+                <span className="flex-1 text-xs font-semibold text-left truncate" style={{ color: '#0D0D1A' }}>{activeBrand.name}</span>
+              </>
+            ) : (
+              <span className="flex-1 text-xs text-left" style={{ color: '#9B9EBB' }}>Brend seçin</span>
+            )}
+            <ChevronDown size={12} strokeWidth={2.5} style={{ color: '#9B9EBB', transform: brandDropOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.15s', flexShrink: 0 }} />
+          </button>
+
+          <AnimatePresence>
+            {brandDropOpen && (
+              <motion.div
+                className="absolute left-4 right-4 top-full mt-1 rounded-xl border overflow-hidden z-50"
+                style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.15)', boxShadow: '0 8px 24px rgba(13,13,26,0.12)' }}
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+              >
+                {brands.map(b => (
+                  <button key={b.id} onClick={() => switchBrand(b)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-left transition-all hover:bg-gray-50"
+                    style={{ borderBottom: '1px solid rgba(123,110,246,0.06)', background: activeBrand?.id === b.id ? 'rgba(123,110,246,0.06)' : undefined }}
+                  >
+                    <BrandAvatar brand={b} size={24} />
+                    <span className="flex-1 font-semibold truncate" style={{ color: '#0D0D1A' }}>{b.name}</span>
+                    {activeBrand?.id === b.id && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#7B6EF6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    )}
+                  </button>
+                ))}
+                <Link href="/brands" onClick={() => setBrandDropOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold transition-all hover:bg-gray-50"
+                  style={{ color: '#7B6EF6' }}
+                >
+                  <Plus size={12} strokeWidth={2.5} /> Brend idarə et
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
       {/* New CTA */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-3">
         <Link href="/generate"
           className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
         >
@@ -148,31 +232,6 @@ export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
                 <Link href="/how-it-works" onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-gray-50 text-text-secondary">
                   <HelpCircle size={15} strokeWidth={1.8} style={{ color: '#9B9EBB' }} /> Yardım mərkəzi
-                </Link>
-              </div>
-
-              <div className="h-px mx-3" style={{ background: 'rgba(123,110,246,0.08)' }} />
-
-              {/* Brands */}
-              <div className="px-3 py-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest px-2 mb-1 mt-1" style={{ color: '#C0C3D8' }}>Brendlər</p>
-                {brands.slice(0, 4).map(b => (
-                  <Link key={b.id} href="/brands" onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:bg-gray-50 text-text-secondary">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                      style={{ background: `hsl(${(b.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
-                      {b.name[0].toUpperCase()}
-                    </div>
-                    <span className="truncate">{b.name}</span>
-                  </Link>
-                ))}
-                <Link href="/brands" onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:bg-gray-50"
-                  style={{ color: '#7B6EF6' }}>
-                  <div className="w-6 h-6 rounded-full border-2 border-dashed flex items-center justify-center flex-shrink-0" style={{ borderColor: '#7B6EF6' }}>
-                    <Plus size={11} strokeWidth={2.5} />
-                  </div>
-                  Yeni brend əlavə et
                 </Link>
               </div>
 

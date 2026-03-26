@@ -27,7 +27,7 @@ export const PLAN_PRODUCT_IDS: Record<string, string> = {
 }
 
 export const PLAN_LIMITS: Record<string, number> = {
-  free:   3,
+  free:   5,
   pro:    50,
   agency: 300,
 }

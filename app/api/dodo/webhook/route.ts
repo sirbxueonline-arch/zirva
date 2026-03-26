@@ -65,6 +65,40 @@ export async function POST(req: Request) {
         break
       }
 
+      // ── Subscription updated (plan upgrade / downgrade) ───────────────────
+      case 'subscription.updated': {
+        const userId = (data.metadata as Record<string, string>)?.user_id
+        const subId  = data.subscription_id as string
+
+        // resolve user_id from metadata or by looking up the subscription
+        let resolvedId = userId
+        if (!resolvedId) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('dodo_subscription_id', subId)
+            .single()
+          resolvedId = profile?.id
+        }
+        if (!resolvedId) break
+
+        const productId = data.product_id as string
+        const plan      = getPlanFromProductId(productId)
+
+        await supabase
+          .from('profiles')
+          .update({
+            plan,
+            generations_limit:    PLAN_LIMITS[plan],
+            brands_limit:         BRAND_LIMITS[plan],
+            subscription_status:  'active',
+            current_period_end:   (data.next_billing_date as string) ?? null,
+            updated_at:           new Date().toISOString(),
+          })
+          .eq('id', resolvedId)
+        break
+      }
+
       // ── Subscription renewed (recurring billing succeeded) ────────────────
       case 'subscription.renewed': {
         const subId = data.subscription_id as string

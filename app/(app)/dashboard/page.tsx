@@ -16,11 +16,12 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: generations }, { count }] = await Promise.all([
+  const [{ data: profile }, { data: generations }, { count }, { count: brandCount }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('generations').select('*').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(5),
     supabase.from('generations').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    supabase.from('brands').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
   ])
 
   const p     = profile as Profile | null
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const websiteUrl = (p as any)?.website_url as string | null | undefined
+  const hasBrand   = (brandCount ?? 0) > 0
 
   const avgScore = gens.filter(g => g.seo_score !== null).length > 0
     ? Math.round(gens.filter(g => g.seo_score !== null).reduce((s, g) => s + (g.seo_score ?? 0), 0) / gens.filter(g => g.seo_score !== null).length)
@@ -78,7 +80,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* ── Hero: Website status ── */}
-        {websiteUrl ? (
+        {(websiteUrl || hasBrand) ? (
           <div
             className="rounded-2xl p-6 mb-6 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 32px rgba(123,110,246,0.28)' }}

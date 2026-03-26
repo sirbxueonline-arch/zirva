@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Globe, Pencil, Trash2 } from 'lucide-react'
 import BrandModal from '@/components/app/BrandModal'
+import BrandAvatar from '@/components/app/BrandAvatar'
 import type { Brand } from '@/types'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 26 }
@@ -87,10 +88,7 @@ export default function BrandsPage() {
                 style={{ borderColor: 'rgba(123,110,246,0.12)' }}
               >
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold text-white flex-shrink-0"
-                  style={{ background: `hsl(${(b.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
-                  {b.name[0].toUpperCase()}
-                </div>
+                <BrandAvatar brand={b} size={48} />
 
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-text-primary truncate">{b.name}</div>

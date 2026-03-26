@@ -76,14 +76,16 @@ function TagCard({ label, value, charMin, charMax, mono }: { label: string; valu
   )
 }
 
-type Platform = 'html' | 'wordpress' | 'webflow' | 'shopify' | 'wix'
+type Platform = 'html' | 'wordpress' | 'webflow' | 'shopify' | 'wix' | 'javascript' | 'react'
 
 const PLATFORM_ICONS: Record<Platform, { src: string; srcActive: string }> = {
-  html:      { src: 'https://cdn.simpleicons.org/html5/E34F26',  srcActive: 'https://cdn.simpleicons.org/html5/FFFFFF'  },
-  wordpress: { src: 'https://cdn.simpleicons.org/wordpress/21759B', srcActive: 'https://cdn.simpleicons.org/wordpress/FFFFFF' },
-  webflow:   { src: 'https://cdn.simpleicons.org/webflow/146EF5',   srcActive: 'https://cdn.simpleicons.org/webflow/FFFFFF'   },
-  shopify:   { src: 'https://cdn.simpleicons.org/shopify/96BF48',   srcActive: 'https://cdn.simpleicons.org/shopify/FFFFFF'   },
-  wix:       { src: 'https://cdn.simpleicons.org/wix/FAAD4D',       srcActive: 'https://cdn.simpleicons.org/wix/FFFFFF'       },
+  html:       { src: 'https://cdn.simpleicons.org/html5/E34F26',      srcActive: 'https://cdn.simpleicons.org/html5/FFFFFF'      },
+  wordpress:  { src: 'https://cdn.simpleicons.org/wordpress/21759B',  srcActive: 'https://cdn.simpleicons.org/wordpress/FFFFFF'  },
+  webflow:    { src: 'https://cdn.simpleicons.org/webflow/146EF5',    srcActive: 'https://cdn.simpleicons.org/webflow/FFFFFF'    },
+  shopify:    { src: 'https://cdn.simpleicons.org/shopify/96BF48',    srcActive: 'https://cdn.simpleicons.org/shopify/FFFFFF'    },
+  wix:        { src: 'https://cdn.simpleicons.org/wix/FAAD4D',        srcActive: 'https://cdn.simpleicons.org/wix/FFFFFF'        },
+  javascript: { src: 'https://cdn.simpleicons.org/javascript/F7DF1E', srcActive: 'https://cdn.simpleicons.org/javascript/FFFFFF' },
+  react:      { src: 'https://cdn.simpleicons.org/react/61DAFB',      srcActive: 'https://cdn.simpleicons.org/react/FFFFFF'      },
 }
 
 function PlatformIcon({ id, active }: { id: Platform; active: boolean }) {
@@ -93,11 +95,13 @@ function PlatformIcon({ id, active }: { id: Platform; active: boolean }) {
 }
 
 const PLATFORMS: { id: Platform; label: string }[] = [
-  { id: 'html',      label: 'HTML'      },
-  { id: 'wordpress', label: 'WordPress' },
-  { id: 'webflow',   label: 'Webflow'   },
-  { id: 'shopify',   label: 'Shopify'   },
-  { id: 'wix',       label: 'Wix'       },
+  { id: 'html',       label: 'HTML'       },
+  { id: 'javascript', label: 'JavaScript' },
+  { id: 'react',      label: 'React'      },
+  { id: 'wordpress',  label: 'WordPress'  },
+  { id: 'webflow',    label: 'Webflow'    },
+  { id: 'shopify',    label: 'Shopify'    },
+  { id: 'wix',        label: 'Wix'        },
 ]
 
 function InstallTab({ seo, isPro, addToast }: { seo: SEOPackage; isPro: boolean; addToast: (msg: string, type?: 'success'|'error'|'info') => void }) {
@@ -163,6 +167,18 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
       { step: '2. Wix SEO Settings\'ə keçin',            desc: 'Sol panel → SEO Tools → Edit SEO Tags.' },
       { step: '3. Custom Meta Tags əlavə edin',           desc: 'Advanced SEO bölməsindən custom teqlər əlavə edin.' },
       { step: '4. Embed Code istifadə edin',              desc: 'Add → Embed → Custom Code → Head bölməsinə yapışdırın.' },
+    ],
+    javascript: [
+      { step: '1. HTML faylınızı açın',                  desc: 'Layihənizdəki əsas index.html faylını açın.' },
+      { step: '2. <head> teqini tapın',                  desc: '<head>...</head> bölməsini tapın.' },
+      { step: '3. Kodu birbaşa yapışdırın',              desc: 'Aşağıdakı HTML teqlərini </head>-dən əvvəl əlavə edin. Vanilla JS üçün əlavə kitabxana lazım deyil.' },
+      { step: '4. Faylı saxlayın',                       desc: 'Dəyişiklikləri saxlayın, brauzerdə yeniləyin.' },
+    ],
+    react: [
+      { step: '1. react-helmet-async quraşdırın',        desc: 'Terminal: npm install react-helmet-async' },
+      { step: '2. App.jsx / main.jsx-ə HelmetProvider əlavə edin', desc: 'import { HelmetProvider } from "react-helmet-async" — root komponenti HelmetProvider ilə əhatə edin.' },
+      { step: '3. Səhifə komponentinizdə Helmet istifadə edin',    desc: 'import { Helmet } from "react-helmet-async" — aşağıdakı teqləri <Helmet> içinə köçürün.' },
+      { step: '4. Next.js istifadə edirsinizsə',         desc: 'react-helmet əvəzinə next/head-dən <Head> komponenti istifadə edin — eyni teqlər keçərlidir.' },
     ],
   }
 

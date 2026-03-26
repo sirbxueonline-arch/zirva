@@ -1,3 +1,4 @@
+// v2
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '@/components/app/AppShell'

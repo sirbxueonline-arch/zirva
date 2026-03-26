@@ -24,9 +24,6 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-bg text-text-primary font-body antialiased">
-        {/* 64px spacer always reserves space for the fixed navbar */}
-        <div className="h-16" />
-        {/* Banner sits in flow directly below navbar, sticks on scroll */}
         <LaunchBanner />
         {children}
       </body>

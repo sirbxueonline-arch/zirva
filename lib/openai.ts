@@ -91,10 +91,10 @@ heç bir kod bloku yoxdur. YALNIZ JSON obyekti. Başqa heç nə.
 === QIYMƏTLƏNDIRMƏ QAYDASI ===
 seo_score və score_breakdown dəyərlərini HƏR SAYTİN REAL VƏZİYYƏTİNƏ GÖRƏ hesabla.
 85 defolt deyil — bu şablon nümunəsidir, KOPYALAMA.
-- Saytda SEO teqləri zəifdirsə / yoxdursa: seo_score = 25-50
-- Orta səviyyəli teqlər varsa: seo_score = 51-70
-- Yaxşı teqlər amma tam optimallaşdırılmayıb: seo_score = 71-82
-- Güclü, tam optimallaşdırılmış sayt: seo_score = 83-96
+- Saytda SEO teqləri zəifdirsə / yoxdursa: seo_score = 5-30
+- Orta səviyyəli teqlər varsa: seo_score = 31-50
+- Yaxşı teqlər amma tam optimallaşdırılmayıb: seo_score = 51-62
+- Güclü, tam optimallaşdırılmış sayt: seo_score = 63-76
 Schema.org yoxdursa schema_present = 0-4. Hreflang yoxdursa hreflang_correct = 0.
 HEÇ VAXT eyni biznes üçün eyni skoru verme — hər analiz fərqli nəticə verməlidir.
 

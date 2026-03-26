@@ -7,6 +7,7 @@ import UpgradeModal from './UpgradeModal'
 import BrandModal from './BrandModal'
 import type { Profile, Brand } from '@/types'
 import { Globe, AlertTriangle, Check, ArrowRight, ChevronDown, Plus } from 'lucide-react'
+import BrandAvatar from './BrandAvatar'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 28 }
 const LOADING_MESSAGES = ['Sayt analiz edilir...', 'SEO teqləri yaradılır...', 'Açar sözlər seçilir...', 'Tamamlanır...']
@@ -21,9 +22,6 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
   const [brands,         setBrands]         = useState<Brand[]>([])
   const [selectedBrand,  setSelectedBrand]  = useState<Brand | null>(null)
   const [dropOpen,       setDropOpen]       = useState(false)
-  const [url,            setUrl]            = useState('')
-  const [crawlResult,    setCrawlResult]    = useState<{ title: string; meta_description: string | null; headings: string[] } | null>(null)
-  const [crawling,       setCrawling]       = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
 
   useEffect(() => {
@@ -31,8 +29,9 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
       if (!d?.brands) return
       setBrands(d.brands)
       if (d.brands.length > 0) {
-        setSelectedBrand(d.brands[0])
-        setUrl(d.brands[0].website_url ?? '')
+        const savedId = localStorage.getItem('zirva_active_brand')
+        const saved   = savedId ? d.brands.find((b: Brand) => b.id === savedId) : null
+        setSelectedBrand(saved ?? d.brands[0])
       }
     })
   }, [])
@@ -49,34 +48,31 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
   }
 
   function selectBrand(b: Brand) {
-    setSelectedBrand(b); setDropOpen(false)
-    setUrl(b.website_url ?? ''); setCrawlResult(null); setError('')
-  }
-
-  async function handleCrawl() {
-    if (!url) return
-    setCrawling(true); setCrawlResult(null); setError('')
-    const normalized = normalizeUrl(url)
-    if (normalized !== url) setUrl(normalized)
-    try {
-      const res = await fetch('/api/crawl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: normalized }) })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setCrawlResult(data)
-    } catch { setError('Sayt əldə edilə bilmədi. URL-i yoxlayın.') }
-    finally { setCrawling(false) }
+    setSelectedBrand(b); setDropOpen(false); setError('')
+    localStorage.setItem('zirva_active_brand', b.id)
+    window.dispatchEvent(new CustomEvent('zirva-brand-change', { detail: b }))
   }
 
   async function handleGenerate() {
-    if (!url) { setError('URL daxil edin'); return }
+    if (!selectedBrand) { setError('Brend seçin'); return }
+    const url = selectedBrand.website_url
+    if (!url) { setError('Seçilmiş brendin sayt URL-i yoxdur. Brendi redaktə edin.'); return }
     if (profile && profile.generations_used >= profile.generations_limit) { setShowUpgrade(true); return }
+
     setLoading(true); setLoadingMsgIdx(0); setError('')
     const normalizedUrl = normalizeUrl(url)
-    if (normalizedUrl !== url) setUrl(normalizedUrl)
+
+    // Auto-crawl first, then generate
+    let crawl: { title: string; meta_description: string | null; headings: string[] } | null = null
+    try {
+      const cr = await fetch('/api/crawl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: normalizedUrl }) })
+      if (cr.ok) crawl = await cr.json()
+    } catch {}
+
     try {
       const res = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ flow_type: 'url', url: normalizedUrl, ...(crawlResult || {}), brand_id: selectedBrand?.id }),
+        body: JSON.stringify({ flow_type: 'url', url: normalizedUrl, ...(crawl || {}), brand_id: selectedBrand.id }),
       })
       const data = await res.json()
       if (res.status === 403) { setShowUpgrade(true); setLoading(false); return }
@@ -132,7 +128,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
             <Globe size={28} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
           </div>
           <h1 className="font-display font-bold text-4xl text-text-primary mb-2">SEO Paketi</h1>
-          <p className="text-text-muted text-base">Brendinizi seçin, URL-i analiz edib<br/>Google üçün optimallaşdırılmış teqlər yaradırıq</p>
+          <p className="text-text-muted text-base">Brendinizi seçin — Google üçün<br/>optimallaşdırılmış teqlər yaradırıq</p>
         </motion.div>
 
         {/* Brand picker */}
@@ -154,13 +150,13 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
               >
                 {selectedBrand ? (
                   <>
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                      style={{ background: `hsl(${(selectedBrand.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
-                      {selectedBrand.name[0].toUpperCase()}
-                    </div>
+                    <BrandAvatar brand={selectedBrand} size={32} />
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-text-primary truncate">{selectedBrand.name}</div>
-                      {selectedBrand.website_url && <div className="text-xs text-text-muted truncate">{selectedBrand.website_url.replace(/^https?:\/\//, '')}</div>}
+                      {selectedBrand.website_url
+                        ? <div className="text-xs text-text-muted truncate">{selectedBrand.website_url.replace(/^https?:\/\//, '')}</div>
+                        : <div className="text-xs" style={{ color: '#F25C54' }}>Sayt URL-i yoxdur</div>
+                      }
                     </div>
                   </>
                 ) : (
@@ -181,13 +177,13 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-all hover:bg-gray-50"
                         style={{ borderBottom: '1px solid rgba(123,110,246,0.06)' }}
                       >
-                        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                          style={{ background: `hsl(${(b.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
-                          {b.name[0].toUpperCase()}
-                        </div>
+                        <BrandAvatar brand={b} size={32} />
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-text-primary truncate">{b.name}</div>
-                          {b.website_url && <div className="text-xs text-text-muted truncate">{b.website_url.replace(/^https?:\/\//, '')}</div>}
+                          {b.website_url
+                            ? <div className="text-xs text-text-muted truncate">{b.website_url.replace(/^https?:\/\//, '')}</div>
+                            : <div className="text-xs" style={{ color: '#F25C54' }}>Sayt URL-i yoxdur</div>
+                          }
                         </div>
                         {selectedBrand?.id === b.id && <Check size={14} strokeWidth={2.5} style={{ color: '#7B6EF6', flexShrink: 0 }} />}
                       </button>
@@ -208,42 +204,6 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           )}
         </motion.div>
 
-        {/* URL input */}
-        <motion.div className="w-full mb-3" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.07 }}>
-          <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Sayt URL-i</label>
-          <div className="flex gap-2">
-            <input type="url" value={url} onChange={e => { setUrl(e.target.value); setError('') }}
-              onKeyDown={e => e.key === 'Enter' && handleCrawl()}
-              placeholder="example.az" autoFocus
-              className="w-full rounded-2xl px-5 py-4 text-base text-text-primary outline-none transition-all"
-              style={{ ...inputStyle, fontSize: '1rem' }}
-              onFocus={e => { e.target.style.borderColor = '#7B6EF6'; e.target.style.boxShadow = '0 0 0 3px rgba(123,110,246,0.1)' }}
-              onBlur={e  => { e.target.style.borderColor = 'rgba(123,110,246,0.18)'; e.target.style.boxShadow = '0 1px 3px rgba(13,13,26,0.04)' }}
-            />
-            <button onClick={handleCrawl} disabled={crawling || !url.trim()}
-              className="flex-shrink-0 px-5 py-4 rounded-2xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-              style={{ background: crawling ? '#9B9EBB' : '#7B6EF6', minWidth: '100px' }}
-            >
-              {crawling ? '...' : 'Analiz Et'}
-            </button>
-          </div>
-
-          <AnimatePresence>
-            {crawlResult && (
-              <motion.div className="mt-2 rounded-xl px-4 py-3 flex items-center gap-2"
-                style={{ background: 'rgba(0,201,167,0.06)', border: '1px solid rgba(0,201,167,0.2)' }}
-                initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={SPRING}
-              >
-                <span className="w-4 h-4 rounded-full bg-success flex items-center justify-center flex-shrink-0">
-                  <Check size={10} strokeWidth={3} className="text-white" />
-                </span>
-                <span className="text-xs font-semibold" style={{ color: '#00C9A7' }}>Sayt analiz edildi</span>
-                <span className="text-xs text-text-muted truncate ml-1">{crawlResult.title || ''}</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
         {/* Error */}
         <AnimatePresence>
           {error && (
@@ -257,10 +217,10 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
         </AnimatePresence>
 
         {/* Submit */}
-        <motion.button onClick={handleGenerate} disabled={loading || !url.trim()}
+        <motion.button onClick={handleGenerate} disabled={loading || !selectedBrand}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all disabled:opacity-60"
           style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.25)' }}
-          initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.12 }}
+          initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.08 }}
           whileHover={{ scale: 1.02, boxShadow: '0 6px 28px rgba(123,110,246,0.35)' }}
           whileTap={{ scale: 0.98 }}
         >

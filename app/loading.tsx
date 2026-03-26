@@ -80,7 +80,7 @@ export default function Loading() {
           fontSize: 11, fontWeight: 600,
           letterSpacing: '0.14em', textTransform: 'uppercase' as const,
           color: '#5B4EE8',
-        }}>Reaching the Summit</span>
+        }}>Zirvəyə Doğru</span>
       </div>
 
       {/* Countdown */}

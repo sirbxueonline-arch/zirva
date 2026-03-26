@@ -26,6 +26,8 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Spacer so page content doesn't hide under the fixed navbar */}
+      <div className="h-16" />
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50"
         animate={{
