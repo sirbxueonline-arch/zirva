@@ -99,7 +99,30 @@ export interface SMOPackage {
   post_specific_captions?:  PostCaption[]
 }
 
-export const PLAN_LIMITS        = { free: 5,  pro: 50, agency: 300 } as const
-export const BRAND_LIMITS       = { free: 1,  pro: 10, agency: 20  } as const
+export const PLAN_LIMITS  = { free: 5,  pro: 50, agency: 300 } as const
+export const BRAND_LIMITS = { free: 1,  pro: 10, agency: 20  } as const
+export const PLAN_NAMES   = { free: 'Pulsuz', pro: 'Pro', agency: 'Agency' } as const
+
+export type BillingPeriod = 'monthly' | 'quarterly' | 'yearly'
+
+// Price per month at each billing period
+export const PLAN_PERIOD_PRICES: Record<string, Record<BillingPeriod, { perMonth: string; total: string; label: string }>> = {
+  free: {
+    monthly:   { perMonth: '0',      total: '0',       label: 'aylıq' },
+    quarterly: { perMonth: '0',      total: '0',       label: 'rüblük' },
+    yearly:    { perMonth: '0',      total: '0',       label: 'illik' },
+  },
+  pro: {
+    monthly:   { perMonth: '39.99',  total: '39.99',   label: 'aylıq' },
+    quarterly: { perMonth: '33.99',  total: '101.97',  label: 'rüblük (15% endirim)' },
+    yearly:    { perMonth: '29.99',  total: '359.88',  label: 'illik (25% endirim)' },
+  },
+  agency: {
+    monthly:   { perMonth: '149.99', total: '149.99',  label: 'aylıq' },
+    quarterly: { perMonth: '127.49', total: '382.47',  label: 'rüblük (15% endirim)' },
+    yearly:    { perMonth: '112.49', total: '1349.88', label: 'illik (25% endirim)' },
+  },
+}
+
+// Keep backwards-compatible flat price for current-plan display
 export const PLAN_PRICES = { free: '0 AZN', pro: '39.99 AZN/ay', agency: '149.99 AZN/ay' } as const
-export const PLAN_NAMES  = { free: 'Pulsuz', pro: 'Pro', agency: 'Agency' } as const

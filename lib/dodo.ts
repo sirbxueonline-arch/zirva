@@ -21,9 +21,18 @@ export const dodo = new Proxy({} as DodoPayments, {
   },
 })
 
-export const PLAN_PRODUCT_IDS: Record<string, string> = {
-  pro:    process.env.DODO_PRO_PRODUCT_ID!,
-  agency: process.env.DODO_AGENCY_PRODUCT_ID!,
+// product_id lookup by plan + billing period
+export const PLAN_PRODUCT_IDS: Record<string, Record<string, string>> = {
+  pro: {
+    monthly:   process.env.DODO_PRO_PRODUCT_ID!,
+    quarterly: process.env.DODO_PRO_QUARTERLY_PRODUCT_ID!,
+    yearly:    process.env.DODO_PRO_YEARLY_PRODUCT_ID!,
+  },
+  agency: {
+    monthly:   process.env.DODO_AGENCY_PRODUCT_ID!,
+    quarterly: process.env.DODO_AGENCY_QUARTERLY_PRODUCT_ID!,
+    yearly:    process.env.DODO_AGENCY_YEARLY_PRODUCT_ID!,
+  },
 }
 
 export const PLAN_LIMITS: Record<string, number> = {

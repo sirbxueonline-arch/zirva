@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/types'
-import { PLAN_NAMES, PLAN_PRICES } from '@/types'
+import type { Profile, BillingPeriod } from '@/types'
+import { PLAN_NAMES, PLAN_PRICES, PLAN_PERIOD_PRICES } from '@/types'
 import {
   Package,
   Globe,
@@ -59,9 +59,16 @@ const PLAN_FEATURES: Record<string, PlanFeature[]> = {
   ],
 }
 
+const PERIODS: { id: BillingPeriod; label: string; badge?: string }[] = [
+  { id: 'monthly',   label: 'Aylıq' },
+  { id: 'quarterly', label: 'Rüblük', badge: '15% endirim' },
+  { id: 'yearly',    label: 'İllik',  badge: '25% endirim' },
+]
+
 export default function BillingPage() {
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [profile, setProfile]   = useState<Profile | null>(null)
+  const [loading, setLoading]   = useState(false)
+  const [period, setPeriod]     = useState<BillingPeriod>('monthly')
   const supabase = createClient()
 
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function BillingPage() {
       const res = await fetch('/api/dodo/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, period }),
       })
       const { url, error } = await res.json()
       if (error) { alert(error); return }
@@ -98,7 +105,6 @@ export default function BillingPage() {
       const { success, error } = await res.json()
       if (error) { alert(error); return }
       if (success) {
-        // Refresh profile to reflect updated subscription_status
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -111,15 +117,18 @@ export default function BillingPage() {
     }
   }
 
-  const plan = profile?.plan ?? 'free'
-  const used = profile?.generations_used ?? 0
-  const limit = profile?.generations_limit ?? 5
-  const pct = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0
+  const plan      = profile?.plan ?? 'free'
+  const used      = profile?.generations_used ?? 0
+  const limit     = profile?.generations_limit ?? 5
+  const pct       = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0
   const usageColor = pct >= 90 ? '#F25C54' : pct >= 70 ? '#F5A623' : '#00C9A7'
-  const planColor = { free: '#9B9EBB', pro: '#7B6EF6', agency: '#00C9A7' }[plan]
+  const planColor  = { free: '#9B9EBB', pro: '#7B6EF6', agency: '#00C9A7' }[plan] ?? '#9B9EBB'
+
+  const proPrices    = PLAN_PERIOD_PRICES.pro[period]
+  const agencyPrices = PLAN_PERIOD_PRICES.agency[period]
 
   return (
-    <div className="px-6 py-10 max-w-3xl mx-auto">
+    <div className="px-4 sm:px-6 py-8 sm:py-10 max-w-3xl mx-auto">
 
       {/* Header */}
       <div className="mb-8">
@@ -197,10 +206,10 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Upgrade cards */}
+      {/* Upgrade section */}
       {plan === 'free' && (
         <>
-          {/* What you're missing banner */}
+          {/* What you're missing */}
           <div className="rounded-2xl p-5 mb-6" style={{ background: 'rgba(242,92,84,0.05)', border: '1px solid rgba(242,92,84,0.18)' }}>
             <p className="text-sm font-bold mb-3" style={{ color: '#F25C54' }}>🔒 Pulsuz planda bu xüsusiyyətlər yoxdur:</p>
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
@@ -222,10 +231,38 @@ export default function BillingPage() {
             </div>
           </div>
 
-          <p className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-4">Planı Yüksəlt</p>
+          {/* Billing period toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-semibold text-text-muted uppercase tracking-widest">Planı Yüksəlt</p>
+            <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.12)' }}>
+              {PERIODS.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setPeriod(p.id)}
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                  style={{
+                    background: period === p.id ? '#FFFFFF' : 'transparent',
+                    color: period === p.id ? '#7B6EF6' : '#9B9EBB',
+                    boxShadow: period === p.id ? '0 1px 4px rgba(13,13,26,0.08)' : 'none',
+                  }}
+                >
+                  {p.label}
+                  {p.badge && (
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                      style={{ background: '#00C9A7', color: '#fff' }}
+                    >
+                      -{p.badge.split('%')[0]}%
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid sm:grid-cols-2 gap-4">
 
-            {/* Pro — featured */}
+            {/* Pro */}
             <div className="rounded-2xl overflow-hidden relative"
               style={{ background: 'linear-gradient(160deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 40px rgba(123,110,246,0.3)' }}
             >
@@ -236,8 +273,11 @@ export default function BillingPage() {
               </div>
               <div className="p-6">
                 <div className="font-display font-bold text-xl text-white mb-1">{PLAN_NAMES.pro}</div>
-                <div className="text-white text-3xl font-bold mb-1">{PLAN_PRICES.pro}</div>
-                <p className="text-white/60 text-xs mb-5">aylıq ödəniş</p>
+                <div className="flex items-baseline gap-2 mb-0.5">
+                  <span className="text-white text-3xl font-bold">{proPrices.perMonth} AZN</span>
+                  <span className="text-white/60 text-sm">/ay</span>
+                </div>
+                <p className="text-white/60 text-xs mb-5">{proPrices.label}{period !== 'monthly' ? ` · cəmi ${proPrices.total} AZN` : ''}</p>
                 <ul className="space-y-2 mb-6">
                   {PLAN_FEATURES.pro.map(f => (
                     <li key={f.text} className="flex items-center gap-2 text-sm text-white/90">
@@ -260,8 +300,11 @@ export default function BillingPage() {
               style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.25)', boxShadow: '0 4px 20px rgba(0,201,167,0.08)' }}
             >
               <div className="font-display font-bold text-xl mb-1" style={{ color: '#00C9A7' }}>{PLAN_NAMES.agency}</div>
-              <div className="text-text-primary text-3xl font-bold mb-1">{PLAN_PRICES.agency}</div>
-              <p className="text-text-muted text-xs mb-5">aylıq ödəniş</p>
+              <div className="flex items-baseline gap-2 mb-0.5">
+                <span className="text-text-primary text-3xl font-bold">{agencyPrices.perMonth} AZN</span>
+                <span className="text-text-muted text-sm">/ay</span>
+              </div>
+              <p className="text-text-muted text-xs mb-5">{agencyPrices.label}{period !== 'monthly' ? ` · cəmi ${agencyPrices.total} AZN` : ''}</p>
               <ul className="space-y-2 mb-6">
                 {PLAN_FEATURES.agency.map(f => (
                   <li key={f.text} className="flex items-center gap-2 text-sm text-text-secondary">
