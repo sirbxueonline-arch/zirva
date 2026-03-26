@@ -82,6 +82,15 @@ export async function POST(req: Request) {
 
     // Validate input
     const raw = await req.json()
+
+    // Gate social & manual flows to pro+ only
+    const isPaidPlan = profile.plan === 'pro' || profile.plan === 'agency'
+    if (!isPaidPlan && (raw.flow_type === 'social' || raw.flow_type === 'manual')) {
+      return Response.json(
+        { error: 'Bu axış yalnız Pro və Agency planlarında mövcuddur.', upgrade: true },
+        { status: 403 }
+      )
+    }
     if (raw.flow_type === 'url' && raw.url && !/^https?:\/\//i.test(raw.url)) {
       raw.url = `https://${raw.url}`
     }
@@ -111,6 +120,16 @@ export async function POST(req: Request) {
 
     // Generate SEO package via OpenAI
     const seoPackage = await generateSEOPackage(prompt)
+
+    // Strip pro-only data for free users
+    if (!isPaidPlan) {
+      seoPackage.competitors = []
+      seoPackage.competitor_tips = []
+      // Free plan: Azerbaijani only — clear Russian tags
+      seoPackage.title_tag_ru = ''
+      seoPackage.meta_description_ru = ''
+      seoPackage.keywords_ru = []
+    }
 
     // Save to generations table
     const { data: generation, error: insertError } = await supabase

@@ -7,18 +7,18 @@ const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
 // Row 1 — 5 platforms
 const PLATFORMS_R1 = [
-  { name: 'WordPress',   domain: 'wordpress.org'  },
-  { name: 'Shopify',     domain: 'shopify.com'    },
-  { name: 'Wix',         domain: 'wix.com'        },
-  { name: 'Webflow',     domain: 'webflow.com'    },
-  { name: 'Notion',      domain: 'notion.so'      },
+  { name: 'WordPress',   icon: 'https://cdn.simpleicons.org/wordpress/21759B'   },
+  { name: 'Shopify',     icon: 'https://cdn.simpleicons.org/shopify/96BF48'     },
+  { name: 'Wix',         icon: 'https://cdn.simpleicons.org/wix/FAAD4D'         },
+  { name: 'Webflow',     icon: 'https://cdn.simpleicons.org/webflow/146EF5'     },
+  { name: 'Notion',      icon: 'https://cdn.simpleicons.org/notion/000000'      },
 ]
 // Row 2 — 4 platforms + 100+
 const PLATFORMS_R2 = [
-  { name: 'HubSpot',     domain: 'hubspot.com'    },
-  { name: 'Ghost',       domain: 'ghost.org'      },
-  { name: 'Next.js',     domain: 'nextjs.org'     },
-  { name: 'Squarespace', domain: 'squarespace.com'},
+  { name: 'HubSpot',     icon: 'https://cdn.simpleicons.org/hubspot/FF7A59'     },
+  { name: 'Ghost',       icon: 'https://cdn.simpleicons.org/ghost/15171A'       },
+  { name: 'Next.js',     icon: 'https://cdn.simpleicons.org/nextdotjs/000000'   },
+  { name: 'Squarespace', icon: 'https://cdn.simpleicons.org/squarespace/000000' },
 ]
 
 // Row 1 — left to right
@@ -53,8 +53,42 @@ const ROW2 = [
   { cc: 'ca', name: 'Kanada'    },
 ]
 
-const MARQUEE_ITEMS = [...ROW1, ...ROW1]
-const MARQUEE_REV   = [...ROW2, ...ROW2]
+// Row 3 — left to right
+const ROW3 = [
+  { cc: 'pt', name: 'Portuqaliya' },
+  { cc: 'se', name: 'İsveç'       },
+  { cc: 'no', name: 'Norveç'      },
+  { cc: 'dk', name: 'Danimarka'   },
+  { cc: 'fi', name: 'Finlandiya'  },
+  { cc: 'ch', name: 'İsveçrə'     },
+  { cc: 'at', name: 'Avstriya'    },
+  { cc: 'be', name: 'Belçika'     },
+  { cc: 'gr', name: 'Yunanıstan'  },
+  { cc: 'ro', name: 'Rumıniya'    },
+  { cc: 'hu', name: 'Macarıstan'  },
+  { cc: 'cz', name: 'Çexiya'      },
+]
+
+// Row 4 — right to left
+const ROW4 = [
+  { cc: 'th', name: 'Tailand'     },
+  { cc: 'vn', name: 'Vyetnam'     },
+  { cc: 'id', name: 'İndoneziya'  },
+  { cc: 'my', name: 'Malayziya'   },
+  { cc: 'sg', name: 'Sinqapur'    },
+  { cc: 'ph', name: 'Filippin'    },
+  { cc: 'pk', name: 'Pakistan'    },
+  { cc: 'ng', name: 'Nigeriya'    },
+  { cc: 'za', name: 'C. Afrika'   },
+  { cc: 'eg', name: 'Misir'       },
+  { cc: 'il', name: 'İsrail'      },
+  { cc: 'ar', name: 'Argentina'   },
+]
+
+const MARQUEE_ITEMS = [...ROW1, ...ROW1, ...ROW1]
+const MARQUEE_REV   = [...ROW2, ...ROW2, ...ROW2]
+const MARQUEE_R3    = [...ROW3, ...ROW3, ...ROW3]
+const MARQUEE_R4    = [...ROW4, ...ROW4, ...ROW4]
 
 function FlagImg({ cc, name }: { cc: string; name: string }) {
   return (
@@ -97,7 +131,7 @@ export default function Integrations() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
             {PLATFORMS_R1.map((p, i) => (
               <motion.div
-                key={p.domain}
+                key={p.name}
                 className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
                 style={{
                   background: '#FFFFFF',
@@ -111,11 +145,11 @@ export default function Integrations() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=128`}
+                  src={p.icon}
                   alt={p.name}
-                  width={52}
-                  height={52}
-                  style={{ width: 52, height: 52, objectFit: 'contain' }}
+                  width={40}
+                  height={40}
+                  style={{ width: 40, height: 40, objectFit: 'contain' }}
                 />
                 <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
               </motion.div>
@@ -126,7 +160,7 @@ export default function Integrations() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             {PLATFORMS_R2.map((p, i) => (
               <motion.div
-                key={p.domain}
+                key={p.name}
                 className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
                 style={{
                   background: '#FFFFFF',
@@ -140,11 +174,11 @@ export default function Integrations() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://www.google.com/s2/favicons?domain=${p.domain}&sz=128`}
+                  src={p.icon}
                   alt={p.name}
-                  width={52}
-                  height={52}
-                  style={{ width: 52, height: 52, objectFit: 'contain' }}
+                  width={40}
+                  height={40}
+                  style={{ width: 40, height: 40, objectFit: 'contain' }}
                 />
                 <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
               </motion.div>
@@ -201,8 +235,8 @@ export default function Integrations() {
         </div>
 
         {/* Row 1 — left to right */}
-        <div style={{ overflow: 'hidden', width: '100%', marginBottom: 12 }}>
-          <div style={{ display: 'flex', gap: 12, width: 'max-content', animation: 'marquee 38s linear infinite' }}>
+        <div style={{ overflow: 'hidden', width: '100%', marginBottom: 12, WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 38s linear infinite', willChange: 'transform' }}>
             {MARQUEE_ITEMS.map((m, i) => (
               <div
                 key={i}
@@ -210,6 +244,7 @@ export default function Integrations() {
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '8px 14px', borderRadius: 999,
                   whiteSpace: 'nowrap', flexShrink: 0,
+                  marginRight: 12,
                   background: '#FFFFFF',
                   border: '1.5px solid rgba(123,110,246,0.1)',
                   boxShadow: '0 2px 8px rgba(13,13,26,0.04)',
@@ -223,22 +258,36 @@ export default function Integrations() {
         </div>
 
         {/* Row 2 — right to left */}
-        <div style={{ overflow: 'hidden', width: '100%' }}>
-          <div style={{ display: 'flex', gap: 12, width: 'max-content', animation: 'marquee-reverse 42s linear infinite' }}>
+        <div style={{ overflow: 'hidden', width: '100%', marginBottom: 12, WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'marquee-reverse 42s linear infinite', willChange: 'transform' }}>
             {MARQUEE_REV.map((m, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 14px', borderRadius: 999,
-                  whiteSpace: 'nowrap', flexShrink: 0,
-                  background: '#FFFFFF',
-                  border: '1.5px solid rgba(123,110,246,0.1)',
-                  boxShadow: '0 2px 8px rgba(13,13,26,0.04)',
-                }}
-              >
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0, marginRight: 12, background: '#FFFFFF', border: '1.5px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 8px rgba(13,13,26,0.04)' }}>
                 <FlagImg cc={m.cc} name={m.name} />
-                <span className="text-sm font-medium" style={{ color: '#3D4060' }}>{m.name}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#3D4060' }}>{m.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 3 — left to right */}
+        <div style={{ overflow: 'hidden', width: '100%', marginBottom: 12, WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 44s linear infinite', willChange: 'transform' }}>
+            {MARQUEE_R3.map((m, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0, marginRight: 12, background: '#FFFFFF', border: '1.5px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 8px rgba(13,13,26,0.04)' }}>
+                <FlagImg cc={m.cc} name={m.name} />
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#3D4060' }}>{m.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 4 — right to left */}
+        <div style={{ overflow: 'hidden', width: '100%', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'marquee-reverse 36s linear infinite', willChange: 'transform' }}>
+            {MARQUEE_R4.map((m, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0, marginRight: 12, background: '#FFFFFF', border: '1.5px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 8px rgba(13,13,26,0.04)' }}>
+                <FlagImg cc={m.cc} name={m.name} />
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#3D4060' }}>{m.name}</span>
               </div>
             ))}
           </div>

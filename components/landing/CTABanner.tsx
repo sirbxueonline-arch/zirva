@@ -9,11 +9,11 @@ import { Zap, ArrowRight, Play } from 'lucide-react'
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
 const COMPANY_LOGOS = [
-  { name: 'Google',   domain: 'google.com'   },
-  { name: 'Shopify',  domain: 'shopify.com'  },
-  { name: 'Airbnb',   domain: 'airbnb.com'   },
-  { name: 'Spotify',  domain: 'spotify.com'  },
-  { name: 'Slack',    domain: 'slack.com'    },
+  { name: 'WordPress',  icon: 'https://cdn.simpleicons.org/wordpress/21759B'  },
+  { name: 'Shopify',    icon: 'https://cdn.simpleicons.org/shopify/96BF48'    },
+  { name: 'Webflow',    icon: 'https://cdn.simpleicons.org/webflow/146EF5'    },
+  { name: 'HubSpot',    icon: 'https://cdn.simpleicons.org/hubspot/FF7A59'    },
+  { name: 'Next.js',    icon: 'https://cdn.simpleicons.org/nextdotjs/000000'  },
 ]
 
 export default function CTABanner() {
@@ -79,23 +79,6 @@ export default function CTABanner() {
       />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-        {/* Badge */}
-        <motion.div
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-semibold mb-7"
-          style={{
-            background: 'rgba(255,255,255,0.18)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            color: '#FFFFFF',
-            backdropFilter: 'blur(8px)',
-          }}
-          initial={{ y: 20, opacity: 0 }}
-          animate={inView ? { y: 0, opacity: 1 } : {}}
-          transition={{ ...SPRING, delay: 0.05 }}
-        >
-          <Zap size={13} strokeWidth={2.5} />
-          Pulsuz başla
-        </motion.div>
-
         {/* Heading */}
         <motion.h2
           className="font-display font-bold text-4xl md:text-5xl lg:text-6xl mb-5"
@@ -169,22 +152,13 @@ export default function CTABanner() {
           <div className="flex -space-x-2.5">
             {COMPANY_LOGOS.map((co, i) => (
               <div
-                key={co.domain}
+                key={co.name}
                 className="w-9 h-9 rounded-full border-2 overflow-hidden flex items-center justify-center bg-white"
-                style={{
-                  borderColor: 'rgba(255,255,255,0.6)',
-                  zIndex: 5 - i,
-                }}
+                style={{ borderColor: 'rgba(255,255,255,0.6)', zIndex: 5 - i }}
                 title={co.name}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://logo.clearbit.com/${co.domain}`}
-                  alt={co.name}
-                  width={28}
-                  height={28}
-                  style={{ objectFit: 'contain' }}
-                />
+                <img src={co.icon} alt={co.name} width={22} height={22} style={{ objectFit: 'contain' }} />
               </div>
             ))}
           </div>

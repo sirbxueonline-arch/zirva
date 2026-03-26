@@ -27,7 +27,7 @@ export const PLAN_PRODUCT_IDS: Record<string, string> = {
 }
 
 export const PLAN_LIMITS: Record<string, number> = {
-  free:   5,
+  free:   3,
   pro:    50,
-  agency: 999999, // unlimited — shown as ∞ in UI
+  agency: 300,
 }

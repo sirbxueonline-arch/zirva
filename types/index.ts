@@ -83,5 +83,5 @@ export interface SMOPackage {
 }
 
 export const PLAN_LIMITS = { free: 5, pro: 50, agency: 300 } as const
-export const PLAN_PRICES = { free: '0 AZN', pro: '79 AZN/ay', agency: '199 AZN/ay' } as const
+export const PLAN_PRICES = { free: '0 AZN', pro: '39.99 AZN/ay', agency: '149.99 AZN/ay' } as const
 export const PLAN_NAMES  = { free: 'Pulsuz', pro: 'Pro', agency: 'Agency' } as const

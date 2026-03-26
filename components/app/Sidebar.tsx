@@ -11,28 +11,27 @@ import {
   Search,
   Share2,
   Clock,
-  Settings,
-  CreditCard,
   LogOut,
+  Settings2,
+  Lock,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const SPRING_SNAPPY = { type: 'spring' as const, stiffness: 400, damping: 30 }
 
-const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon }[] = [
-  { label: 'Dashboard',    href: '/dashboard',        Icon: LayoutDashboard },
-  { label: 'SEO Paketi',   href: '/generate',          Icon: Search },
-  { label: 'SMO Paketi',   href: '/smo',               Icon: Share2 },
-  { label: 'Tarixçə',      href: '/history',            Icon: Clock },
-  { label: 'Parametrlər',  href: '/settings',           Icon: Settings },
-  { label: 'Billing',      href: '/settings/billing',   Icon: CreditCard },
+const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; proOnly?: boolean }[] = [
+  { label: 'Dashboard',    href: '/dashboard',  Icon: LayoutDashboard },
+  { label: 'SEO Paketi',   href: '/generate',   Icon: Search },
+  { label: 'SMO Paketi',   href: '/smo',        Icon: Share2, proOnly: true },
+  { label: 'Tarixçə',      href: '/history',    Icon: Clock },
 ]
 
 interface SidebarProps {
   profile: Profile | null
+  onOpenSettings?: () => void
 }
 
-export default function Sidebar({ profile }: SidebarProps) {
+export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -75,6 +74,8 @@ export default function Sidebar({ profile }: SidebarProps) {
       <nav className="flex-1 px-3 py-2">
         {NAV_ITEMS.map((item, i) => {
           const active = pathname === item.href
+          const isPaid = profile?.plan === 'pro' || profile?.plan === 'agency'
+          const locked = item.proOnly && !isPaid
           return (
             <motion.div
               key={item.href}
@@ -82,18 +83,38 @@ export default function Sidebar({ profile }: SidebarProps) {
               animate={{ x: 0, opacity: 1 }}
               transition={{ ...SPRING_SNAPPY, delay: i * 0.05 }}
             >
-              <Link
-                href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1"
-                style={{
-                  background: active ? 'rgba(123,110,246,0.12)' : 'transparent',
-                  color: active ? '#7B6EF6' : '#5A5D7A',
-                  border: active ? '1px solid rgba(123,110,246,0.2)' : '1px solid transparent',
-                }}
-              >
-                <item.Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
-                {item.label}
-              </Link>
+              {locked ? (
+                <Link
+                  href="/settings/billing"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1 group"
+                  style={{
+                    background: 'transparent',
+                    color: '#B0B3C8',
+                    border: '1px solid transparent',
+                  }}
+                  title="Pro plana keçin"
+                >
+                  <item.Icon size={16} strokeWidth={1.8} />
+                  <span className="flex-1">{item.label}</span>
+                  <span className="flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded-md group-hover:opacity-100"
+                    style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>
+                    <Lock size={9} strokeWidth={2.5} /> Pro
+                  </span>
+                </Link>
+              ) : (
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1"
+                  style={{
+                    background: active ? 'rgba(123,110,246,0.12)' : 'transparent',
+                    color: active ? '#7B6EF6' : '#5A5D7A',
+                    border: active ? '1px solid rgba(123,110,246,0.2)' : '1px solid transparent',
+                  }}
+                >
+                  <item.Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
+                  {item.label}
+                </Link>
+              )}
             </motion.div>
           )
         })}
@@ -110,7 +131,7 @@ export default function Sidebar({ profile }: SidebarProps) {
               >
                 {(profile.full_name || profile.email)[0].toUpperCase()}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-text-primary text-xs font-medium truncate">
                   {profile.full_name || 'İstifadəçi'}
                 </div>
@@ -131,6 +152,14 @@ export default function Sidebar({ profile }: SidebarProps) {
             </div>
           </div>
         )}
+
+        <button
+          onClick={onOpenSettings}
+          className="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-text-muted hover:text-primary hover:bg-surface-hover text-sm transition-all duration-200 mb-1"
+        >
+          <Settings2 size={15} strokeWidth={1.8} />
+          Parametrlər
+        </button>
 
         <button
           onClick={handleLogout}

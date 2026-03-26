@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/app/Sidebar'
+import AppShell from '@/components/app/AppShell'
 import type { Profile } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -35,10 +35,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar profile={profile as Profile | null} />
-      <main className="md:ml-60 min-h-screen">
+      <AppShell profile={profile as Profile | null}>
         {children}
-      </main>
+      </AppShell>
     </div>
   )
 }

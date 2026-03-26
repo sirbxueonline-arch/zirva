@@ -19,9 +19,9 @@ export default function Navbar() {
   }, [mobileOpen])
 
   const navLinks = [
-    { label: 'Necə işləyir', href: '#how-it-works' },
-    { label: 'Qiymətlər',    href: '#pricing'      },
-    { label: 'FAQ',          href: '#faq'           },
+    { label: 'Necə işləyir', href: '/how-it-works' },
+    { label: 'Qiymətlər',    href: '/pricing'      },
+    { label: 'FAQ',          href: '/faq'           },
   ]
 
   return (
@@ -29,11 +29,11 @@ export default function Navbar() {
       <motion.nav
         className="fixed top-0 left-0 right-0 z-50"
         animate={{
-          backgroundColor: scrolled ? 'rgba(6,6,26,0.92)' : 'rgba(6,6,26,0)',
-          backdropFilter:   scrolled ? 'blur(20px)'        : 'blur(0px)',
+          backgroundColor: scrolled ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0)',
+          backdropFilter:   scrolled ? 'blur(20px)'             : 'blur(0px)',
         }}
         transition={{ duration: 0.2 }}
-        style={{ borderBottom: scrolled ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent' }}
+        style={{ borderBottom: scrolled ? '1px solid rgba(0,0,0,0.07)' : '1px solid transparent' }}
       >
         <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
 
@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link
             href="/"
             className="font-display font-bold text-xl tracking-tight flex-shrink-0"
-            style={{ color: '#FFFFFF' }}
+            style={{ color: '#0D0D1A' }}
           >
             Zirva
           </Link>
@@ -49,16 +49,16 @@ export default function Navbar() {
           {/* Desktop links — centred */}
           <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
             {navLinks.map(link => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm font-medium transition-colors duration-150"
-                style={{ color: 'rgba(255,255,255,0.5)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+                style={{ color: '#737599' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#0D0D1A')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#737599')}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -67,9 +67,9 @@ export default function Navbar() {
             <Link
               href="/login"
               className="text-sm font-medium transition-colors duration-150"
-              style={{ color: 'rgba(255,255,255,0.5)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+              style={{ color: '#737599' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#0D0D1A')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#737599')}
             >
               Daxil ol
             </Link>
@@ -88,7 +88,7 @@ export default function Navbar() {
           {/* Mobile menu button */}
           <button
             className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg transition-colors"
-            style={{ color: '#fff', background: mobileOpen ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+            style={{ color: '#0D0D1A', background: mobileOpen ? 'rgba(0,0,0,0.06)' : 'transparent' }}
             onClick={() => setMobileOpen(o => !o)}
             aria-label="Menyu"
           >
@@ -115,19 +115,19 @@ export default function Navbar() {
             {/* Panel */}
             <motion.div
               className="fixed top-0 right-0 bottom-0 z-50 w-72 md:hidden flex flex-col"
-              style={{ background: '#0E0E28', borderLeft: '1px solid rgba(255,255,255,0.07)' }}
+              style={{ background: '#FFFFFF', borderLeft: '1px solid rgba(0,0,0,0.07)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 32 }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 h-16 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-                <span className="font-display font-bold text-lg text-white">Zirva</span>
+              <div className="flex items-center justify-between px-5 h-16 border-b" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
+                <span className="font-display font-bold text-lg" style={{ color: '#0D0D1A' }}>Zirva</span>
                 <button
                   onClick={() => setMobileOpen(false)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: '#fff' }}
+                  style={{ background: 'rgba(0,0,0,0.06)', color: '#0D0D1A' }}
                 >
                   <X size={16} />
                 </button>
@@ -136,29 +136,27 @@ export default function Navbar() {
               {/* Links */}
               <div className="flex flex-col px-4 py-4 gap-1 flex-1">
                 {navLinks.map((link, i) => (
-                  <motion.a
-                    key={link.href}
-                    href={link.href}
-                    className="px-4 py-3 rounded-xl text-sm font-medium transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.65)' }}
-                    onClick={() => setMobileOpen(false)}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + i * 0.05 }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    {link.label}
-                  </motion.a>
+                  <motion.div key={link.href} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.05 }}>
+                    <Link
+                      href={link.href}
+                      className="block px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                      style={{ color: '#737599' }}
+                      onClick={() => setMobileOpen(false)}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
 
               {/* Bottom CTAs */}
-              <div className="px-4 pb-8 flex flex-col gap-3 border-t pt-4" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+              <div className="px-4 pb-8 flex flex-col gap-3 border-t pt-4" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
                 <Link
                   href="/login"
                   className="text-center py-3 rounded-xl text-sm font-medium transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  style={{ background: 'rgba(0,0,0,0.04)', color: '#3D4060', border: '1px solid rgba(0,0,0,0.08)' }}
                   onClick={() => setMobileOpen(false)}
                 >
                   Daxil ol

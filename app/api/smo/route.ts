@@ -47,6 +47,15 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Aylıq limitiniz dolub. Pro plana keçin.' }, { status: 403 })
     }
 
+    // SMO is Pro+ only
+    const isPaidPlan = profile.plan === 'pro' || profile.plan === 'agency'
+    if (!isPaidPlan) {
+      return Response.json(
+        { error: 'SMO Paketi yalnız Pro və Agency planlarında mövcuddur.', upgrade: true },
+        { status: 403 }
+      )
+    }
+
     const body = schema.parse(await req.json())
     const prompt = buildSMOPrompt(body)
     const smoPackage = await generateSMOPackage(prompt)

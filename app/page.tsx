@@ -1,12 +1,13 @@
 import Navbar          from '@/components/landing/Navbar'
 import PageIntro       from '@/components/landing/PageIntro'
 import Hero            from '@/components/landing/Hero'
-import Features        from '@/components/landing/Features'
+import StepsSection    from '@/components/landing/StepsSection'
+import FeatureSpotlight from '@/components/landing/FeatureSpotlight'
+import SocialProof     from '@/components/landing/SocialProof'
 import Integrations    from '@/components/landing/Integrations'
 import Testimonials    from '@/components/landing/Testimonials'
 import PlanComparison  from '@/components/landing/PlanComparison'
 import CTABanner       from '@/components/landing/CTABanner'
-import FAQ             from '@/components/landing/FAQ'
 import Footer          from '@/components/landing/Footer'
 
 export default function LandingPage() {
@@ -15,12 +16,13 @@ export default function LandingPage() {
       <PageIntro />
       <Navbar />
       <Hero />
-      <Features />
+      <StepsSection />
+      <FeatureSpotlight />
+      <SocialProof />
       <Integrations />
       <Testimonials />
       <PlanComparison />
       <CTABanner />
-      <FAQ />
       <Footer />
     </main>
   )

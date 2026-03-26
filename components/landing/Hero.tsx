@@ -86,19 +86,19 @@ function GooglePanel() {
 /* ── ChatGPT panel ────────────────────────────────── */
 function ChatGPTPanel() {
   return (
-    <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ background: '#0D0D1E', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
       {/* Header */}
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b" style={{ borderColor: 'rgba(0,0,0,0.07)' }}>
         <ChatGPTIcon size={28} />
-        <span className="text-sm font-semibold text-white">ChatGPT</span>
-        <span className="ml-auto text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>GPT-4o</span>
+        <span className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>ChatGPT</span>
+        <span className="ml-auto text-xs" style={{ color: '#9CA3AF' }}>GPT-4o</span>
       </div>
 
       <div className="p-4">
         {/* User message */}
         <div className="flex justify-end mb-4">
           <div className="text-sm px-3.5 py-2.5 rounded-2xl max-w-[75%]"
-            style={{ background: 'rgba(255,255,255,0.1)', color: '#E5E7EB' }}>
+            style={{ background: '#F3F4F6', color: '#374151' }}>
             Bakıda ən yaxşı gözəllik salonu?
           </div>
         </div>
@@ -106,18 +106,18 @@ function ChatGPTPanel() {
         {/* AI prelude */}
         <div className="flex items-start gap-2.5 mb-3">
           <ChatGPTIcon size={24} />
-          <p className="text-[13px] leading-relaxed pt-0.5" style={{ color: '#9CA3AF' }}>
+          <p className="text-[13px] leading-relaxed pt-0.5" style={{ color: '#6B7280' }}>
             Bakıda bir neçə yüksək reytinqli gözəllik salonu var. Müştəri rəylərinə və onlayn məlumatlara əsasən:
           </p>
         </div>
 
         {/* #1 recommendation */}
         <div className="relative ml-8 rounded-xl p-3 mb-2"
-          style={{ background: 'rgba(16,163,127,0.1)', border: '1.5px solid rgba(16,163,127,0.35)' }}>
+          style={{ background: 'rgba(16,163,127,0.06)', border: '1.5px solid rgba(16,163,127,0.25)' }}>
           <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
             style={{ background: '#10A37F' }}>1</div>
-          <div className="text-sm font-bold mb-0.5" style={{ color: '#E5E7EB' }}>Beauty Studio Bakı</div>
-          <div className="text-xs mb-2" style={{ color: '#9CA3AF' }}>
+          <div className="text-sm font-bold mb-0.5" style={{ color: '#0D0D1A' }}>Beauty Studio Bakı</div>
+          <div className="text-xs mb-2" style={{ color: '#6B7280' }}>
             Nəsimi rayonu — saç, dırnaq, makiyaj xidmətləri
           </div>
           <div className="flex items-center gap-1 mb-2">
@@ -136,16 +136,16 @@ function ChatGPTPanel() {
 
         {/* Others faded */}
         {['guzellik.az', 'beauty-baku.az'].map((site, i) => (
-          <div key={i} className="ml-8 flex items-center gap-2.5 py-2 opacity-30">
+          <div key={i} className="ml-8 flex items-center gap-2.5 py-2 opacity-40">
             <div className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold text-white"
-              style={{ background: 'rgba(255,255,255,0.2)' }}>{i + 2}</div>
+              style={{ background: '#D1D5DB' }}>{i + 2}</div>
             <span className="text-xs" style={{ color: '#9CA3AF' }}>{site}</span>
           </div>
         ))}
 
         {/* Footer note */}
         <div className="mt-3 rounded-lg px-3 py-2 text-[11px] leading-relaxed"
-          style={{ background: 'rgba(123,110,246,0.1)', border: '1px solid rgba(123,110,246,0.2)', color: 'rgba(196,188,255,0.8)' }}>
+          style={{ background: 'rgba(123,110,246,0.06)', border: '1px solid rgba(123,110,246,0.15)', color: '#7B6EF6' }}>
           Zirva schema markup + structured data ilə həm Google-u, həm ChatGPT-ni eyni anda optimallaşdırır
         </div>
       </div>
@@ -165,78 +165,67 @@ export default function Hero() {
   })
 
   return (
-    <section className="relative pt-24 sm:pt-28 pb-0 overflow-hidden" style={{ background: '#07071A' }}>
+    <section className="relative pt-24 sm:pt-28 pb-0 overflow-hidden" style={{ background: '#FFFFFF' }}>
 
-      {/* Noise */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.022]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: '180px',
-        }}
-      />
-
-      {/* Orbs */}
+      {/* Soft orbs */}
       <div className="absolute pointer-events-none" style={{
         width: 700, height: 700, top: '-25%', left: '50%', transform: 'translateX(-50%)',
-        background: 'radial-gradient(circle, rgba(123,110,246,0.18) 0%, transparent 60%)',
+        background: 'radial-gradient(circle, rgba(123,110,246,0.07) 0%, transparent 60%)',
       }} />
       <div className="absolute pointer-events-none hidden sm:block" style={{
         width: 400, height: 400, bottom: '5%', right: '-5%',
-        background: 'radial-gradient(circle, rgba(16,163,127,0.1) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgba(16,163,127,0.06) 0%, transparent 65%)',
       }} />
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6">
 
-        {/* Platform pills */}
-        <motion.div className="flex items-center justify-center gap-2 mb-7 sm:mb-10" {...stagger(0)}>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: 'rgba(66,133,244,0.12)', border: '1px solid rgba(66,133,244,0.25)', color: '#93B8FB' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Google
-          </div>
-          <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>+</span>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: 'rgba(16,163,127,0.12)', border: '1px solid rgba(16,163,127,0.28)', color: '#6EE7C7' }}>
-            <ChatGPTIcon size={14} />
-            ChatGPT
-          </div>
-        </motion.div>
-
         {/* Headline */}
         <motion.h1
           className="text-center font-display font-bold tracking-tight mb-4 sm:mb-5 px-2"
-          style={{ fontSize: 'clamp(34px, 7vw, 76px)', lineHeight: 1.1, color: '#fff' }}
-          {...stagger(1)}
+          style={{ fontSize: 'clamp(34px, 7vw, 76px)', lineHeight: 1.15, color: '#0D0D1A' }}
+          {...stagger(0)}
         >
-          Saytınız Google-da da,{' '}
-          <br className="hidden sm:block" />
-          <span style={{
-            background: 'linear-gradient(100deg, #A78BFA 0%, #7B6EF6 40%, #10A37F 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            ChatGPT-də də #1
+          {/* Line 1: Saytınız [Google] -da da, */}
+          <span>
+            Saytınız{' '}
+            {/* Google with per-letter brand colors */}
+            <span style={{ whiteSpace: 'nowrap' }}>
+              <span style={{ color: '#4285F4' }}>G</span>
+              <span style={{ color: '#EA4335' }}>o</span>
+              <span style={{ color: '#FBBC05' }}>o</span>
+              <span style={{ color: '#4285F4' }}>g</span>
+              <span style={{ color: '#34A853' }}>l</span>
+              <span style={{ color: '#EA4335' }}>e</span>
+            </span>
+            -da da,
+          </span>
+          <br />
+          {/* Line 2: [ChatGPT] -də də [#1] */}
+          <span>
+            <span style={{ color: '#10A37F' }}>ChatGPT</span>
+            <span style={{ color: '#0D0D1A' }}>-də də </span>
+            <span style={{
+              background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 2px 12px rgba(123,110,246,0.3))',
+            }}>#1</span>
           </span>
         </motion.h1>
 
         {/* Sub */}
         <motion.p
           className="text-center mx-auto mb-8 sm:mb-10 px-2"
-          style={{ maxWidth: '46ch', fontSize: 'clamp(14px, 2.5vw, 17px)', lineHeight: 1.7, color: 'rgba(255,255,255,0.42)' }}
-          {...stagger(2)}
+          style={{ maxWidth: '46ch', fontSize: 'clamp(14px, 2.5vw, 17px)', lineHeight: 1.7, color: '#737599' }}
+          {...stagger(1)}
         >
-          URL-i daxil edin — 30 saniyə ərzində title teq, meta, schema markup
-          və hreflang hər iki platforma uyğun hazır olur.
+          Saytınızın URL-ini daxil edin. 30 saniyə ərzində title teq, meta açıqlama,
+          schema markup və hreflang — Google-da da, ChatGPT-də də sizi <strong style={{ color: '#0D0D1A', fontWeight: 700 }}>birinci sıraya</strong> çıxaracaq tam paket hazırdır.
         </motion.p>
 
         {/* CTAs */}
-        <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-12 sm:mb-16 px-4 sm:px-0" {...stagger(3)}>
+        <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-12 sm:mb-16 px-4 sm:px-0" {...stagger(2)}>
           <Link
             href="/signup"
             className="group flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.03]"
@@ -251,7 +240,7 @@ export default function Hero() {
           <a
             href="#how-it-works"
             className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01]"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
+            style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)', color: '#3D4060' }}
           >
             Necə işləyir?
           </a>
@@ -270,7 +259,7 @@ export default function Hero() {
 
         {/* Bottom fade */}
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-20"
-          style={{ background: 'linear-gradient(to bottom, transparent, #07071A)' }} />
+          style={{ background: 'linear-gradient(to bottom, transparent, #FFFFFF)' }} />
       </div>
     </section>
   )

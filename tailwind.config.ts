@@ -21,7 +21,7 @@ const config: Config = {
         'text-muted':    '#737599',
       },
       fontFamily: {
-        display: ['Bricolage Grotesque', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'Outfit', 'sans-serif'],
         body:    ['Outfit', 'sans-serif'],
         mono:    ['JetBrains Mono', 'monospace'],
       },

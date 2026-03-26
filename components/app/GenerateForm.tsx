@@ -21,9 +21,12 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0)
   const [error, setError] = useState('')
   const [showUpgrade, setShowUpgrade] = useState(false)
-  const [url, setUrl] = useState('')
+  const [url, setUrl] = useState(profile?.website_url ?? '')
   const [crawlResult, setCrawlResult] = useState<{ title: string; meta_description: string | null; headings: string[] } | null>(null)
   const [crawling, setCrawling] = useState(false)
+
+  const isPaidPlan = profile?.plan === 'pro' || profile?.plan === 'agency'
+  const domainLocked = !isPaidPlan && !!profile?.website_url
 
   useEffect(() => {
     if (!loading) return
@@ -164,17 +167,42 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
         <motion.div className="w-full mb-3"
           initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.06 }}
         >
+          {/* Free plan: no domain saved yet */}
+          {!isPaidPlan && !profile?.website_url && (
+            <div className="mb-3 px-4 py-3 rounded-xl flex items-center gap-2 text-sm"
+              style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.25)', color: '#D97706' }}
+            >
+              <Globe size={14} strokeWidth={2} className="flex-shrink-0" />
+              Pulsuz planda yalnız 1 domen istifadə edə bilərsiniz.{' '}
+              <a href="/settings" className="font-bold underline underline-offset-2">Parametrlərdə domeninizi əlavə edin.</a>
+            </div>
+          )}
+
+          {/* Locked domain badge for free users */}
+          {domainLocked && (
+            <div className="mb-2 flex items-center gap-2 px-1">
+              <Globe size={13} strokeWidth={2} style={{ color: '#9B9EBB' }} />
+              <span className="text-xs text-text-muted">Pulsuz plan — 1 domen:</span>
+              <span className="text-xs font-bold" style={{ color: '#7B6EF6' }}>{profile?.website_url}</span>
+              <a href="/settings/billing" className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-lg"
+                style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>
+                Pro → çox domen
+              </a>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <input
               type="url"
               value={url}
-              onChange={e => { setUrl(e.target.value); setError('') }}
+              onChange={e => { if (!domainLocked) { setUrl(e.target.value); setError('') } }}
               onKeyDown={e => e.key === 'Enter' && handleCrawl()}
               placeholder="example.az"
-              autoFocus
+              autoFocus={!domainLocked}
+              readOnly={domainLocked}
               className="w-full rounded-2xl px-5 py-4 text-base text-text-primary outline-none transition-all"
-              style={{ ...inputStyle, fontSize: '1rem' }}
-              onFocus={e => { e.target.style.borderColor = '#7B6EF6'; e.target.style.boxShadow = '0 0 0 3px rgba(123,110,246,0.1)' }}
+              style={{ ...inputStyle, fontSize: '1rem', cursor: domainLocked ? 'default' : 'text', opacity: domainLocked ? 0.75 : 1 }}
+              onFocus={e => { if (!domainLocked) { e.target.style.borderColor = '#7B6EF6'; e.target.style.boxShadow = '0 0 0 3px rgba(123,110,246,0.1)' } }}
               onBlur={e => { e.target.style.borderColor = 'rgba(123,110,246,0.18)'; e.target.style.boxShadow = '0 1px 3px rgba(13,13,26,0.04)' }}
             />
             <button

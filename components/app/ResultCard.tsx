@@ -126,7 +126,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
 
   const TABS: { id: ResultTab; label: string }[] = [
     { id: 'az', label: 'Azərbaycanca' },
-    { id: 'ru', label: 'Rusca' },
+    ...(isPro ? [{ id: 'ru' as ResultTab, label: 'Rusca' }] : []),
     { id: 'schema', label: 'Schema' },
     { id: 'tips', label: 'Tövsiyələr' },
     ...(hasContent ? [{ id: 'content' as ResultTab, label: '# Kontent' }] : []),
@@ -345,6 +345,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                   </div>
                 </div>
 
+                {isPro && (
                 <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
                   <h3 className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: '#9B9EBB' }}>Açar sözlər (RU)</h3>
                   <div className="flex flex-wrap gap-2">
@@ -355,10 +356,25 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                     ))}
                   </div>
                 </div>
+                )}
 
                 <div className="rounded-xl border p-5" style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '0 1px 4px rgba(13,13,26,0.04)' }}>
-                  <h3 className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: '#9B9EBB' }}>Rəqiblər</h3>
-                  {seo.competitors && seo.competitors.length > 0 ? (
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Rəqiblər</h3>
+                    {!isPro && (
+                      <span className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>
+                        🔒 Pro
+                      </span>
+                    )}
+                  </div>
+                  {!isPro ? (
+                    <Link href="/settings/billing" className="flex flex-col items-center justify-center gap-2 py-6 rounded-xl text-center transition-all hover:opacity-90"
+                      style={{ background: 'rgba(123,110,246,0.04)', border: '1.5px dashed rgba(123,110,246,0.2)' }}>
+                      <span style={{ fontSize: 28 }}>🔒</span>
+                      <span className="text-sm font-semibold" style={{ color: '#7B6EF6' }}>Rəqib analizi — Pro xüsusiyyəti</span>
+                      <span className="text-xs" style={{ color: '#9B9EBB' }}>Pro planına keçin və rəqiblərinizi analiz edin</span>
+                    </Link>
+                  ) : seo.competitors && seo.competitors.length > 0 ? (
                     <div className="space-y-3">
                       {seo.competitors.map((c, i) => (
                         <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'rgba(123,110,246,0.04)', border: '1px solid rgba(123,110,246,0.1)' }}>
@@ -403,7 +419,7 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
                       ))}
                     </ol>
                   )}
-                  {seo.competitor_tips && seo.competitor_tips.length > 0 && seo.competitors && seo.competitors.length > 0 && (
+                  {isPro && seo.competitor_tips && seo.competitor_tips.length > 0 && seo.competitors && seo.competitors.length > 0 && (
                     <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: 'rgba(123,110,246,0.08)' }}>
                       <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#9B9EBB' }}>Rəqibləri üstələmək üçün</p>
                       {seo.competitor_tips.map((tip, i) => (
