@@ -51,7 +51,7 @@ export default function LaunchBanner() {
 
   return (
     <div
-      className="sticky z-40 flex items-center justify-center gap-3 sm:gap-5 px-10 py-0"
+      className="sticky z-40 flex items-center justify-center gap-2 sm:gap-4 px-8 sm:px-10 py-0 overflow-hidden"
       style={{
         top: 64,
         minHeight: 46,
@@ -61,9 +61,8 @@ export default function LaunchBanner() {
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}
     >
-      {/* Fire badge */}
-      <div style={{
-        display: 'flex',
+      {/* Fire badge — hidden on small screens */}
+      <div className="hidden sm:flex" style={{
         alignItems: 'center',
         gap: 5,
         background: 'rgba(255,255,255,0.1)',
@@ -85,43 +84,41 @@ export default function LaunchBanner() {
 
       {/* Main message */}
       <span style={{
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         color: 'rgba(255,255,255,0.95)',
         whiteSpace: 'nowrap',
         letterSpacing: '0.01em',
+        flexShrink: 1,
+        minWidth: 0,
       }}>
-        Bütün planlarda{' '}
-        <span style={{
-          color: '#FCD34D',
-          fontWeight: 800,
-          fontSize: 14,
-        }}>50% endirim</span>
-        {' '}— teklif bitir:
+        <span className="hidden sm:inline">Bütün planlarda </span>
+        <span style={{ color: '#FCD34D', fontWeight: 800, fontSize: 13 }}>50% endirim</span>
+        <span className="hidden sm:inline"> — teklif bitir:</span>
       </span>
 
-      {/* Countdown */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+      {/* Countdown — hide days on mobile */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
         {vals.map((val, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <div key={i} className={i === 0 ? 'hidden sm:flex' : 'flex'} style={{ alignItems: 'center', gap: 3 }}>
             {i > 0 && (
               <span style={{
                 color: 'rgba(255,255,255,0.35)',
                 fontWeight: 800,
-                fontSize: 15,
+                fontSize: 14,
                 lineHeight: 1,
               }}>:</span>
             )}
             <div style={{
               fontFamily: 'monospace',
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: 800,
               color: '#ffffff',
               background: 'rgba(0,0,0,0.3)',
               border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 7,
-              padding: '3px 8px',
-              minWidth: 36,
+              borderRadius: 6,
+              padding: '2px 6px',
+              minWidth: 30,
               textAlign: 'center',
               letterSpacing: '0.04em',
               lineHeight: 1.4,
@@ -139,12 +136,12 @@ export default function LaunchBanner() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 5,
+          gap: 4,
           background: '#FCD34D',
           color: '#1a0f6e',
           fontWeight: 800,
-          fontSize: 12,
-          padding: '5px 14px',
+          fontSize: 11,
+          padding: '4px 12px',
           borderRadius: 20,
           whiteSpace: 'nowrap',
           letterSpacing: '0.02em',
@@ -163,16 +160,16 @@ export default function LaunchBanner() {
         }}
       >
         İndi Al
-        <ArrowRight size={12} strokeWidth={3} />
+        <ArrowRight size={11} strokeWidth={3} />
       </Link>
 
       {/* Dismiss */}
       <button
         onClick={dismiss}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-white/15"
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-white/15"
         aria-label="Bağla"
       >
-        <X size={12} style={{ color: 'rgba(255,255,255,0.4)' }} />
+        <X size={11} style={{ color: 'rgba(255,255,255,0.4)' }} />
       </button>
 
       <style>{`

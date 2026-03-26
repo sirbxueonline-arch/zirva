@@ -23,7 +23,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-bg text-text-primary font-body antialiased">
+      <body className="bg-bg text-text-primary font-body antialiased overflow-x-hidden">
         <LaunchBanner />
         {children}
       </body>
