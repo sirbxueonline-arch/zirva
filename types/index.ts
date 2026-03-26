@@ -57,6 +57,7 @@ export interface Profile {
   email:                 string
   full_name:             string | null
   avatar_url:            string | null
+  website_url:           string | null
   plan:                  'free' | 'pro' | 'agency'
   generations_used:      number
   generations_limit:     number
