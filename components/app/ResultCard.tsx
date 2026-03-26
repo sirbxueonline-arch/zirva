@@ -78,12 +78,45 @@ function TagCard({ label, value, charMin, charMax, mono }: { label: string; valu
 
 type Platform = 'html' | 'wordpress' | 'webflow' | 'shopify' | 'wix'
 
-const PLATFORMS: { id: Platform; label: string; logo: string }[] = [
-  { id: 'html',      label: 'HTML',      logo: '🌐' },
-  { id: 'wordpress', label: 'WordPress', logo: '🔷' },
-  { id: 'webflow',   label: 'Webflow',   logo: '🔵' },
-  { id: 'shopify',   label: 'Shopify',   logo: '🟢' },
-  { id: 'wix',       label: 'Wix',       logo: '⬛' },
+function PlatformIcon({ id, active }: { id: Platform; active: boolean }) {
+  const col = active ? '#FFFFFF' : undefined
+  if (id === 'html') return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M4 3l1.5 17L12 22l6.5-2L20 3H4z" stroke={col ?? '#E44D26'} strokeWidth="1.8" strokeLinejoin="round"/>
+      <path d="M16 8H8l.5 4.5H15.5l-.5 5-3 1-3-1-.2-2.5" stroke={col ?? '#E44D26'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+  if (id === 'wordpress') return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={col ?? '#21759B'}>
+      <circle cx="12" cy="12" r="10" fill="none" stroke={col ?? '#21759B'} strokeWidth="1.8"/>
+      <path d="M3 12c0 4.1 2.4 7.7 5.9 9.4L3.7 8.2C3.2 9.4 3 10.7 3 12zm15.1-1c0-1.3-.5-2.2-.9-2.9-.6-.9-1.1-1.7-1.1-2.6 0-1 .8-2 1.9-2h.1a9 9 0 0 0-13.6 1.2h.7c1.2 0 3-.1 3-.1.6 0 .7.8.1.9 0 0-.6.1-1.3.1L9.7 17l2.5-7.5-1.8-4.9c.6 0 1.2-.1 1.2-.1.6 0 .7.8.1.9 0 0-.6.1-1.2.1l3.6 10.7 1-3.3c.4-1.4.7-2.4.7-3.9z" fill={col ?? '#21759B'}/>
+      <path d="M12.2 13l-3 8.7c.9.3 1.8.4 2.8.4 1.2 0 2.3-.2 3.3-.6l-.1-.1-3-8.4zm7.6-5a8.9 8.9 0 0 1-6.7 13.6L17.4 9c.2-.6.5-1.5.5-2.5 0-.2 0-.4-.1-.5z" fill={col ?? '#21759B'}/>
+    </svg>
+  )
+  if (id === 'webflow') return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={col ?? '#146EF5'}>
+      <path d="M17.8 7s-2.2 6.7-2.5 7.7c-.1-.9-.8-7.7-.8-7.7H11l-2.3 7.7C8.5 13.7 6.2 7 6.2 7H3l4.2 10h3.3l2.2-7.1L15 17h3.3L21.5 7h-3.7z"/>
+    </svg>
+  )
+  if (id === 'shopify') return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={col ?? '#96BF48'}>
+      <path d="M15.3 3.1c0 0-.3 0-.7.1-.1-.3-.3-.7-.5-1-.6-.9-1.4-1.4-2.4-1.4-.1 0-.2 0-.3 0-.1-.1-.2-.2-.3-.3-.4-.4-.9-.6-1.5-.6-1.1 0-2.3.8-3.2 2.2-.6 1-1.1 2.2-1.2 3.2l-2.2.7C2.3 6.3 2.3 6.4 2.2 7l-1.4 13.5 11.2 2.1L18 21V5.2c-.2 0-2.4-.2-2.7-2.1zm-4.6-1.6c.6 0 1 .2 1.3.6-.5.1-1.1.3-1.6.5-.2-.8-.5-1.1-.8-1.3.4.1.7.1 1.1.2zm-1.5.5c.1 0 .2 0 .3-.1.4.2.7.7.9 1.4-.7.2-1.3.4-2 .6.2-1.3.8-1.9.8-1.9zm-.4 1.6c-.7.2-1.5.5-2.2.7.2-1 .5-1.9 1-2.6.3.6.8 1.3 1.2 1.9zm1.5-1.4c.5-.2 1-.3 1.5-.5 0 .1 0 .1 0 .2 0 .5-.1 1.2-.4 2-.6.2-1.3.4-1.9.6.2-.7.5-1.5.8-2.3zm1.7 2.4c-.1.5-.3 1-.5 1.6-.6.2-1.3.4-2 .6-.2-.5-.4-1-.5-1.5.8-.2 1.6-.5 2.4-.7.2 0 .4-.1.6 0zm-3.5 2.4c-.6.2-1.2.4-1.8.6.1-.7.4-1.4.6-2 .5-.2 1.1-.4 1.6-.5.2.5.4 1 .5 1.5l-.9.4zm.4.1c.5-.2 1-.4 1.5-.5.2.5.5 1 .7 1.6-.7.2-1.4.4-2.1.6 0-.5-.1-1.1-.1-1.7zm2.7-.9c.6-.2 1.3-.4 1.9-.5-.1.6-.3 1.2-.5 1.8-.6.2-1.2.4-1.9.6-.2-.6-.5-1.2-.8-1.8.4-.1.9-.1 1.3-.1zm.1 2.7c.6-.2 1.2-.4 1.8-.6-.2.7-.4 1.4-.7 2.1-.6.2-1.2.4-1.8.5-.1-.7-.2-1.3-.4-2 .4 0 .7.1 1.1 0zm-3.7 2.7c-.1-.6-.2-1.2-.3-1.8.6-.2 1.2-.3 1.8-.5.2.7.3 1.4.4 2.1-.7.1-1.3.2-1.9.2zm3.5 2.3c-.6.1-1.2.2-1.8.2-.1-.7-.2-1.4-.3-2.1.6-.1 1.2-.2 1.9-.3.1.7.1 1.4.2 2.2z"/>
+    </svg>
+  )
+  // Wix
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={col ?? '#FAAD4D'}>
+      <path d="M9.5 7.5L7 16.5l-2.5-9H2l3.5 9h3L11 8.5 13.5 16.5h3L20 7.5h-2.5l-2.5 9-2.5-9H9.5z"/>
+    </svg>
+  )
+}
+
+const PLATFORMS: { id: Platform; label: string }[] = [
+  { id: 'html',      label: 'HTML'      },
+  { id: 'wordpress', label: 'WordPress' },
+  { id: 'webflow',   label: 'Webflow'   },
+  { id: 'shopify',   label: 'Shopify'   },
+  { id: 'wix',       label: 'Wix'       },
 ]
 
 function InstallTab({ seo, isPro, addToast }: { seo: SEOPackage; isPro: boolean; addToast: (msg: string, type?: 'success'|'error'|'info') => void }) {
@@ -174,7 +207,8 @@ ${JSON.stringify(seo.schema_markup, null, 2)}
               border: `1px solid ${platform === p.id ? '#7B6EF6' : 'rgba(123,110,246,0.15)'}`,
             }}
           >
-            <span>{p.logo}</span> {p.label}
+            <PlatformIcon id={p.id} active={platform === p.id} />
+            {p.label}
           </button>
         ))}
       </div>
