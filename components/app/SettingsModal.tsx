@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ToastContainer } from '@/components/shared/Toast'
-import type { Profile } from '@/types'
-import { PLAN_NAMES, PLAN_PRICES } from '@/types'
+import type { Profile, BillingPeriod } from '@/types'
+import { PLAN_NAMES, PLAN_PRICES, PLAN_PERIOD_PRICES } from '@/types'
 import {
   LayoutGrid, Plug, CreditCard, User,
   Globe, CheckCircle2, Plus, AlertTriangle,
@@ -71,6 +71,7 @@ export default function SettingsModal({ open, onClose }: Props) {
   const [websiteUrl, setWebsiteUrl] = useState('')
   const [saving, setSaving]         = useState(false)
   const [upgrading, setUpgrading]   = useState(false)
+  const [period, setPeriod]         = useState<BillingPeriod>('monthly')
   const [toasts, setToasts]         = useState<ToastItem[]>([])
   const [wpConnection,      setWpConnection]      = useState<Connection | null>(null)
   const [wpModalOpen,       setWpModalOpen]       = useState(false)
@@ -128,7 +129,7 @@ export default function SettingsModal({ open, onClose }: Props) {
   async function handleUpgrade(plan: 'pro' | 'agency') {
     setUpgrading(true)
     try {
-      const res = await fetch('/api/dodo/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan }) })
+      const res = await fetch('/api/dodo/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plan, period }) })
       const { url, error } = await res.json()
       if (error) { addToast(error, 'error'); return }
       if (url) window.location.href = url
@@ -506,8 +507,36 @@ export default function SettingsModal({ open, onClose }: Props) {
                       </div>
                       {plan === 'free' && (
                         <>
-                          <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#C0C3D8' }}>Planı Yüksəlt</p>
+                          {/* Period toggle */}
+                          <div className="flex items-center justify-between mb-4">
+                            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#C0C3D8' }}>Planı Yüksəlt</p>
+                            <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.12)' }}>
+                              {([
+                                { id: 'monthly'   as BillingPeriod, label: 'Aylıq' },
+                                { id: 'quarterly' as BillingPeriod, label: 'Rüblük', pct: 15 },
+                                { id: 'yearly'    as BillingPeriod, label: 'İllik',  pct: 25 },
+                              ]).map(p => (
+                                <button key={p.id} onClick={() => setPeriod(p.id)}
+                                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                                  style={{
+                                    background: period === p.id ? '#FFFFFF' : 'transparent',
+                                    color: period === p.id ? '#7B6EF6' : '#9B9EBB',
+                                    boxShadow: period === p.id ? '0 1px 4px rgba(13,13,26,0.08)' : 'none',
+                                  }}
+                                >
+                                  {p.label}
+                                  {'pct' in p && (
+                                    <span className="text-[9px] font-bold px-1 py-0.5 rounded-full leading-none" style={{ background: '#00C9A7', color: '#fff' }}>
+                                      -{p.pct}%
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
                           <div className="grid grid-cols-2 gap-4">
+                            {/* Pro */}
                             <div className="rounded-2xl overflow-hidden relative"
                               style={{ background: 'linear-gradient(160deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 32px rgba(123,110,246,0.25)' }}
                             >
@@ -518,8 +547,11 @@ export default function SettingsModal({ open, onClose }: Props) {
                               </div>
                               <div className="p-5 flex flex-col h-full">
                                 <div className="font-display font-bold text-lg text-white mb-0.5">{PLAN_NAMES.pro}</div>
-                                <div className="text-white text-2xl font-bold">{PLAN_PRICES.pro}</div>
-                                <p className="text-white/60 text-xs mb-4">aylıq ödəniş</p>
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-white text-2xl font-bold">{PLAN_PERIOD_PRICES.pro[period].perMonth} AZN</span>
+                                  <span className="text-white/60 text-xs">/ay</span>
+                                </div>
+                                <p className="text-white/60 text-xs mb-4">{PLAN_PERIOD_PRICES.pro[period].label}</p>
                                 <ul className="space-y-1.5 flex-1">
                                   {PLAN_FEATURES.pro.map(f => (
                                     <li key={f.text} className="flex items-center gap-2 text-xs text-white/90">
@@ -535,10 +567,15 @@ export default function SettingsModal({ open, onClose }: Props) {
                                 </button>
                               </div>
                             </div>
+
+                            {/* Agency */}
                             <div className="rounded-2xl p-5 flex flex-col" style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.25)' }}>
                               <div className="font-display font-bold text-lg mb-0.5" style={{ color: '#00C9A7' }}>{PLAN_NAMES.agency}</div>
-                              <div className="text-text-primary text-2xl font-bold">{PLAN_PRICES.agency}</div>
-                              <p className="text-text-muted text-xs mb-4">aylıq ödəniş</p>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-text-primary text-2xl font-bold">{PLAN_PERIOD_PRICES.agency[period].perMonth} AZN</span>
+                                <span className="text-text-muted text-xs">/ay</span>
+                              </div>
+                              <p className="text-text-muted text-xs mb-4">{PLAN_PERIOD_PRICES.agency[period].label}</p>
                               <ul className="space-y-1.5 flex-1">
                                 {PLAN_FEATURES.agency.map(f => (
                                   <li key={f.text} className="flex items-center gap-2 text-xs text-text-secondary">
