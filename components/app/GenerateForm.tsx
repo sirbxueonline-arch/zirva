@@ -4,88 +4,79 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import UpgradeModal from './UpgradeModal'
-import type { Profile } from '@/types'
-import { Globe, AlertTriangle, Check, ArrowRight } from 'lucide-react'
+import BrandModal from './BrandModal'
+import type { Profile, Brand } from '@/types'
+import { Globe, AlertTriangle, Check, ArrowRight, ChevronDown, Plus } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 28 }
 const LOADING_MESSAGES = ['Sayt analiz edilir...', 'SEO teqləri yaradılır...', 'Açar sözlər seçilir...', 'Tamamlanır...']
 
-interface GenerateFormProps {
-  profile: Profile | null
-}
-
-export default function GenerateForm({ profile }: GenerateFormProps) {
+export default function GenerateForm({ profile }: { profile: Profile | null }) {
   const router = useRouter()
 
-  const [loading, setLoading] = useState(false)
-  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0)
-  const [error, setError] = useState('')
-  const [showUpgrade, setShowUpgrade] = useState(false)
-  const [url, setUrl] = useState(profile?.website_url ?? '')
-  const [crawlResult, setCrawlResult] = useState<{ title: string; meta_description: string | null; headings: string[] } | null>(null)
-  const [crawling, setCrawling] = useState(false)
+  const [loading,        setLoading]        = useState(false)
+  const [loadingMsgIdx,  setLoadingMsgIdx]  = useState(0)
+  const [error,          setError]          = useState('')
+  const [showUpgrade,    setShowUpgrade]    = useState(false)
+  const [brands,         setBrands]         = useState<Brand[]>([])
+  const [selectedBrand,  setSelectedBrand]  = useState<Brand | null>(null)
+  const [dropOpen,       setDropOpen]       = useState(false)
+  const [url,            setUrl]            = useState('')
+  const [crawlResult,    setCrawlResult]    = useState<{ title: string; meta_description: string | null; headings: string[] } | null>(null)
+  const [crawling,       setCrawling]       = useState(false)
+  const [brandModalOpen, setBrandModalOpen] = useState(false)
 
-  const isPaidPlan = profile?.plan === 'pro' || profile?.plan === 'agency'
-  const domainLocked = !isPaidPlan && !!profile?.website_url
+  useEffect(() => {
+    fetch('/api/brands').then(r => r.ok ? r.json() : null).then(d => {
+      if (!d?.brands) return
+      setBrands(d.brands)
+      if (d.brands.length > 0) {
+        setSelectedBrand(d.brands[0])
+        setUrl(d.brands[0].website_url ?? '')
+      }
+    })
+  }, [])
 
   useEffect(() => {
     if (!loading) return
-    const interval = setInterval(() => setLoadingMsgIdx(i => (i + 1) % LOADING_MESSAGES.length), 1500)
-    return () => clearInterval(interval)
+    const iv = setInterval(() => setLoadingMsgIdx(i => (i + 1) % LOADING_MESSAGES.length), 1500)
+    return () => clearInterval(iv)
   }, [loading])
 
-  function normalizeUrl(raw: string): string {
-    const trimmed = raw.trim()
-    if (!trimmed) return trimmed
-    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  function normalizeUrl(raw: string) {
+    const t = raw.trim()
+    return /^https?:\/\//i.test(t) ? t : `https://${t}`
+  }
+
+  function selectBrand(b: Brand) {
+    setSelectedBrand(b); setDropOpen(false)
+    setUrl(b.website_url ?? ''); setCrawlResult(null); setError('')
   }
 
   async function handleCrawl() {
     if (!url) return
-    setCrawling(true)
-    setCrawlResult(null)
-    setError('')
+    setCrawling(true); setCrawlResult(null); setError('')
     const normalized = normalizeUrl(url)
     if (normalized !== url) setUrl(normalized)
     try {
-      const res = await fetch('/api/crawl', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: normalized }),
-      })
+      const res = await fetch('/api/crawl', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: normalized }) })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setCrawlResult(data)
-    } catch {
-      setError('Sayt əldə edilə bilmədi. URL-i yoxlayın.')
-    } finally {
-      setCrawling(false)
-    }
+    } catch { setError('Sayt əldə edilə bilmədi. URL-i yoxlayın.') }
+    finally { setCrawling(false) }
   }
 
   async function handleGenerate() {
-    if (profile && profile.generations_used >= profile.generations_limit) {
-      setShowUpgrade(true)
-      return
-    }
     if (!url) { setError('URL daxil edin'); return }
-
-    setLoading(true)
-    setLoadingMsgIdx(0)
-    setError('')
-
+    if (profile && profile.generations_used >= profile.generations_limit) { setShowUpgrade(true); return }
+    setLoading(true); setLoadingMsgIdx(0); setError('')
     const normalizedUrl = normalizeUrl(url)
     if (normalizedUrl !== url) setUrl(normalizedUrl)
-
     try {
       const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          flow_type: 'url',
-          url: normalizedUrl,
-          ...(crawlResult || {}),
-        }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flow_type: 'url', url: normalizedUrl, ...(crawlResult || {}), brand_id: selectedBrand?.id }),
       })
       const data = await res.json()
       if (res.status === 403) { setShowUpgrade(true); setLoading(false); return }
@@ -97,20 +88,13 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
     }
   }
 
-  const inputStyle = {
-    background: '#FFFFFF',
-    border: '1px solid rgba(123,110,246,0.18)',
-    boxShadow: '0 1px 3px rgba(13,13,26,0.04)',
-  }
-
-  const used = profile?.generations_used ?? 0
-  const limit = profile?.generations_limit ?? 5
-  const pct = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0
-  const usageColor = pct >= 90 ? '#F25C54' : pct >= 70 ? '#F5A623' : '#7B6EF6'
+  const inputStyle = { background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.18)', boxShadow: '0 1px 3px rgba(13,13,26,0.04)' }
 
   return (
     <>
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
+      <BrandModal open={brandModalOpen} onClose={() => setBrandModalOpen(false)} initial={null}
+        onSaved={b => { setBrands(prev => [b, ...prev]); selectBrand(b) }} />
 
       {/* Loading overlay */}
       <AnimatePresence>
@@ -148,66 +132,95 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
             <Globe size={28} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
           </div>
           <h1 className="font-display font-bold text-4xl text-text-primary mb-2">SEO Paketi</h1>
-          <p className="text-text-muted text-base">Saytınızı analiz edib Google.az üçün<br/>optimallaşdırılmış teqlər yaradırıq</p>
-          {profile && (
-            <div className="mt-5 w-48 mx-auto">
-              <div className="flex justify-between text-xs text-text-muted mb-1.5">
-                <span>Bu ay</span>
-                <span style={{ color: usageColor }}>{used} / {limit === 999999 ? '∞' : limit}</span>
-              </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(123,110,246,0.1)' }}>
-                <motion.div className="h-full rounded-full" style={{ background: usageColor }}
-                  initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
-              </div>
-            </div>
+          <p className="text-text-muted text-base">Brendinizi seçin, URL-i analiz edib<br/>Google üçün optimallaşdırılmış teqlər yaradırıq</p>
+        </motion.div>
+
+        {/* Brand picker */}
+        <motion.div className="w-full mb-5 relative" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.04 }}>
+          <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Brend</label>
+
+          {brands.length === 0 ? (
+            <button onClick={() => setBrandModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold border-2 border-dashed transition-all hover:border-primary hover:text-primary"
+              style={{ borderColor: 'rgba(123,110,246,0.25)', color: '#9B9EBB' }}
+            >
+              <Plus size={16} strokeWidth={2.5} /> İlk brendi yarat
+            </button>
+          ) : (
+            <>
+              <button onClick={() => setDropOpen(v => !v)}
+                className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-medium text-left transition-all"
+                style={{ ...inputStyle, border: dropOpen ? '1px solid #7B6EF6' : '1px solid rgba(123,110,246,0.18)' }}
+              >
+                {selectedBrand ? (
+                  <>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                      style={{ background: `hsl(${(selectedBrand.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
+                      {selectedBrand.name[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-text-primary truncate">{selectedBrand.name}</div>
+                      {selectedBrand.website_url && <div className="text-xs text-text-muted truncate">{selectedBrand.website_url.replace(/^https?:\/\//, '')}</div>}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-text-muted flex-1">Brend seçin...</span>
+                )}
+                <ChevronDown size={16} strokeWidth={2} style={{ color: '#9B9EBB', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0 }} />
+              </button>
+
+              <AnimatePresence>
+                {dropOpen && (
+                  <motion.div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border overflow-hidden z-20"
+                    style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.15)', boxShadow: '0 8px 32px rgba(13,13,26,0.12)' }}
+                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                  >
+                    {brands.map(b => (
+                      <button key={b.id} onClick={() => selectBrand(b)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-all hover:bg-gray-50"
+                        style={{ borderBottom: '1px solid rgba(123,110,246,0.06)' }}
+                      >
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                          style={{ background: `hsl(${(b.name.charCodeAt(0) * 37) % 360}, 60%, 60%)` }}>
+                          {b.name[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-text-primary truncate">{b.name}</div>
+                          {b.website_url && <div className="text-xs text-text-muted truncate">{b.website_url.replace(/^https?:\/\//, '')}</div>}
+                        </div>
+                        {selectedBrand?.id === b.id && <Check size={14} strokeWidth={2.5} style={{ color: '#7B6EF6', flexShrink: 0 }} />}
+                      </button>
+                    ))}
+                    <button onClick={() => { setDropOpen(false); setBrandModalOpen(true) }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all hover:bg-gray-50"
+                      style={{ color: '#7B6EF6' }}
+                    >
+                      <div className="w-8 h-8 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0" style={{ borderColor: '#7B6EF6' }}>
+                        <Plus size={14} strokeWidth={2.5} />
+                      </div>
+                      Yeni brend əlavə et
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
           )}
         </motion.div>
 
         {/* URL input */}
-        <motion.div className="w-full mb-3"
-          initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.06 }}
-        >
-          {/* Free plan: no domain saved yet */}
-          {!isPaidPlan && !profile?.website_url && (
-            <div className="mb-3 px-4 py-3 rounded-xl flex items-center gap-2 text-sm"
-              style={{ background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.25)', color: '#D97706' }}
-            >
-              <Globe size={14} strokeWidth={2} className="flex-shrink-0" />
-              Pulsuz planda yalnız 1 domen istifadə edə bilərsiniz.{' '}
-              <a href="/settings" className="font-bold underline underline-offset-2">Parametrlərdə domeninizi əlavə edin.</a>
-            </div>
-          )}
-
-          {/* Locked domain badge for free users */}
-          {domainLocked && (
-            <div className="mb-2 flex items-center gap-2 px-1">
-              <Globe size={13} strokeWidth={2} style={{ color: '#9B9EBB' }} />
-              <span className="text-xs text-text-muted">Pulsuz plan — 1 domen:</span>
-              <span className="text-xs font-bold" style={{ color: '#7B6EF6' }}>{profile?.website_url}</span>
-              <a href="/settings/billing" className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-lg"
-                style={{ background: 'rgba(123,110,246,0.1)', color: '#7B6EF6' }}>
-                Pro → çox domen
-              </a>
-            </div>
-          )}
-
+        <motion.div className="w-full mb-3" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.07 }}>
+          <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Sayt URL-i</label>
           <div className="flex gap-2">
-            <input
-              type="url"
-              value={url}
-              onChange={e => { if (!domainLocked) { setUrl(e.target.value); setError('') } }}
+            <input type="url" value={url} onChange={e => { setUrl(e.target.value); setError('') }}
               onKeyDown={e => e.key === 'Enter' && handleCrawl()}
-              placeholder="example.az"
-              autoFocus={!domainLocked}
-              readOnly={domainLocked}
+              placeholder="example.az" autoFocus
               className="w-full rounded-2xl px-5 py-4 text-base text-text-primary outline-none transition-all"
-              style={{ ...inputStyle, fontSize: '1rem', cursor: domainLocked ? 'default' : 'text', opacity: domainLocked ? 0.75 : 1 }}
-              onFocus={e => { if (!domainLocked) { e.target.style.borderColor = '#7B6EF6'; e.target.style.boxShadow = '0 0 0 3px rgba(123,110,246,0.1)' } }}
-              onBlur={e => { e.target.style.borderColor = 'rgba(123,110,246,0.18)'; e.target.style.boxShadow = '0 1px 3px rgba(13,13,26,0.04)' }}
+              style={{ ...inputStyle, fontSize: '1rem' }}
+              onFocus={e => { e.target.style.borderColor = '#7B6EF6'; e.target.style.boxShadow = '0 0 0 3px rgba(123,110,246,0.1)' }}
+              onBlur={e  => { e.target.style.borderColor = 'rgba(123,110,246,0.18)'; e.target.style.boxShadow = '0 1px 3px rgba(13,13,26,0.04)' }}
             />
-            <button
-              onClick={handleCrawl}
-              disabled={crawling || !url.trim()}
+            <button onClick={handleCrawl} disabled={crawling || !url.trim()}
               className="flex-shrink-0 px-5 py-4 rounded-2xl text-sm font-semibold text-white transition-all disabled:opacity-50"
               style={{ background: crawling ? '#9B9EBB' : '#7B6EF6', minWidth: '100px' }}
             >
@@ -244,8 +257,7 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
         </AnimatePresence>
 
         {/* Submit */}
-        <motion.button
-          onClick={handleGenerate} disabled={loading || !url.trim()}
+        <motion.button onClick={handleGenerate} disabled={loading || !url.trim()}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all disabled:opacity-60"
           style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.25)' }}
           initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.12 }}
@@ -254,7 +266,6 @@ export default function GenerateForm({ profile }: GenerateFormProps) {
         >
           <span className="flex items-center justify-center gap-2">SEO Paketi Yarat <ArrowRight size={16} strokeWidth={2.5} /></span>
         </motion.button>
-
       </div>
     </>
   )

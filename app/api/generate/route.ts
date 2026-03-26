@@ -63,6 +63,7 @@ export async function POST(req: Request) {
           plan: 'free',
           generations_used: 0,
           generations_limit: 5,
+          brands_limit: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })

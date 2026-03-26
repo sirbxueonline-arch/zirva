@@ -36,7 +36,7 @@ const PLANS: Plan[] = [
       yearly:    { display: '0',     billing: 'AZN / ay' },
     },
     features: [
-      { text: '1 domen',                         included: true  },
+      { text: '1 brend',                            included: true  },
       { text: 'Ayda 5 SEO paketi',                included: true  },
       { text: 'URL axışı',                       included: true  },
       { text: 'Azərbaycan dili teqləri',                 included: true  },
@@ -56,7 +56,7 @@ const PLANS: Plan[] = [
       yearly:    { display: '27.99',                  badge: 'Save 30%', billing: 'AZN / ay, illik ödənilir' },
     },
     features: [
-      { text: '3 domen',                         included: true },
+      { text: '10 brend',                          included: true },
       { text: 'Ayda 50 SEO paketi',         included: true },
       { text: 'Bütün axışlar',                   included: true },
       { text: 'AZ + RU + EN teqləri',            included: true },
@@ -77,7 +77,7 @@ const PLANS: Plan[] = [
       yearly:    { display: '104.99',                  badge: 'Save 30%', billing: 'AZN / ay, illik ödənilir' },
     },
     features: [
-      { text: '10 domen',                        included: true },
+      { text: '20 brend',                          included: true },
       { text: 'Limitsiz SEO paketi',       included: true },
       { text: 'Pro-nun hər şeyi',                included: true },
       { text: 'Çoxlu sayt idarəetməsi',          included: true },

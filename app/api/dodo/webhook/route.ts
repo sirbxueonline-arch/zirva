@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { dodo, PLAN_PRODUCT_IDS, PLAN_LIMITS } from '@/lib/dodo'
+import { BRAND_LIMITS } from '@/types'
 
 // Service-role client bypasses RLS for billing updates
 function createServiceClient() {
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
           .update({
             plan,
             generations_limit:    PLAN_LIMITS[plan],
+            brands_limit:         BRAND_LIMITS[plan],
             dodo_customer_id:     data.customer_id     as string,
             dodo_subscription_id: data.subscription_id as string,
             subscription_status:  'active',
@@ -105,6 +107,7 @@ export async function POST(req: Request) {
           .update({
             plan:                 'free',
             generations_limit:    PLAN_LIMITS.free,
+            brands_limit:         BRAND_LIMITS.free,
             dodo_subscription_id: null,
             subscription_status:  'cancelled',
             current_period_end:   null,

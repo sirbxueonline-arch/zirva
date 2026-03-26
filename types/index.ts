@@ -61,12 +61,28 @@ export interface Profile {
   plan:                  'free' | 'pro' | 'agency'
   generations_used:      number
   generations_limit:     number
+  brands_limit:          number
   dodo_customer_id:      string | null
   dodo_subscription_id:  string | null
   subscription_status:   string | null
   current_period_end:    string | null
   created_at:            string
   updated_at:            string
+}
+
+export interface Brand {
+  id:            string
+  user_id:       string
+  name:          string
+  website_url:   string | null
+  instagram_url: string | null
+  tiktok_url:    string | null
+  facebook_url:  string | null
+  category:      string | null
+  city:          string | null
+  description:   string | null
+  created_at:    string
+  updated_at:    string
 }
 
 export interface SMOPackage {
@@ -83,6 +99,7 @@ export interface SMOPackage {
   post_specific_captions?:  PostCaption[]
 }
 
-export const PLAN_LIMITS = { free: 5, pro: 50, agency: 300 } as const
+export const PLAN_LIMITS        = { free: 5,  pro: 50, agency: 300 } as const
+export const BRAND_LIMITS       = { free: 1,  pro: 10, agency: 20  } as const
 export const PLAN_PRICES = { free: '0 AZN', pro: '39.99 AZN/ay', agency: '149.99 AZN/ay' } as const
 export const PLAN_NAMES  = { free: 'Pulsuz', pro: 'Pro', agency: 'Agency' } as const
