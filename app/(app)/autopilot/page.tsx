@@ -102,9 +102,12 @@ function AutopilotPageInner() {
     if (gsc === 'connected') {
       showToast('Google Search Console uğurla qoşuldu!', 'success')
       router.replace('/autopilot')
+    } else if (gsc === 'no-url') {
+      showToast('Əvvəlcə saytınızın URL-ini daxil edin və saxlayın.', 'error')
+      router.replace('/autopilot')
     } else if (gsc === 'error') {
       const msg = searchParams.get('msg')
-      showToast(`GSC xəta: ${msg ? decodeURIComponent(msg) : 'bilinməyən səbəb'}`, 'error')
+      showToast(msg ? decodeURIComponent(msg) : 'Google Search Console qoşularkən xəta baş verdi.', 'error')
       router.replace('/autopilot')
     }
   }, [searchParams, router])
@@ -442,7 +445,7 @@ function AutopilotPageInner() {
                   >
                     {disconnecting ? 'Kəsilir...' : 'Bağlantını kəs'}
                   </button>
-                ) : (
+                ) : profile?.autopilot_url ? (
                   <Link
                     href="/api/gsc/auth"
                     style={{
@@ -466,6 +469,19 @@ function AutopilotPageInner() {
                     </svg>
                     Google Search Console-u Qoş
                   </Link>
+                ) : (
+                  <div style={{
+                    padding: '10px 18px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(123,110,246,0.08)',
+                    color: '#9B9EBB',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    border: '1px dashed rgba(123,110,246,0.2)',
+                    textAlign: 'center' as const,
+                  }}>
+                    Əvvəlcə URL daxil edin
+                  </div>
                 )}
               </div>
             </div>
