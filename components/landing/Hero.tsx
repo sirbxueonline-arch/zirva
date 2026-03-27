@@ -16,7 +16,7 @@ function ChatGPTIcon({ size = 16 }: { size?: number }) {
 /* ── Google SERP panel ────────────────────────────── */
 function GooglePanel() {
   return (
-    <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ background: '#fff' }}>
+    <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
       {/* Browser bar */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
         <div className="flex gap-1.5">
