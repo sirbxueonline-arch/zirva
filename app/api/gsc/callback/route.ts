@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
     }).eq('id', state)
 
     return NextResponse.redirect(new URL('/autopilot?gsc=connected', request.url))
-  } catch {
-    return NextResponse.redirect(new URL('/autopilot?gsc=error', request.url))
+  } catch (err) {
+    console.error('[GSC callback error]', err)
+    const msg = err instanceof Error ? encodeURIComponent(err.message) : 'unknown'
+    return NextResponse.redirect(new URL(`/autopilot?gsc=error&msg=${msg}`, request.url))
   }
 }

@@ -103,7 +103,8 @@ function AutopilotPageInner() {
       showToast('Google Search Console uğurla qoşuldu!', 'success')
       router.replace('/autopilot')
     } else if (gsc === 'error') {
-      showToast('Google Search Console qoşularkən xəta baş verdi.', 'error')
+      const msg = searchParams.get('msg')
+      showToast(`GSC xəta: ${msg ? decodeURIComponent(msg) : 'bilinməyən səbəb'}`, 'error')
       router.replace('/autopilot')
     }
   }, [searchParams, router])

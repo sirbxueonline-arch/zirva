@@ -46,9 +46,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Protect API routes (except Stripe webhook — no auth needed there)
+  // Protect API routes — whitelist public endpoints
+  const publicApiPaths = ['/api/stripe/webhook', '/api/dodo/webhook', '/api/gsc/callback', '/api/autopilot/unsubscribe']
   if (pathname.startsWith('/api/') &&
-      !pathname.startsWith('/api/stripe/webhook') &&
+      !publicApiPaths.some(p => pathname.startsWith(p)) &&
       !user) {
     return NextResponse.json({ error: 'Giriş tələb olunur' }, { status: 401 })
   }
