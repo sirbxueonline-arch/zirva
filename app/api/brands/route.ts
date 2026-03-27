@@ -6,14 +6,13 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data, error } = await supabase
-    .from('brands')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  const [{ data, error }, { data: profile }] = await Promise.all([
+    supabase.from('brands').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('profiles').select('plan').eq('id', user.id).single(),
+  ])
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json({ brands: data })
+  return Response.json({ brands: data, plan: profile?.plan ?? 'free' })
 }
 
 export async function POST(req: Request) {

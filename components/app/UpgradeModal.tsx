@@ -56,11 +56,11 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                   <Rocket size={24} strokeWidth={1.5} style={{ color: '#7B6EF6' }} />
                 </div>
                 <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
-                  Limitiniz dolub
+                  Kreditiniz bitdi
                 </h2>
                 <p className="text-text-secondary text-sm mb-8">
-                  Bu ay üçün pulsuz limitiniz bitdi. Pro plana keçin —
-                  aylıq 200 SEO paketi, rəqib analizi, JSON/HTML ixracı.
+                  Bu ay üçün pulsuz kreditləriniz bitdi. Pro plana keçin —
+                  aylıq 250 kredit, rəqib analizi, JSON/HTML ixracı.
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
@@ -69,16 +69,16 @@ export default function UpgradeModal({ open, onClose }: UpgradeModalProps) {
                     style={{ borderColor: 'rgba(123,110,246,0.3)' }}
                   >
                     <div className="font-display font-bold text-xl text-primary mb-1">Pro</div>
-                    <div className="text-text-primary font-bold mb-1">79 AZN/ay</div>
-                    <div className="text-text-muted text-xs">200 paket/ay</div>
+                    <div className="text-text-primary font-bold mb-1">39.99 AZN/ay</div>
+                    <div className="text-text-muted text-xs">250 kredit/ay · 50 gen</div>
                   </div>
                   <div
                     className="rounded-xl border p-4 text-center"
                     style={{ borderColor: 'rgba(0,201,167,0.3)' }}
                   >
                     <div className="font-display font-bold text-xl text-success mb-1">Agency</div>
-                    <div className="text-text-primary font-bold mb-1">199 AZN/ay</div>
-                    <div className="text-text-muted text-xs">Limitsiz</div>
+                    <div className="text-text-primary font-bold mb-1">149.99 AZN/ay</div>
+                    <div className="text-text-muted text-xs">1000 kredit/ay · 200 gen</div>
                   </div>
                 </div>
 

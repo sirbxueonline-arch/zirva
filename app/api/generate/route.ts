@@ -61,8 +61,8 @@ export async function POST(req: Request) {
           email: user.email ?? '',
           full_name: user.user_metadata?.full_name ?? '',
           plan: 'free',
-          generations_used: 0,
-          generations_limit: 5,
+          credits_used: 0,
+          credits_limit: 25,
           brands_limit: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -74,9 +74,11 @@ export async function POST(req: Request) {
 
     if (!profile) return Response.json({ error: 'Profil yaradıla bilmədi' }, { status: 500 })
 
-    if (profile.generations_used >= profile.generations_limit) {
+    const creditsUsed  = (profile as Record<string, unknown>).credits_used  as number ?? 0
+    const creditsLimit = (profile as Record<string, unknown>).credits_limit as number ?? 25
+    if (creditsUsed + 5 > creditsLimit) {
       return Response.json(
-        { error: 'Aylıq limitiniz dolub. Pro plana keçin.' },
+        { error: 'Kreditiniz bitib. Pro plana keçin.' },
         { status: 403 }
       )
     }
@@ -172,10 +174,10 @@ export async function POST(req: Request) {
 
     if (insertError) throw insertError
 
-    // Increment usage counter
+    // Deduct 5 credits
     await supabase
       .from('profiles')
-      .update({ generations_used: profile.generations_used + 1 })
+      .update({ credits_used: creditsUsed + 5 })
       .eq('id', user.id)
 
     return Response.json({ id: generation.id, ...seoPackage })

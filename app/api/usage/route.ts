@@ -8,7 +8,7 @@ export async function GET() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('generations_used, generations_limit, plan')
+      .select('credits_used, credits_limit, plan')
       .eq('id', user.id)
       .single()
 
@@ -20,8 +20,8 @@ export async function GET() {
       .eq('user_id', user.id)
 
     return Response.json({
-      used:  profile.generations_used,
-      limit: profile.generations_limit,
+      used:  (profile as Record<string, unknown>).credits_used  as number ?? 0,
+      limit: (profile as Record<string, unknown>).credits_limit as number ?? 25,
       plan:  profile.plan,
       total: count ?? 0,
     })

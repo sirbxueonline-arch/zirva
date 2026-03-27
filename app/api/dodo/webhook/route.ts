@@ -12,8 +12,8 @@ function createServiceClient() {
 }
 
 function getPlanFromProductId(productId: string): 'pro' | 'agency' | 'free' {
-  if (productId === PLAN_PRODUCT_IDS.pro)    return 'pro'
-  if (productId === PLAN_PRODUCT_IDS.agency) return 'agency'
+  if (Object.values(PLAN_PRODUCT_IDS.pro).includes(productId))    return 'pro'
+  if (Object.values(PLAN_PRODUCT_IDS.agency).includes(productId)) return 'agency'
   return 'free'
 }
 
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
           .from('profiles')
           .update({
             plan,
-            generations_limit:    PLAN_LIMITS[plan],
+            credits_limit:        PLAN_LIMITS[plan],
             brands_limit:         BRAND_LIMITS[plan],
             dodo_customer_id:     data.customer_id     as string,
             dodo_subscription_id: data.subscription_id as string,
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
           .from('profiles')
           .update({
             plan,
-            generations_limit:    PLAN_LIMITS[plan],
+            credits_limit:        PLAN_LIMITS[plan],
             brands_limit:         BRAND_LIMITS[plan],
             subscription_status:  'active',
             current_period_end:   (data.next_billing_date as string) ?? null,
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
           .update({
             subscription_status: 'active',
             current_period_end:  (data.next_billing_date as string) ?? null,
-            generations_used:    0,                    // reset monthly usage on renewal
+            credits_used:        0,                    // reset monthly credits on renewal
             updated_at:          new Date().toISOString(),
           })
           .eq('id', profile.id)
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
           .from('profiles')
           .update({
             plan:                 'free',
-            generations_limit:    PLAN_LIMITS.free,
+            credits_limit:        PLAN_LIMITS.free,
             brands_limit:         BRAND_LIMITS.free,
             dodo_subscription_id: null,
             subscription_status:  'cancelled',

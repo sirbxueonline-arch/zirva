@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ResultCard from '@/components/app/ResultCard'
+import SMOResultCard from '@/components/app/SMOResultCard'
 import type { Generation } from '@/types'
 
 interface Props {
@@ -22,7 +23,12 @@ export default async function ResultPage({ params }: Props) {
 
   if (error || !generation) notFound()
 
+  const gen = generation as Generation
   const isPro = profile?.plan === 'pro' || profile?.plan === 'agency'
 
-  return <ResultCard generation={generation as Generation} isPro={isPro} />
+  if (gen.tool === 'smo') {
+    return <SMOResultCard generation={gen} />
+  }
+
+  return <ResultCard generation={gen} isPro={isPro} />
 }

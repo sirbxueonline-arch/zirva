@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { X, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
-const APP_PATHS = ['/dashboard', '/generate', '/history', '/result', '/settings', '/onboarding', '/help', '/brands', '/login', '/signup']
+const APP_PATHS = ['/dashboard', '/generate', '/history', '/result', '/settings', '/onboarding', '/help', '/brands', '/login', '/signup', '/smo']
 
 const DEADLINE = new Date('2026-04-30T23:59:59').getTime()
 

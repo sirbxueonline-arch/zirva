@@ -7,9 +7,11 @@ import type { Generation, Profile } from '@/types'
 import { PLAN_NAMES } from '@/types'
 import {
   Plus, ChevronRight, Zap, ArrowRight, FileText, TrendingUp,
-  Globe, PenLine, Sparkles, CalendarDays, BarChart3, Lock,
+  BarChart3,
 } from 'lucide-react'
+
 import DashboardHero from '@/components/app/DashboardHero'
+import CreditBar from '@/components/app/CreditBar'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -27,11 +29,8 @@ export default async function DashboardPage() {
   const p     = profile as Profile | null
   const gens  = (generations || []) as Generation[]
   const total = count ?? 0
-  const used  = p?.generations_used ?? 0
-  const limit = p?.generations_limit ?? 5
-  const pct   = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0
-  const remaining  = Math.max(limit - used, 0)
-  const usageColor = pct >= 90 ? '#F25C54' : pct >= 70 ? '#F5A623' : '#7B6EF6'
+  const creditsUsed  = (p as unknown as Record<string, unknown>)?.credits_used  as number ?? 0
+  const creditsLimit = (p as unknown as Record<string, unknown>)?.credits_limit as number ?? 25
   const planKey    = p?.plan ?? 'free'
   const planColor  = ({ free: '#9B9EBB', pro: '#7B6EF6', agency: '#00C9A7' } as Record<string,string>)[planKey] ?? '#9B9EBB'
 
@@ -42,9 +41,7 @@ export default async function DashboardPage() {
   const dayStr    = dayNames[today.getDay()]
   const firstName = p?.full_name?.split(' ')[0] || 'İstifadəçi'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const websiteUrl = (p as any)?.website_url as string | null | undefined
-  const hasBrand   = (brandCount ?? 0) > 0
+  const hasBrand = (brandCount ?? 0) > 0
 
   const avgScore = gens.filter(g => g.seo_score !== null).length > 0
     ? Math.round(gens.filter(g => g.seo_score !== null).reduce((s, g) => s + (g.seo_score ?? 0), 0) / gens.filter(g => g.seo_score !== null).length)
@@ -54,10 +51,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F5FF' }}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
         {/* ── Greeting ── */}
-        <div className="flex items-end justify-between mb-5 sm:mb-8 gap-4">
+        <div className="flex items-end justify-between mb-8 sm:mb-10 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: `${planColor}18`, color: planColor, border: `1px solid ${planColor}28` }}>
@@ -69,89 +66,40 @@ export default async function DashboardPage() {
               Salam, {firstName} 👋
             </h1>
           </div>
-          <Link
-            href="/generate"
-            className="hidden sm:flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold text-white flex-shrink-0 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.3)' }}
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            Yeni Məqalə
-          </Link>
         </div>
 
-        {/* ── Hero: Website status ── */}
-        {(websiteUrl || hasBrand) ? (
-          <div
-            className="rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 32px rgba(123,110,246,0.28)' }}
-          >
-            <div className="absolute right-0 top-0 w-64 h-64 rounded-full pointer-events-none opacity-10"
-              style={{ background: 'radial-gradient(circle, #fff 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
-            <div className="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
-                  <span className="text-white/70 text-xs font-medium">Avtomatik nəşr aktiv</span>
-                </div>
-                <h2 className="font-display font-bold text-xl text-white mb-1">Hər gün yeni məqalə</h2>
-                <p className="text-white/60 text-sm">{websiteUrl}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-center">
-                  <div className="font-display font-bold text-2xl text-white">{used}</div>
-                  <div className="text-white/60 text-xs">Bu ay</div>
-                </div>
-                <div className="w-px h-10 bg-white/20" />
-                <div className="text-center">
-                  <div className="font-display font-bold text-2xl text-white">{total}</div>
-                  <div className="text-white/60 text-xs">Ümumi</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <DashboardHero />
-        )}
+        {/* ── Hero ── */}
+        {!hasBrand && <DashboardHero />}
 
         {/* ── Stats row ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
 
-          {/* Monthly usage */}
-          <div className="col-span-2 rounded-2xl p-4 sm:p-5 relative overflow-hidden"
-            style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
+          {/* Credit balance */}
+          <div className="col-span-2 rounded-2xl p-5 sm:p-6 relative overflow-hidden"
+            style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.12)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#9B9EBB' }}>Bu ay nəşr edildi</p>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#9B9EBB' }}>Kredit</p>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-display font-bold text-3xl sm:text-4xl" style={{ color: '#0D0D1A' }}>{used}</span>
-                  <span className="text-base font-medium" style={{ color: '#9B9EBB' }}>/ {limit} məqalə</span>
+                  <span className="font-display font-bold text-3xl sm:text-4xl" style={{ color: '#0D0D1A' }}>{creditsUsed}</span>
+                  <span className="text-base font-medium" style={{ color: '#9B9EBB' }}>/ {creditsLimit} bu ay</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${usageColor}12` }}>
-                <CalendarDays size={18} strokeWidth={2} style={{ color: usageColor }} />
-              </div>
-            </div>
-            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(123,110,246,0.08)' }}>
-              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: usageColor }} />
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold" style={{ color: usageColor }}>
-                {remaining > 0 ? `${remaining} məqalə qalıb` : 'Aylıq limit dolub'}
-              </p>
-              {remaining === 0 && (
+              {creditsUsed + 5 > creditsLimit && (
                 <Link
                   href="/settings/billing"
                   className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg text-white flex-shrink-0 transition-all hover:scale-[1.03]"
                   style={{ background: '#7B6EF6', boxShadow: '0 2px 8px rgba(123,110,246,0.3)' }}
                 >
-                  <Lock size={10} strokeWidth={2.5} /> Limiti artır
+                  Kredit al
                 </Link>
               )}
             </div>
+            <CreditBar used={creditsUsed} limit={creditsLimit} />
           </div>
 
           {/* Total articles */}
-          <div className="rounded-2xl p-4 sm:p-5 flex flex-col justify-between"
+          <div className="rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
             style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Ümumi məqalə</p>
@@ -166,7 +114,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Avg SEO score */}
-          <div className="rounded-2xl p-4 sm:p-5 flex flex-col justify-between"
+          <div className="rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
             style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
             <div className="flex items-start justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9B9EBB' }}>Ort. SEO balı</p>
@@ -183,41 +131,47 @@ export default async function DashboardPage() {
               ) : (
                 <div>
                   <div className="font-display font-bold text-2xl sm:text-3xl mb-0.5" style={{ color: '#C0C3D8' }}>—</div>
-                  <p className="text-xs" style={{ color: '#C0C3D8' }}>Hələ paket yoxdur</p>
+                  <p className="text-xs" style={{ color: '#C0C3D8' }}>Hələ kredit xərclənməyib</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ── Quick actions ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
-          {[
-            { icon: <PenLine size={20} strokeWidth={1.8} />,   label: 'Yeni Məqalə',   sub: 'AI ilə kontent yarat',    href: '/generate',         color: '#7B6EF6' },
-            { icon: <TrendingUp size={20} strokeWidth={1.8} />, label: 'SEO Analizi',   sub: 'Sayt balınızı yoxlayın', href: '/generate',         color: '#00C9A7' },
-            { icon: <FileText size={20} strokeWidth={1.8} />,   label: 'Məqalələr',     sub: `${total} yazılmış`,       href: '/history',          color: '#4285F4' },
-          ].map(a => (
-            <Link key={a.href + a.label} href={a.href}
-              className="group flex items-center gap-4 rounded-2xl p-4 transition-all duration-200 hover:scale-[1.02]"
-              style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.08)', boxShadow: '0 2px 12px rgba(13,13,26,0.04)' }}
-            >
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: `${a.color}12`, color: a.color }}>
-                {a.icon}
+        {/* ── Tool shortcuts ── */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            {/* SEO */}
+            <div className="rounded-2xl p-5 flex items-center justify-between gap-3"
+              style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.12)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
+              <div className="min-w-0">
+                <p className="text-sm font-bold truncate" style={{ color: '#0D0D1A' }}>SEO Paketi</p>
+                <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Axtarış optimallaşdırması</p>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold" style={{ color: '#0D0D1A' }}>{a.label}</div>
-                <div className="text-xs truncate" style={{ color: '#9B9EBB' }}>{a.sub}</div>
+              <Link href="/generate"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0 transition-all hover:scale-[1.02]"
+                style={{ background: '#7B6EF6', boxShadow: '0 2px 8px rgba(123,110,246,0.25)' }}>
+                SEO Yarat
+              </Link>
+            </div>
+            {/* SMO */}
+            <div className="rounded-2xl p-5 flex items-center justify-between gap-3"
+              style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.12)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
+              <div className="min-w-0">
+                <p className="text-sm font-bold truncate" style={{ color: '#0D0D1A' }}>SMO Paketi</p>
+                <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Sosial media optimallaşdırması</p>
               </div>
-              <ChevronRight size={16} strokeWidth={2} className="flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: '#C0C3D8' }} />
-            </Link>
-          ))}
-        </div>
+              <Link href="/smo"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0 transition-all hover:scale-[1.02]"
+                style={{ background: '#00C9A7', boxShadow: '0 2px 8px rgba(0,201,167,0.25)' }}>
+                SMO Yarat
+              </Link>
+            </div>
+          </div>
 
         {/* ── Upgrade banner (free users) ── */}
         {p?.plan === 'free' && (
           <div
-            className="rounded-2xl p-5 mb-6 flex items-center justify-between gap-4 relative overflow-hidden"
+            className="rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8 flex items-center justify-between gap-4 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07) 0%, rgba(155,143,248,0.03) 100%)', border: '1px solid rgba(123,110,246,0.18)' }}
           >
             <div className="absolute right-0 top-0 w-48 h-48 rounded-full pointer-events-none opacity-50"
@@ -227,7 +181,7 @@ export default async function DashboardPage() {
                 <Zap size={13} strokeWidth={2.5} /> Pro plana keçin
               </p>
               <p className="text-xs" style={{ color: '#9B9EBB' }}>
-                Ayda 50 məqalə · Hər gün avtomatik nəşr · Prioritet dəstək
+                250 kredit/ay · 5 brend · Rəqib analizi · AZ + RU teqləri
               </p>
             </div>
             <Link
@@ -242,7 +196,7 @@ export default async function DashboardPage() {
 
         {/* ── Recent articles ── */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="font-display font-bold text-xl" style={{ color: '#0D0D1A' }}>Son Məqalələr</h2>
               {total > 0 && <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Ümumi {total} məqalə yazılıb</p>}
@@ -257,27 +211,34 @@ export default async function DashboardPage() {
           {total === 0 ? (
             /* Empty state */
             <div
-              className="rounded-2xl p-10 text-center"
+              className="rounded-2xl p-8 sm:p-12 text-center"
               style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)' }}
             >
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
                 style={{ background: 'rgba(123,110,246,0.08)' }}>
-                <PenLine size={24} strokeWidth={1.8} style={{ color: '#7B6EF6' }} />
+                <FileText size={26} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
               </div>
-              <h3 className="font-display font-bold text-lg mb-2" style={{ color: '#0D0D1A' }}>
-                Hələ heç bir məqalə yoxdur
+              <h3 className="font-display font-bold text-xl mb-2" style={{ color: '#0D0D1A' }}>
+                İlk generasiyanızı yaradın
               </h3>
-              <p className="text-sm mb-6 leading-relaxed" style={{ color: '#737599' }}>
-                İlk məqaləni yaradın — Zirva saytınızı öyrənir<br />
-                və ən effektiv kontent yazır.
+              <p className="text-sm mb-5 leading-relaxed max-w-sm mx-auto" style={{ color: '#737599' }}>
+                Brendinizi seçin, biz saytı analiz edib Google üçün optimallaşdırılmış SEO teqləri yazırıq.
               </p>
-              <Link
-                href="/generate"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
-                style={{ background: '#7B6EF6', boxShadow: '0 4px 16px rgba(123,110,246,0.28)' }}
-              >
-                <Plus size={15} strokeWidth={2.5} /> İlk məqaləni yarat
-              </Link>
+              {/* Credit balance hint */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl mb-6"
+                style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.15)' }}>
+                <span className="font-bold text-sm" style={{ color: '#00C9A7' }}>{Math.max(creditsLimit - creditsUsed, 0)} kredit</span>
+                <span className="text-xs" style={{ color: '#9B9EBB' }}>hazırdır</span>
+              </div>
+              <div>
+                <Link
+                  href="/generate"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+                  style={{ background: '#7B6EF6', boxShadow: '0 4px 16px rgba(123,110,246,0.28)' }}
+                >
+                  <Plus size={15} strokeWidth={2.5} /> SEO Paketi Yarat
+                </Link>
+              </div>
             </div>
           ) : (
             <div

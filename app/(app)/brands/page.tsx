@@ -8,6 +8,7 @@ import BrandAvatar from '@/components/app/BrandAvatar'
 import ConfirmModal from '@/components/shared/ConfirmModal'
 import { ToastContainer } from '@/components/shared/Toast'
 import type { Brand } from '@/types'
+import { BRAND_LIMITS } from '@/types'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 26 }
 
@@ -16,11 +17,15 @@ interface ToastItem { id: string; message: string; type?: 'success' | 'error' | 
 export default function BrandsPage() {
   const [brands, setBrands]     = useState<Brand[]>([])
   const [loading, setLoading]   = useState(true)
+  const [plan, setPlan]         = useState<'free' | 'pro' | 'agency'>('free')
   const [modalOpen, setModalOpen]   = useState(false)
   const [editing, setEditing]       = useState<Brand | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId]   = useState<string | null>(null)
   const [toasts, setToasts]         = useState<ToastItem[]>([])
+
+  const brandLimit = BRAND_LIMITS[plan]
+  const atLimit    = brands.length >= brandLimit
 
   function addToast(message: string, type: ToastItem['type'] = 'success') {
     const id = Math.random().toString(36).slice(2)
@@ -29,8 +34,13 @@ export default function BrandsPage() {
 
   async function load() {
     const res = await fetch('/api/brands')
-    if (res.ok) { const { brands } = await res.json(); setBrands(brands) }
-    else addToast('Brendlər yüklənmədi', 'error')
+    if (res.ok) {
+      const data = await res.json()
+      setBrands(data.brands ?? [])
+      if (data.plan) setPlan(data.plan)
+    } else {
+      addToast('Brendlər yüklənmədi', 'error')
+    }
     setLoading(false)
   }
 
@@ -83,15 +93,32 @@ export default function BrandsPage() {
         <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
           <div>
             <h1 className="font-display font-bold text-2xl sm:text-3xl text-text-primary mb-1">Brendlər</h1>
-            <p className="text-text-muted text-sm">Saytlarınız üçün brend profilləri yaradın</p>
+            <p className="text-text-muted text-sm">
+              {loading ? 'Saytlarınız üçün brend profilləri yaradın' : `${brands.length} / ${brandLimit} brend`}
+            </p>
           </div>
-          <button onClick={openCreate}
-            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02] flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)', boxShadow: '0 4px 16px rgba(123,110,246,0.3)' }}
+          <button onClick={atLimit ? undefined : openCreate}
+            disabled={atLimit}
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: atLimit ? '#9B9EBB' : 'linear-gradient(135deg, #7B6EF6, #9B8FF8)', boxShadow: atLimit ? 'none' : '0 4px 16px rgba(123,110,246,0.3)' }}
+            title={atLimit ? `Brend limiti dolub (${brandLimit}/${brandLimit})` : undefined}
           >
             <Plus size={16} strokeWidth={2.5} /> <span className="hidden sm:inline">Yeni </span>Brend
           </button>
         </div>
+
+        {/* Limit reached banner */}
+        {atLimit && !loading && (
+          <div className="mb-5 px-4 py-3 rounded-xl text-sm flex items-center gap-2"
+            style={{ background: 'rgba(242,92,84,0.07)', border: '1px solid rgba(242,92,84,0.18)', color: '#B03030' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>Brend limitinə çatdınız</strong> ({brandLimit}/{brandLimit}). Daha çox brend üçün planı yüksəldin.</span>
+            <a href="/settings/billing" className="ml-auto font-bold text-xs px-3 py-1.5 rounded-lg text-white flex-shrink-0"
+              style={{ background: '#7B6EF6' }}>
+              Yüksəlt
+            </a>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-20">
@@ -161,16 +188,10 @@ export default function BrandsPage() {
                     title="Redaktə et">
                     <Pencil size={14} strokeWidth={1.8} style={{ color: '#9B9EBB' }} />
                   </button>
-                  <button
-                    onClick={() => setConfirmId(b.id)}
-                    disabled={deletingId === b.id}
-                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50 disabled:opacity-50"
-                    title="Sil"
-                  >
-                    {deletingId === b.id
-                      ? <Loader2 size={14} strokeWidth={2} className="animate-spin" style={{ color: '#F25C54' }} />
-                      : <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
-                    }
+                  <button onClick={() => setConfirmId(b.id)}
+                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50"
+                    title="Sil">
+                    <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
                   </button>
                 </div>
               </motion.div>

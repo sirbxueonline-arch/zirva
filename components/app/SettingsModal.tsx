@@ -11,7 +11,7 @@ import {
   LayoutGrid, Plug, CreditCard, User,
   Globe, CheckCircle2, Plus, AlertTriangle,
   Package, Languages, ClipboardList, Download,
-  Search, Zap, CheckCircle, BarChart2, Target,
+  Search, Sparkles, Zap, CheckCircle, BarChart2, Target,
   Star, ArrowRight, Loader2, type LucideIcon,
 } from 'lucide-react'
 import WordPressModal from './WordPressModal'
@@ -23,30 +23,26 @@ interface PlanFeature { Icon: LucideIcon; text: string }
 
 const PLAN_FEATURES: Record<string, PlanFeature[]> = {
   free:   [
-    { Icon: Globe,         text: '1 domen' },
-    { Icon: Package,       text: 'Ayda 5 SEO paketi' },
-    { Icon: Globe,         text: 'URL axışı' },
-    { Icon: Languages,     text: 'Azərbaycan dili teqləri' },
-    { Icon: ClipboardList, text: 'Bütün teq növləri' },
+    { Icon: Package,       text: '25 kredit/ay' },
+    { Icon: Globe,         text: '1 brend profili' },
+    { Icon: Search,        text: 'Əsas SEO teqləri (AZ dili)' },
+    { Icon: Sparkles,      text: 'Əsas SMO analizi' },
   ],
   pro:    [
-    { Icon: Globe,         text: '3 domen' },
-    { Icon: Package,       text: 'Ayda 50 SEO paketi' },
-    { Icon: Globe,         text: 'Bütün axışlar' },
-    { Icon: Languages,     text: 'AZ + RU + EN teqləri' },
-    { Icon: ClipboardList, text: 'Bütün teq növləri' },
-    { Icon: Search,        text: 'Rəqib analizi' },
+    { Icon: Package,       text: '250 kredit/ay' },
+    { Icon: Globe,         text: '5 brend profili' },
+    { Icon: Search,        text: 'Güclü SEO — AZ + RU, Schema, OG' },
+    { Icon: Sparkles,      text: 'Tam SMO paketi' },
     { Icon: Download,      text: 'JSON / HTML ixracı' },
     { Icon: Zap,           text: 'Prioritet dəstək' },
   ],
   agency: [
-    { Icon: Globe,         text: '10 domen' },
-    { Icon: Package,       text: 'Limitsiz SEO paketi' },
-    { Icon: CheckCircle,   text: 'Pro-nun hər şeyi' },
-    { Icon: Globe,         text: 'Çoxlu sayt idarəetməsi' },
+    { Icon: Package,       text: '1000 kredit/ay' },
+    { Icon: Globe,         text: '15 brend profili' },
+    { Icon: Search,        text: 'Maksimum SEO gücü' },
+    { Icon: Sparkles,      text: 'Maksimum SMO gücü' },
+    { Icon: CheckCircle,   text: 'Pro-nun bütün imkanları' },
     { Icon: Plug,          text: 'API girişi (tezliklə)' },
-    { Icon: BarChart2,     text: 'Xüsusi hesabat' },
-    { Icon: Target,        text: 'Fərdi onboarding' },
   ],
 }
 
@@ -159,10 +155,10 @@ export default function SettingsModal({ open, onClose }: Props) {
 
   const plan        = profile?.plan ?? 'free'
   const planColor   = { free: '#9B9EBB', pro: '#7B6EF6', agency: '#00C9A7' }[plan]
-  const used        = profile?.generations_used ?? 0
-  const limit       = profile?.generations_limit ?? 5
+  const used        = (profile as unknown as Record<string, unknown>)?.credits_used  as number ?? 0
+  const limit       = (profile as unknown as Record<string, unknown>)?.credits_limit as number ?? 25
   const pct         = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0
-  const usageColor  = pct >= 90 ? '#F25C54' : pct >= 70 ? '#F5A623' : '#7B6EF6'
+  const usageColor  = pct >= 95 ? '#F25C54' : pct >= 80 ? '#F5A623' : '#00C9A7'
   const avatarLetter = (profile?.full_name || profile?.email || '?')[0].toUpperCase()
   const inputStyle  = { background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.15)', color: '#0D0D1A' }
 
@@ -243,8 +239,8 @@ export default function SettingsModal({ open, onClose }: Props) {
                         </div>
                         {/* Usage pill */}
                         <div className="text-right flex-shrink-0">
-                          <div className="text-xs text-text-muted mb-1.5">Bu ay istifadə</div>
-                          <div className="text-sm font-bold" style={{ color: usageColor }}>{used} / {limit === 999999 ? '∞' : limit}</div>
+                          <div className="text-xs text-text-muted mb-1.5">Kredit balansı</div>
+                          <div className="text-sm font-bold" style={{ color: usageColor }}>{used} / {limit === 999999 ? '∞' : limit} kredit</div>
                           <div className="mt-1.5 h-1.5 w-24 rounded-full overflow-hidden" style={{ background: 'rgba(123,110,246,0.1)' }}>
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, background: usageColor, transition: 'width 0.6s ease' }} />
                           </div>
@@ -252,20 +248,25 @@ export default function SettingsModal({ open, onClose }: Props) {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-3 gap-4 mb-7">
-                        <div className="rounded-2xl p-5" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
-                          <div className="text-3xl font-bold mb-1" style={{ color: '#7B6EF6' }}>{used}</div>
-                          <div className="text-xs font-medium text-text-muted">Nəşr edildi</div>
-                        </div>
-                        <div className="rounded-2xl p-5" style={{ background: '#EEF6FF', border: '1px solid rgba(59,130,246,0.12)' }}>
-                          <div className="text-3xl font-bold mb-1" style={{ color: '#3B82F6' }}>{used * 2}<span className="text-lg ml-0.5">s</span></div>
-                          <div className="text-xs font-medium text-text-muted">Qənaət vaxt</div>
-                        </div>
-                        <div className="rounded-2xl p-5" style={{ background: '#FFF0F8', border: '1px solid rgba(236,72,153,0.12)' }}>
-                          <div className="text-3xl font-bold mb-1" style={{ color: '#EC4899' }}>₼{used * 40}</div>
-                          <div className="text-xs font-medium text-text-muted">Qənaət pul</div>
-                        </div>
-                      </div>
+                      {(() => {
+                        const gens = Math.floor(used / 5)
+                        return (
+                          <div className="grid grid-cols-3 gap-4 mb-7">
+                            <div className="rounded-2xl p-5" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
+                              <div className="text-3xl font-bold mb-1" style={{ color: '#7B6EF6' }}>{gens}</div>
+                              <div className="text-xs font-medium text-text-muted">Generasiya</div>
+                            </div>
+                            <div className="rounded-2xl p-5" style={{ background: '#EEF6FF', border: '1px solid rgba(59,130,246,0.12)' }}>
+                              <div className="text-3xl font-bold mb-1" style={{ color: '#3B82F6' }}>{gens * 2}<span className="text-base ml-1 font-semibold">saat</span></div>
+                              <div className="text-xs font-medium text-text-muted">Qənaət olunan vaxt</div>
+                            </div>
+                            <div className="rounded-2xl p-5" style={{ background: '#FFF0F8', border: '1px solid rgba(236,72,153,0.12)' }}>
+                              <div className="text-3xl font-bold mb-1" style={{ color: '#EC4899' }}>₼{gens * 40}</div>
+                              <div className="text-xs font-medium text-text-muted">Qənaət olunan pul</div>
+                            </div>
+                          </div>
+                        )
+                      })()}
 
                       {/* Form */}
                       <div className="space-y-4">
@@ -472,8 +473,8 @@ export default function SettingsModal({ open, onClose }: Props) {
                         </div>
                         <div className="mb-4 relative z-10">
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-xs text-text-muted">Bu ay istifadə</span>
-                            <span className="text-xs font-semibold" style={{ color: usageColor }}>{used} / {limit === 999999 ? '∞' : limit}</span>
+                            <span className="text-xs text-text-muted">Kredit istifadəsi</span>
+                            <span className="text-xs font-semibold" style={{ color: usageColor }}>{used} / {limit === 999999 ? '∞' : limit} kredit</span>
                           </div>
                           <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(123,110,246,0.07)' }}>
                             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: usageColor }} />
@@ -505,6 +506,97 @@ export default function SettingsModal({ open, onClose }: Props) {
                           </div>
                         )}
                       </div>
+                      {(plan === 'pro' || plan === 'agency') && profile?.subscription_status !== 'cancelled' && (
+                        <div className="rounded-2xl p-4 mt-3" style={{ background: '#FAFAFE', border: `1px solid ${planColor}22` }}>
+                          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#C0C3D8' }}>Daha Sərfəli Dövr</p>
+                          <div className="grid grid-cols-3 gap-1.5 mb-3">
+                            {([
+                              { id: 'monthly'   as BillingPeriod, label: 'Aylıq',   pct: undefined },
+                              { id: 'quarterly' as BillingPeriod, label: 'Rüblük',  pct: 15 },
+                              { id: 'yearly'    as BillingPeriod, label: 'İllik',   pct: 25 },
+                            ]).map(p => {
+                              const prices = PLAN_PERIOD_PRICES[plan][p.id]
+                              return (
+                                <button key={p.id} onClick={() => setPeriod(p.id)}
+                                  className="relative rounded-xl p-2.5 text-left transition-all"
+                                  style={{
+                                    background: period === p.id ? `${planColor}10` : '#FFFFFF',
+                                    border: `1.5px solid ${period === p.id ? planColor : 'rgba(0,0,0,0.07)'}`,
+                                  }}
+                                >
+                                  {p.pct && (
+                                    <span className="absolute -top-2 left-1.5 text-[9px] font-bold px-1 py-0.5 rounded-full leading-none" style={{ background: '#00C9A7', color: '#fff' }}>
+                                      -{p.pct}%
+                                    </span>
+                                  )}
+                                  <div className="text-[10px] font-semibold text-text-primary mb-0.5">{p.label}</div>
+                                  <div className="text-xs font-bold" style={{ color: planColor }}>{prices.perMonth}<span className="text-[10px] font-normal text-text-muted"> AZN/ay</span></div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <button
+                            onClick={() => handleUpgrade(plan as 'pro' | 'agency')}
+                            disabled={upgrading || period === 'monthly'}
+                            className="w-full py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 text-white hover:opacity-90"
+                            style={{ background: planColor }}
+                          >
+                            {upgrading ? '...' : period === 'monthly' ? 'Rüblük/illik seçin' : `${PLAN_NAMES[plan]} ${period === 'quarterly' ? 'Rüblük' : 'İllik'}-ə keç`}
+                          </button>
+                        </div>
+                      )}
+                      {plan === 'pro' && (
+                        <>
+                          <div className="flex items-center justify-between mb-4 mt-4">
+                            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#C0C3D8' }}>Agency-ə Yüksəlt</p>
+                            <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.12)' }}>
+                              {([
+                                { id: 'monthly'   as BillingPeriod, label: 'Aylıq' },
+                                { id: 'quarterly' as BillingPeriod, label: 'Rüblük', pct: 15 },
+                                { id: 'yearly'    as BillingPeriod, label: 'İllik',  pct: 25 },
+                              ]).map(p => (
+                                <button key={p.id} onClick={() => setPeriod(p.id)}
+                                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                                  style={{
+                                    background: period === p.id ? '#FFFFFF' : 'transparent',
+                                    color: period === p.id ? '#00C9A7' : '#9B9EBB',
+                                    boxShadow: period === p.id ? '0 1px 4px rgba(13,13,26,0.08)' : 'none',
+                                  }}
+                                >
+                                  {p.label}
+                                  {'pct' in p && (
+                                    <span className="text-[9px] font-bold px-1 py-0.5 rounded-full leading-none" style={{ background: '#00C9A7', color: '#fff' }}>
+                                      -{p.pct}%
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="rounded-2xl p-5 flex flex-col" style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.25)', boxShadow: '0 4px 16px rgba(0,201,167,0.08)' }}>
+                            <div className="font-display font-bold text-lg mb-0.5" style={{ color: '#00C9A7' }}>{PLAN_NAMES.agency}</div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-text-primary text-2xl font-bold">{PLAN_PERIOD_PRICES.agency[period].perMonth} AZN</span>
+                              <span className="text-text-muted text-xs">/ay</span>
+                            </div>
+                            <p className="text-text-muted text-xs mb-4">{PLAN_PERIOD_PRICES.agency[period].label}</p>
+                            <ul className="space-y-1.5 mb-5">
+                              {PLAN_FEATURES.agency.map(f => (
+                                <li key={f.text} className="flex items-center gap-2 text-xs text-text-secondary">
+                                  <f.Icon size={12} strokeWidth={1.8} style={{ color: '#00C9A7', flexShrink: 0 }} /> {f.text}
+                                </li>
+                              ))}
+                            </ul>
+                            <button onClick={() => handleUpgrade('agency')} disabled={upgrading}
+                              className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2 hover:scale-[1.02]"
+                              style={{ background: '#00C9A7', boxShadow: '0 4px 12px rgba(0,201,167,0.3)' }}
+                            >
+                              {upgrading ? <Loader2 size={14} className="animate-spin" /> : <><span>Agency-ə Keç</span><ArrowRight size={13} strokeWidth={2.5} /></>}
+                            </button>
+                          </div>
+                        </>
+                      )}
+
                       {plan === 'free' && (
                         <>
                           {/* Period toggle */}

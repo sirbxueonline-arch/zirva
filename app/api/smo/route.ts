@@ -1,29 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { generateSMOPackage, buildSMOPrompt } from '@/lib/openai-smo'
+import { buildSMOPrompt, generateSMOPackage } from '@/lib/openai'
 import { z } from 'zod'
 
-const profileDataSchema = z.object({
-  username:    z.string(),
-  full_name:   z.string().optional(),
-  bio:         z.string().optional(),
-  followers:   z.number().optional(),
-  following:   z.number().optional(),
-  posts:       z.number().optional(),
-  category:    z.string().optional(),
-  website:     z.string().optional(),
-  is_business: z.boolean().optional(),
-}).optional()
-
-const schema = z.object({
-  business_name:   z.string().min(1),
-  platform:        z.enum(['instagram']),
-  category:        z.string().min(1),
-  city:            z.string().min(1),
-  existing_bio:    z.string().optional(),
-  target_audience: z.string().optional(),
-  services:        z.string().optional(),
-  post_idea:       z.string().optional(),
-  profile_data:    profileDataSchema,
+const bodySchema = z.object({
+  brand_id: z.string().uuid(),
 })
 
 export async function POST(req: Request) {
@@ -32,62 +12,80 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return Response.json({ error: 'İcazəsiz giriş' }, { status: 401 })
 
-    let { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-    if (!profile) {
-      const { data: np } = await supabase.from('profiles').upsert({
-        id: user.id, email: user.email ?? '', full_name: user.user_metadata?.full_name ?? '',
-        plan: 'free', generations_used: 0, generations_limit: 5,
-        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      }).select().single()
-      profile = np
-    }
-    if (!profile) return Response.json({ error: 'Profil yaradıla bilmədi' }, { status: 500 })
+    const raw = await req.json()
+    const { brand_id } = bodySchema.parse(raw)
 
-    if (profile.generations_used >= profile.generations_limit) {
-      return Response.json({ error: 'Aylıq limitiniz dolub. Pro plana keçin.' }, { status: 403 })
-    }
+    // Get brand
+    const { data: brand, error: brandError } = await supabase
+      .from('brands')
+      .select('*')
+      .eq('id', brand_id)
+      .eq('user_id', user.id)
+      .single()
 
-    // SMO is Pro+ only
-    const isPaidPlan = profile.plan === 'pro' || profile.plan === 'agency'
-    if (!isPaidPlan) {
-      return Response.json(
-        { error: 'SMO Paketi yalnız Pro və Agency planlarında mövcuddur.', upgrade: true },
-        { status: 403 }
-      )
+    if (brandError || !brand) {
+      return Response.json({ error: 'Brend tapılmadı' }, { status: 404 })
     }
 
-    const body = schema.parse(await req.json())
-    const prompt = buildSMOPrompt(body)
+    // Get profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) return Response.json({ error: 'Profil tapılmadı' }, { status: 500 })
+
+    // Credit check
+    const creditsUsed  = (profile as Record<string, unknown>).credits_used  as number ?? 0
+    const creditsLimit = (profile as Record<string, unknown>).credits_limit as number ?? 25
+    if (creditsUsed + 5 > creditsLimit) {
+      return Response.json({ error: 'Kreditiniz bitib. Pro plana keçin.' }, { status: 403 })
+    }
+
+    // Build prompt and generate
+    const prompt = buildSMOPrompt({
+      business_name: brand.name,
+      website_url:   brand.website_url,
+      instagram_url: brand.instagram_url,
+      tiktok_url:    brand.tiktok_url,
+      facebook_url:  brand.facebook_url,
+      category:      brand.category,
+      city:          brand.city,
+      description:   brand.description,
+    })
+
     const smoPackage = await generateSMOPackage(prompt)
 
+    // Save to generations table
     const { data: generation, error: insertError } = await supabase
       .from('generations')
       .insert({
         user_id:       user.id,
-        flow_type:     'social',
-        input_data:    { ...body, _type: 'smo' },
+        tool:          'smo',
+        flow_type:     'url',
+        input_data:    { brand_id, brand_name: brand.name },
         output_data:   smoPackage,
-        business_name: body.business_name,
+        business_name: brand.name,
         seo_score:     smoPackage.score,
-        title_tag_az:  smoPackage.instagram_bio,
-        meta_desc_az:  smoPackage.tiktok_bio,
+        title_tag_az:  null,
+        meta_desc_az:  null,
       })
       .select()
       .single()
 
-    if (insertError) {
-      console.error('SMO insert error:', insertError)
-      throw new Error((insertError as { message?: string }).message ?? JSON.stringify(insertError))
-    }
+    if (insertError) throw insertError
 
-    await supabase.from('profiles')
-      .update({ generations_used: profile.generations_used + 1 })
+    // Deduct 5 credits
+    await supabase
+      .from('profiles')
+      .update({ credits_used: creditsUsed + 5 })
       .eq('id', user.id)
 
     return Response.json({ id: generation.id, ...smoPackage })
   } catch (err) {
-    console.error('SMO error:', err)
-    const message = err instanceof Error ? err.message : JSON.stringify(err)
-    return Response.json({ error: message }, { status: 500 })
+    console.error('SMO generate error:', err)
+    const message = err instanceof Error ? err.message : 'Naməlum xəta'
+    return Response.json({ error: `Xəta baş verdi: ${message}` }, { status: 500 })
   }
 }

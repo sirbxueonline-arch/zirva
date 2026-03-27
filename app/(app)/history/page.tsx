@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import HistoryTable from '@/components/app/HistoryTable'
 import { SkeletonTable } from '@/components/shared/SkeletonCard'
 import { ToastContainer } from '@/components/shared/Toast'
 import type { Generation } from '@/types'
-import { Globe, Smartphone, PenLine, ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react'
+import { Globe, Smartphone, PenLine, Sparkles, ChevronLeft, ChevronRight, Download, Loader2, FileText } from 'lucide-react'
 
 const FLOW_FILTERS = [
   { id: 'all',    label: 'Hamısı',  Icon: null },
@@ -41,7 +42,9 @@ export default function HistoryPage() {
       .order('created_at', { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
-    if (flowFilter !== 'all') {
+    if (flowFilter === 'smo') {
+      query = query.eq('tool', 'smo')
+    } else if (flowFilter !== 'all') {
       query = query.eq('flow_type', flowFilter)
     }
 
@@ -91,7 +94,7 @@ export default function HistoryPage() {
       <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
           <h1 className="font-display font-bold text-2xl sm:text-3xl text-text-primary mb-1">Tarixçə</h1>
-          <p className="text-text-muted text-sm">Bütün SEO generasiyalarınız</p>
+          <p className="text-text-muted text-sm">Bütün generasiyalarınız</p>
         </div>
         <button
           onClick={exportCSV}
@@ -127,11 +130,61 @@ export default function HistoryPage() {
             </button>
           )
         })}
+
+        {/* SMO filter */}
+        {(() => {
+          const isActive = flowFilter === 'smo'
+          return (
+            <button
+              onClick={() => { setFlowFilter('smo'); setPage(0) }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              style={{
+                background: isActive ? 'rgba(0,201,167,0.12)' : 'transparent',
+                border: `1px solid ${isActive ? '#00C9A7' : 'rgba(0,201,167,0.2)'}`,
+                color: isActive ? '#00C9A7' : '#5A5D7A',
+              }}
+            >
+              {isActive && loading
+                ? <Loader2 size={13} strokeWidth={2} className="animate-spin" />
+                : <Sparkles size={13} strokeWidth={1.8} />
+              }
+              SMO
+            </button>
+          )
+        })()}
       </div>
 
       {/* Table */}
       {loading ? (
         <SkeletonTable rows={PAGE_SIZE} />
+      ) : generations.length === 0 ? (
+        <div className="rounded-2xl p-10 sm:p-16 text-center"
+          style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.1)' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ background: 'rgba(123,110,246,0.08)' }}>
+            <FileText size={24} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
+          </div>
+          <h3 className="font-bold text-text-primary mb-1">
+            {flowFilter === 'all' ? 'Hələ generasiya yoxdur' : `${flowFilter === 'smo' ? 'SMO' : flowFilter === 'url' ? 'URL' : flowFilter === 'social' ? 'Sosial' : 'Manual'} generasiyası tapılmadı`}
+          </h3>
+          <p className="text-sm text-text-muted mb-5">
+            {flowFilter === 'all' ? 'İlk SEO və ya SMO paketinizi yaradın.' : 'Bu filtrdə hələ heç nə yoxdur.'}
+          </p>
+          {flowFilter === 'all' && (
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Link href="/generate"
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+                style={{ background: '#7B6EF6', boxShadow: '0 4px 12px rgba(123,110,246,0.25)' }}>
+                SEO Paketi Yarat
+              </Link>
+              <Link href="/smo"
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+                style={{ background: '#00C9A7', boxShadow: '0 4px 12px rgba(0,201,167,0.25)' }}>
+                SMO Paketi Yarat
+              </Link>
+            </div>
+          )}
+        </div>
       ) : (
         <HistoryTable generations={generations} onDelete={handleDelete} />
       )}

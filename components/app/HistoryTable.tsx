@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { scoreColor, flowLabel, flowBadgeColor, timeAgo } from '@/lib/utils'
 import type { Generation } from '@/types'
-import { FileText, Plus, Trash2, ChevronRight } from 'lucide-react'
+import { FileText, Plus, Trash2, ChevronRight, Sparkles } from 'lucide-react'
 
 function resultHref(gen: Generation) {
   return `/result/${gen.id}`
@@ -75,15 +75,22 @@ export default function HistoryTable({ generations, onDelete }: HistoryTableProp
         >
           {/* Main clickable area */}
           <Link href={resultHref(gen)} className="flex items-center gap-3 flex-1 min-w-0 px-4 py-3.5">
-            {/* #12 — color communicates type */}
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
-              style={{
-                background: `${flowBadgeColor(gen.flow_type)}18`,
-                color:      flowBadgeColor(gen.flow_type),
-                border:     `1px solid ${flowBadgeColor(gen.flow_type)}30`,
-              }}>
-              {flowLabel(gen.flow_type)}
-            </span>
+            {/* Tool / flow badge */}
+            {gen.tool === 'smo' ? (
+              <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+                style={{ background: 'rgba(0,201,167,0.1)', color: '#00C9A7', border: '1px solid rgba(0,201,167,0.2)' }}>
+                <Sparkles size={10} strokeWidth={2} /> SMO
+              </span>
+            ) : (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap"
+                style={{
+                  background: `${flowBadgeColor(gen.flow_type)}18`,
+                  color:      flowBadgeColor(gen.flow_type),
+                  border:     `1px solid ${flowBadgeColor(gen.flow_type)}30`,
+                }}>
+                {flowLabel(gen.flow_type)}
+              </span>
+            )}
 
             {/* #3 — strong/muted weight contrast */}
             <div className="flex-1 min-w-0">

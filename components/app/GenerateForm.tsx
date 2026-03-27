@@ -58,7 +58,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
     if (!selectedBrand) { setError('Brend seçin'); return }
     const url = selectedBrand.website_url
     if (!url) { setError('Seçilmiş brendin sayt URL-i yoxdur. Brendi redaktə edin.'); return }
-    if (profile && profile.generations_used >= profile.generations_limit) { setShowUpgrade(true); return }
+    if (profile && (profile.credits_used + 5 > profile.credits_limit)) { setShowUpgrade(true); return }
 
     setLoading(true); setLoadingMsgIdx(0); setError(''); setCrawlWarning(false)
     const normalizedUrl = normalizeUrl(url)
@@ -87,6 +87,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
   }
 
   const inputStyle = { background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.18)', boxShadow: '0 1px 3px rgba(13,13,26,0.04)' }
+  const creditsRemaining = Math.max((profile?.credits_limit ?? 25) - (profile?.credits_used ?? 0), 0)
 
   return (
     <>
@@ -218,6 +219,30 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           )}
         </motion.div>
 
+        {/* What you'll get */}
+        <motion.div className="w-full mb-5 rounded-2xl p-4 text-left"
+          style={{ background: 'rgba(123,110,246,0.04)', border: '1px solid rgba(123,110,246,0.12)' }}
+          initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.06 }}
+        >
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#7B6EF6' }}>SEO Paketi nə verir</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              ['🏷️', 'Title + Meta teqlər', 'AZ + RU dilləri'],
+              ['🔑', '8 Açar söz', 'SEO optimized'],
+              ['🔗', 'Schema Markup', 'JSON-LD strukturu'],
+              ['📱', 'OG + Twitter Card', 'Sosial paylaşım teqləri'],
+            ].map(([icon, title, sub]) => (
+              <div key={title} className="flex items-start gap-2">
+                <span className="text-base mt-0.5">{icon}</span>
+                <div>
+                  <div className="text-xs font-semibold" style={{ color: '#0D0D1A' }}>{title}</div>
+                  <div className="text-xs" style={{ color: '#9B9EBB' }}>{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
         {/* Crawl warning (non-blocking) */}
         <AnimatePresence>
           {crawlWarning && (
@@ -242,16 +267,29 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           )}
         </AnimatePresence>
 
-        {/* Submit */}
-        <motion.button onClick={handleGenerate} disabled={loading || !selectedBrand}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all disabled:opacity-60"
-          style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.25)' }}
+        {/* Submit + credit pill */}
+        <motion.div className="w-full"
           initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.08 }}
-          whileHover={{ scale: 1.02, boxShadow: '0 6px 28px rgba(123,110,246,0.35)' }}
-          whileTap={{ scale: 0.98 }}
         >
-          <span className="flex items-center justify-center gap-2">SEO Paketi Yarat <ArrowRight size={16} strokeWidth={2.5} /></span>
-        </motion.button>
+          <div className="relative">
+            <motion.button onClick={handleGenerate} disabled={loading || !selectedBrand}
+              className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all disabled:opacity-60"
+              style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.25)' }}
+              whileHover={{ scale: 1.02, boxShadow: '0 6px 28px rgba(123,110,246,0.35)' }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="flex items-center justify-center gap-2">SEO Paketi Yarat <ArrowRight size={16} strokeWidth={2.5} /></span>
+            </motion.button>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-lg pointer-events-none"
+              style={{ background: 'rgba(255,255,255,0.18)' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/80"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+              <span className="text-white/90 text-[11px] font-bold">5</span>
+            </div>
+          </div>
+          <p className="text-xs text-center mt-3" style={{ color: '#9B9EBB' }}>
+            <span className="font-semibold" style={{ color: creditsRemaining < 5 ? '#F25C54' : creditsRemaining < 25 ? '#F5A623' : '#7B6EF6' }}>{creditsRemaining}</span> kredit qalıb
+          </p>
+        </motion.div>
       </div>
     </>
   )

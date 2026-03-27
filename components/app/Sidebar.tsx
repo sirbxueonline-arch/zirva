@@ -8,8 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 import type { Profile, Brand } from '@/types'
 import { PLAN_NAMES } from '@/types'
 import {
-  LayoutDashboard, Search, Clock, ChevronDown,
-  Settings2, LogOut, Plus, HelpCircle, Mail,
+  LayoutDashboard, Globe, Clock, ChevronDown,
+  Settings2, LogOut, Plus, HelpCircle, Mail, Share2, Building2, Zap,
   type LucideIcon,
 } from 'lucide-react'
 import BrandAvatar from './BrandAvatar'
@@ -17,18 +17,23 @@ import BrandAvatar from './BrandAvatar'
 const SPRING = { type: 'spring' as const, stiffness: 400, damping: 30 }
 const SPRING_MENU = { type: 'spring' as const, stiffness: 320, damping: 26 }
 
-const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon }[] = [
+const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; activeColor?: string; activeBg?: string; activeBorder?: string }[] = [
   { label: 'Dashboard',  href: '/dashboard', Icon: LayoutDashboard },
-  { label: 'SEO Paketi', href: '/generate',  Icon: Search },
+  { label: 'SEO Paketi', href: '/generate',  Icon: Globe },
+  { label: 'SMO Paketi', href: '/smo',       Icon: Share2,    activeColor: '#00C9A7', activeBg: 'rgba(0,201,167,0.12)', activeBorder: 'rgba(0,201,167,0.2)' },
+  { label: 'Brendlər',  href: '/brands',    Icon: Building2 },
   { label: 'Tarixçə',   href: '/history',   Icon: Clock },
+  { label: 'Avtopilot', href: '/settings/autopilot', Icon: Zap, activeColor: '#F5A623', activeBg: 'rgba(245,166,35,0.1)', activeBorder: 'rgba(245,166,35,0.25)' },
 ]
 
 interface SidebarProps {
   profile: Profile | null
   onOpenSettings?: () => void
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
+export default function Sidebar({ profile, onOpenSettings, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname  = usePathname()
   const router    = useRouter()
   const supabase  = createClient()
@@ -91,12 +96,21 @@ export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
   const avatarLetter = (profile?.full_name || profile?.email || '?')[0].toUpperCase()
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 border-r z-30"
+    <aside
+      className={`flex flex-col fixed left-0 top-0 h-full w-72 md:w-60 border-r z-50 transition-transform duration-300 ease-in-out
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.12)', boxShadow: '2px 0 12px rgba(13,13,26,0.06)' }}
     >
       {/* Logo */}
-      <div className="px-6 py-6 border-b" style={{ borderColor: 'rgba(123,110,246,0.12)' }}>
-        <Link href="/" className="font-display font-bold text-2xl text-primary">Zirva</Link>
+      <div className="px-6 py-5 border-b flex items-center justify-between" style={{ borderColor: 'rgba(123,110,246,0.12)' }}>
+        <Link href="/" className="font-display font-bold text-2xl text-primary" onClick={onMobileClose}>Zirva</Link>
+        <button
+          onClick={onMobileClose}
+          className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
+          aria-label="Menyu bağla"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="#5A5D7A" strokeWidth="1.8" strokeLinecap="round"/></svg>
+        </button>
       </div>
 
       {/* Brand switcher */}
@@ -163,16 +177,15 @@ export default function Sidebar({ profile, onOpenSettings }: SidebarProps) {
       <nav className="flex-1 px-3 py-2">
         {NAV_ITEMS.map((item, i) => {
           const active = pathname === item.href
+          const color  = active ? (item.activeColor ?? '#7B6EF6') : '#5A5D7A'
+          const bg     = active ? (item.activeBg ?? 'rgba(123,110,246,0.12)') : 'transparent'
+          const border = active ? `1px solid ${item.activeBorder ?? 'rgba(123,110,246,0.2)'}` : '1px solid transparent'
           return (
             <motion.div key={item.href} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }}
               transition={{ ...SPRING, delay: i * 0.05 }}>
-              <Link href={item.href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1"
-                style={{
-                  background: active ? 'rgba(123,110,246,0.12)' : 'transparent',
-                  color: active ? '#7B6EF6' : '#5A5D7A',
-                  border: active ? '1px solid rgba(123,110,246,0.2)' : '1px solid transparent',
-                }}
+              <Link href={item.href} onClick={onMobileClose}
+                className="flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1"
+                style={{ background: bg, color, border }}
               >
                 <item.Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
                 {item.label}
