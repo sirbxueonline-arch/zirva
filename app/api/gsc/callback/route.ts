@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state') // user ID
 
   if (!code || !state) {
-    return NextResponse.redirect(new URL('/settings/autopilot?gsc=error', request.url))
+    return NextResponse.redirect(new URL('/autopilot?gsc=error', request.url))
   }
 
   try {
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }).eq('id', state)
 
-    return NextResponse.redirect(new URL('/settings/autopilot?gsc=connected', request.url))
+    return NextResponse.redirect(new URL('/autopilot?gsc=connected', request.url))
   } catch {
-    return NextResponse.redirect(new URL('/settings/autopilot?gsc=error', request.url))
+    return NextResponse.redirect(new URL('/autopilot?gsc=error', request.url))
   }
 }

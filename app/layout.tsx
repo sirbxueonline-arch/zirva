@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import LaunchBanner from '@/components/landing/LaunchBanner'
 
 export const metadata: Metadata = {
   title: 'Zirva — Google.az-da Birinci Ol',
@@ -24,7 +23,6 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-bg text-text-primary font-body antialiased overflow-x-hidden">
-        <LaunchBanner />
         {children}
       </body>
     </html>

@@ -23,7 +23,7 @@ const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; activeColor?: 
   { label: 'SMO Paketi', href: '/smo',       Icon: Share2,    activeColor: '#00C9A7', activeBg: 'rgba(0,201,167,0.12)', activeBorder: 'rgba(0,201,167,0.2)' },
   { label: 'Brendlər',  href: '/brands',    Icon: Building2 },
   { label: 'Tarixçə',   href: '/history',   Icon: Clock },
-  { label: 'Avtopilot', href: '/settings/autopilot', Icon: Zap, activeColor: '#F5A623', activeBg: 'rgba(245,166,35,0.1)', activeBorder: 'rgba(245,166,35,0.25)' },
+  { label: 'Avtopilot', href: '/autopilot', Icon: Zap, activeColor: '#F5A623', activeBg: 'rgba(245,166,35,0.1)', activeBorder: 'rgba(245,166,35,0.25)' },
 ]
 
 interface SidebarProps {

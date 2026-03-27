@@ -18,6 +18,6 @@ export async function GET(request: NextRequest) {
     h1{color:#0D0D1A;font-size:22px;margin-bottom:8px}p{color:#737599;font-size:14px}
     a{display:inline-block;margin-top:20px;padding:12px 24px;background:#7B6EF6;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px}</style></head>
     <body><div class="box"><h1>Avtopilot söndürüldü ✓</h1><p>Bundan sonra avtomatik hesabat göndərilməyəcək. İstənilən vaxt yenidən aktivləşdirə bilərsiniz.</p>
-    <a href="https://tryzirva.com/settings/autopilot">Parametrlərə qayıt</a></div></body></html>
+    <a href="https://tryzirva.com/autopilot">Parametrlərə qayıt</a></div></body></html>
   `, { headers: { 'content-type': 'text/html' } })
 }

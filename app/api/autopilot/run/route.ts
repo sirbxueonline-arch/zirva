@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
           subject: 'Zirva — Google Search Console yenidən qoşulun',
           react: React.createElement(ReconnectGSCEmail, {
             userName: user.full_name?.split(' ')[0] || 'İstifadəçi',
-            reconnectUrl: 'https://tryzirva.com/settings/autopilot',
+            reconnectUrl: 'https://tryzirva.com/autopilot',
           }),
         })
         results.push({ userId: user.id, status: 'skipped_gsc_token_error' })

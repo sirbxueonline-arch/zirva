@@ -22,7 +22,10 @@
     "react-dom": "^19",
     "tailwind-merge": "^2.2.0",
     "typescript": "^5",
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "@react-email/components": "^0.0.22",
+    "googleapis": "^144.0.0",
+    "resend": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
