@@ -272,7 +272,7 @@ export default function ResultCard({ generation, isPro }: { generation: Generati
   const [toasts, setToasts]             = useState<ToastItem[]>([])
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting]         = useState(false)
-  const seo = generation.output_data
+  const seo = generation.output_data as SEOPackage
 
   function addToast(message: string, type: ToastItem['type'] = 'success') {
     const id = Math.random().toString(36).slice(2)
