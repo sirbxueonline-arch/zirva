@@ -9,13 +9,15 @@ import LowCreditsEmail from '@/emails/LowCredits'
 import ReconnectGSCEmail from '@/emails/ReconnectGSC'
 import type { AutopilotInsights } from '@/types'
 
-const AUTOPILOT_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün rəqəmsal marketinq analitika ekspertisən. Hər 3 gündə bir istifadəçiyə Google Search Console məlumatlarına əsaslanan Azerbaycanca SEO hesabatı hazırlayırsan. Hər hesabat fərqli olmalıdır çünki məlumatlar dəyişir. Eyni məlumatı iki dəfə yazma. Həmişə konkret rəqəmlərə əsaslan. Ümumi fikirlər yazma. Bu saytın bu həftə nə dəyişdiyinə fokuslan.
+const AUTOPILOT_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün rəqəmsal marketinq analitika ekspertisən. Hər 3 gündə bir istifadəçiyə Google Search Console məlumatlarına əsaslanan Azerbaycanca SEO + SMO hesabatı hazırlayırsan. Hər hesabat fərqli olmalıdır çünki məlumatlar dəyişir. Eyni məlumatı iki dəfə yazma. Həmişə konkret rəqəmlərə əsaslan. Ümumi fikirlər yazma. Bu saytın bu həftə nə dəyişdiyinə fokuslan.
 
 Sənə aşağıdakı məlumatlar veriləcək. Cari dövrün məlumatları son 3 gündür. Əvvəlki dövrün məlumatları bundan əvvəlki 3 gündür. Hər açar söz üçün klik, impresiya, CTR və orta mövqe var. Saytın ümumi göstəriciləri də var.
 
+SEO analizindən əlavə SMO (sosial media optimallaşdırma) bölməsi də hazırla: bu həftənin ən populyar açar sözlərinə əsaslanaraq Instagram/TikTok üçün konkret kontent ideyaları, hashteqlər və tövsiyələr ver.
+
 Bu məlumatları analiz et və aşağıdakı JSON strukturunu qaytar. Heç bir izahat yazma. Heç bir markdown yazma. Yalnız xam JSON:
 
-{"seo_score":75,"score_change":5,"headline":"string — bu dövrün ən vacib məlumatı, 1 cümlə","summary":"string — 2-3 cümləlik Azerbaycanca analiz","top_performers":[{"keyword":"string","clicks":0,"position":0.0,"change":"string"}],"declining":[{"keyword":"string","position_drop":0,"reason":"string — 1 cümlə"}],"action_items":["string","string","string"],"opportunity":"string","warning":"string","total_clicks":0,"total_clicks_change":"string","total_impressions":0,"total_impressions_change":"string"}`
+{"seo_score":75,"score_change":5,"headline":"string — bu dövrün ən vacib məlumatı, 1 cümlə","summary":"string — 2-3 cümləlik Azerbaycanca analiz","top_performers":[{"keyword":"string","clicks":0,"position":0.0,"change":"string"}],"declining":[{"keyword":"string","position_drop":0,"reason":"string — 1 cümlə"}],"action_items":["string","string","string"],"opportunity":"string","warning":"string","total_clicks":0,"total_clicks_change":"string","total_impressions":0,"total_impressions_change":"string","smo":{"headline":"string — bu həftə sosial mediada nə paylaşmalısınız, 1 cümlə","top_hashtags":["#hashtag1","#hashtag2","#hashtag3","#hashtag4","#hashtag5"],"content_ideas":["string — konkret post ideyası 1","string — konkret post ideyası 2","string — konkret post ideyası 3"],"best_platform":"string — hansı platforma bu həftə daha effektivdir və niyə, 1 cümlə","post_tip":"string — bu həftə üçün xüsusi SMO tövsiyəsi, 1 cümlə"}}`
 
 async function generateInsights(gscData: import('@/lib/gsc').GSCData, openai: OpenAI): Promise<AutopilotInsights> {
   const userPrompt = `Sayt: ${gscData.siteUrl}
@@ -146,6 +148,7 @@ export async function GET(request: NextRequest) {
           actionItems: insights.action_items,
           opportunity: insights.opportunity,
           warning: insights.warning,
+          smo: insights.smo,
           period,
           unsubscribeUrl,
         }),

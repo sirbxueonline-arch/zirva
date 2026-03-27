@@ -91,6 +91,13 @@ export interface AutopilotInsights {
   total_clicks_change: string
   total_impressions: number
   total_impressions_change: string
+  smo: {
+    headline: string
+    top_hashtags: string[]
+    content_ideas: string[]
+    best_platform: string
+    post_tip: string
+  }
 }
 
 export interface Brand {

@@ -27,6 +27,13 @@ interface AutopilotReportEmailProps {
   actionItems: string[]
   opportunity: string
   warning: string
+  smo?: {
+    headline: string
+    top_hashtags: string[]
+    content_ideas: string[]
+    best_platform: string
+    post_tip: string
+  }
   period: string
   unsubscribeUrl: string
 }
@@ -47,6 +54,7 @@ export default function AutopilotReportEmail({
   actionItems,
   opportunity,
   warning,
+  smo,
   period,
   unsubscribeUrl,
 }: AutopilotReportEmailProps) {
@@ -364,6 +372,128 @@ export default function AutopilotReportEmail({
               </div>
             )}
           </Section>
+
+          {/* SMO Section */}
+          {smo && (
+            <Section style={{
+              backgroundColor: '#ffffff',
+              padding: '0 32px 28px',
+            }}>
+              <Hr style={{ borderColor: 'rgba(0,201,167,0.15)', margin: '0 0 24px' }} />
+
+              {/* SMO header */}
+              <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '16px' }}>
+                <tbody>
+                  <tr>
+                    <td>
+                      <Text style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.8px' }}>
+                        📱 SMO İnsaytları
+                      </Text>
+                      <Text style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: '700', color: '#0D0D1A' }}>
+                        {smo.headline}
+                      </Text>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Best platform */}
+              <div style={{
+                backgroundColor: 'rgba(0,201,167,0.06)',
+                border: '1px solid rgba(0,201,167,0.2)',
+                borderRadius: '10px',
+                padding: '12px 14px',
+                marginBottom: '16px',
+              }}>
+                <Text style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '700', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>
+                  Bu Həftənin Platforması
+                </Text>
+                <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
+                  {smo.best_platform}
+                </Text>
+              </div>
+
+              {/* Hashtags */}
+              {smo.top_hashtags && smo.top_hashtags.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <Text style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: '600', color: '#5A5D7A' }}>
+                    Tövsiyə olunan hashteqlər:
+                  </Text>
+                  <div>
+                    {smo.top_hashtags.map((tag, i) => (
+                      <span key={i} style={{
+                        display: 'inline-block',
+                        backgroundColor: 'rgba(0,201,167,0.08)',
+                        color: '#00C9A7',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        marginRight: '6px',
+                        marginBottom: '6px',
+                        border: '1px solid rgba(0,201,167,0.2)',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Content ideas */}
+              {smo.content_ideas && smo.content_ideas.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <Text style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '600', color: '#5A5D7A' }}>
+                    Kontent ideyaları:
+                  </Text>
+                  {smo.content_ideas.map((idea, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      padding: '9px 12px',
+                      backgroundColor: i % 2 === 0 ? '#F5F5FF' : '#ffffff',
+                      borderRadius: '8px',
+                      marginBottom: '5px',
+                      border: '1px solid rgba(123,110,246,0.06)',
+                    }}>
+                      <table width="100%" cellPadding={0} cellSpacing={0}>
+                        <tbody>
+                          <tr>
+                            <td width="20" style={{ verticalAlign: 'top', paddingTop: '1px' }}>
+                              <Text style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7B6EF6' }}>
+                                {i + 1}.
+                              </Text>
+                            </td>
+                            <td style={{ paddingLeft: '6px' }}>
+                              <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
+                                {idea}
+                              </Text>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Post tip */}
+              {smo.post_tip && (
+                <div style={{
+                  backgroundColor: 'rgba(123,110,246,0.06)',
+                  border: '1px solid rgba(123,110,246,0.15)',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                }}>
+                  <Text style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '700', color: '#7B6EF6', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>
+                    💡 Həftənin SMO Tövsiyəsi
+                  </Text>
+                  <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
+                    {smo.post_tip}
+                  </Text>
+                </div>
+              )}
+            </Section>
+          )}
 
           {/* Footer */}
           <Section style={{
