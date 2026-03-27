@@ -24,6 +24,12 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
+  // Always allow public pages through — no auth logic whatsoever
+  const publicPaths = ['/', '/about', '/privacy', '/terms', '/pricing', '/faq', '/how-it-works']
+  if (publicPaths.some(p => pathname === p)) {
+    return supabaseResponse
+  }
+
   // Protect app routes
   const protectedPaths = ['/dashboard', '/generate', '/history', '/result', '/settings', '/onboarding', '/smo']
   if (protectedPaths.some(p => pathname.startsWith(p)) && !user) {
