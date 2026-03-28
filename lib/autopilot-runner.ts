@@ -1,4 +1,4 @@
-import { createClient as supabaseAdmin } from '@supabase/supabase-js'
+import { createClient as supabaseAdmin, type SupabaseClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import { refreshAccessToken, getGSCData } from '@/lib/gsc'
 import { resend } from '@/lib/resend'
@@ -124,7 +124,8 @@ export interface AutopilotUser {
 
 export async function runAutopilotForUser(
   user: AutopilotUser,
-  admin: ReturnType<typeof supabaseAdmin>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: SupabaseClient<any, any, any>,
   openai: OpenAI,
 ): Promise<{ status: string; error?: string }> {
   // Build the list of entries to report on
