@@ -164,7 +164,7 @@ export default function StepsSection() {
   return (
     <>
       {/* ── 3 Steps ── */}
-      <section ref={ref1} className="py-24" style={{ background: '#FFFFFF' }}>
+      <section id="how-it-works" ref={ref1} className="py-24" style={{ background: '#FFFFFF' }}>
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
             className="text-center mb-16"
@@ -180,15 +180,49 @@ export default function StepsSection() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10">
+            {/* Desktop connectors between steps */}
+            <div className="hidden md:flex absolute top-[72px] left-0 right-0 items-center pointer-events-none" style={{ zIndex: 0 }}>
+              <div className="flex-1" />
+              <div className="flex items-center gap-1" style={{ width: 'calc(33.33% - 32px)', justifyContent: 'center' }}>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="h-px flex-1 rounded-full" style={{ background: 'rgba(123,110,246,0.25)' }} />
+                ))}
+                <svg width="14" height="14" viewBox="0 0 14 14" style={{ flexShrink: 0, color: '#7B6EF6' }}>
+                  <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <div className="flex-1" />
+              <div className="flex items-center gap-1" style={{ width: 'calc(33.33% - 32px)', justifyContent: 'center' }}>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="h-px flex-1 rounded-full" style={{ background: 'rgba(123,110,246,0.25)' }} />
+                ))}
+                <svg width="14" height="14" viewBox="0 0 14 14" style={{ flexShrink: 0, color: '#7B6EF6' }}>
+                  <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <div className="flex-1" />
+            </div>
+
+            {/* Mobile vertical connector */}
+            <div className="md:hidden absolute left-1/2 -translate-x-1/2 flex flex-col items-center" style={{ top: 220, height: 'calc(100% - 440px)', zIndex: 0 }}>
+              <div className="w-px flex-1" style={{ background: 'linear-gradient(to bottom, rgba(123,110,246,0.3), rgba(123,110,246,0.1))' }} />
+            </div>
+
             {STEPS.map((step, i) => (
               <motion.div
                 key={step.num}
-                className="flex flex-col items-center text-center gap-5"
+                className="relative flex flex-col items-center text-center gap-5"
+                style={{ zIndex: 1 }}
                 initial={{ y: 28, opacity: 0 }}
                 animate={inView1 ? { y: 0, opacity: 1 } : {}}
                 transition={{ ...SPRING, delay: 0.08 + i * 0.1 }}
               >
+                {/* Step number badge */}
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold mb-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg, #7B6EF6, #9B8FF8)', boxShadow: '0 4px 12px rgba(123,110,246,0.3)' }}>
+                  {step.num}
+                </div>
+
                 {/* Visual */}
                 <div className="w-full max-w-[260px]">
                   {step.visual}
@@ -197,7 +231,7 @@ export default function StepsSection() {
                 {/* Text */}
                 <div>
                   <p className="font-display font-bold text-lg mb-1" style={{ color: '#0D0D1A' }}>
-                    <span style={{ color: '#7B6EF6' }}>{step.num}.</span> {step.title}
+                    {step.title}
                   </p>
                   <p className="text-sm leading-relaxed" style={{ color: '#737599' }}>
                     {step.desc}

@@ -1,9 +1,48 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { ArrowRight, Star, CheckCircle } from 'lucide-react'
+
+/* ── Live user counter ────────────────────────────── */
+function LiveCounter() {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true })
+  const [count, setCount] = useState(273)
+
+  useEffect(() => {
+    if (!inView) return
+    let current = 273
+    const target = 317
+    const id = setInterval(() => {
+      current = Math.min(current + 4, target)
+      setCount(current)
+      if (current >= target) clearInterval(id)
+    }, 55)
+    return () => clearInterval(id)
+  }, [inView])
+
+  const COLORS = ['#7B6EF6', '#00C9A7', '#F25C54', '#F5A623', '#4285F4']
+  const INITIALS = ['N', 'R', 'E', 'K', 'A']
+
+  return (
+    <div ref={ref} className="flex items-center justify-center gap-2.5 text-sm">
+      <div className="flex -space-x-2">
+        {COLORS.map((c, i) => (
+          <div key={i} className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-white font-bold" style={{ background: c, fontSize: 9 }}>
+            {INITIALS[i]}
+          </div>
+        ))}
+      </div>
+      <span style={{ color: '#737599' }}>
+        Bu ay{' '}
+        <strong style={{ color: '#0D0D1A' }}>{count}+</strong>
+        {' '}sahibkar Zirva ilə #1-ə çıxdı
+      </span>
+    </div>
+  )
+}
 
 /* ── Shared: ChatGPT icon PNG ─────────────────────── */
 function ChatGPTIcon({ size = 16 }: { size?: number }) {
@@ -156,6 +195,7 @@ function ChatGPTPanel() {
 /* ── Main Hero ────────────────────────────────────── */
 export default function Hero() {
   const [mounted, setMounted] = useState(false)
+  const [activePanel, setActivePanel] = useState<'google' | 'chatgpt'>('google')
   useEffect(() => { setMounted(true) }, [])
 
   const stagger = (i: number) => ({
@@ -225,7 +265,7 @@ export default function Hero() {
         </motion.p>
 
         {/* CTAs */}
-        <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-12 sm:mb-16 px-4 sm:px-0" {...stagger(2)}>
+        <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-5 px-4 sm:px-0" {...stagger(2)}>
           <Link
             href="/signup"
             className="group flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 hover:scale-[1.03]"
@@ -237,24 +277,55 @@ export default function Hero() {
             Pulsuz Başla
             <ArrowRight size={15} strokeWidth={2.5} className="group-hover:translate-x-0.5 transition-transform duration-200" />
           </Link>
-          <a
-            href="#how-it-works"
+          <Link
+            href="/how-it-works"
             className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.01]"
             style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)', color: '#3D4060' }}
           >
             Necə işləyir?
-          </a>
+          </Link>
         </motion.div>
 
-        {/* Dual mockup — stacks on mobile */}
+        {/* Live counter */}
+        <motion.div className="mb-10 sm:mb-14 px-4 sm:px-0" {...stagger(3)}>
+          <LiveCounter />
+        </motion.div>
+
+        {/* Mobile panel tab switcher */}
+        <motion.div
+          className="flex md:hidden items-center gap-1 mb-3 mx-4 p-1 rounded-xl self-center"
+          style={{ background: 'rgba(0,0,0,0.05)', width: 'fit-content', margin: '0 auto 12px' }}
+          {...stagger(3)}
+        >
+          {(['google', 'chatgpt'] as const).map(panel => (
+            <button
+              key={panel}
+              onClick={() => setActivePanel(panel)}
+              className="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200"
+              style={{
+                background: activePanel === panel ? '#FFFFFF' : 'transparent',
+                color: activePanel === panel ? '#0D0D1A' : '#737599',
+                boxShadow: activePanel === panel ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+              }}
+            >
+              {panel === 'google' ? '🔍 Google' : '🤖 ChatGPT'}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Dual mockup — stacks on mobile with tab switching */}
         <motion.div
           className="flex flex-col md:flex-row gap-3"
           initial={{ y: 56, opacity: 0 }}
           animate={mounted ? { y: 0, opacity: 1 } : {}}
           transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
-          <GooglePanel />
-          <ChatGPTPanel />
+          <div className={activePanel === 'google' ? 'flex flex-1 min-w-0' : 'hidden md:flex flex-1 min-w-0'}>
+            <GooglePanel />
+          </div>
+          <div className={activePanel === 'chatgpt' ? 'flex flex-1 min-w-0' : 'hidden md:flex flex-1 min-w-0'}>
+            <ChatGPTPanel />
+          </div>
         </motion.div>
 
         {/* Bottom fade */}

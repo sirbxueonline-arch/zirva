@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Zap, ArrowRight, Play } from 'lucide-react'
+import { Zap, ArrowRight } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
@@ -126,8 +126,8 @@ export default function CTABanner() {
             />
           </Link>
 
-          <a
-            href="#how-it-works"
+          <Link
+            href="/pricing"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-200 hover:scale-[1.02]"
             style={{
               background: 'rgba(255,255,255,0.12)',
@@ -136,9 +136,9 @@ export default function CTABanner() {
               backdropFilter: 'blur(8px)',
             }}
           >
-            <Play size={15} strokeWidth={2.5} />
-            Demo baxın
-          </a>
+            Qiymətlərə baxın
+            <ArrowRight size={15} strokeWidth={2.5} />
+          </Link>
         </motion.div>
 
         {/* Social proof */}

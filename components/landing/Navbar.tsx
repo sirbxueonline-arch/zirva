@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence, useScroll } from 'framer-motion'
 import { ArrowRight, X, Menu } from 'lucide-react'
 
@@ -9,6 +10,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled,   setScrolled]   = useState(false)
   const { scrollY } = useScroll()
+  const pathname = usePathname()
 
   useEffect(() => scrollY.on('change', v => setScrolled(v > 24)), [scrollY])
 
@@ -20,9 +22,15 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'Necə işləyir', href: '/how-it-works' },
-    { label: 'Qiymətlər',    href: '/pricing'      },
-    { label: 'FAQ',          href: '/faq'           },
+    { label: 'Avtopilot',    href: '/#autopilot-section' },
+    { label: 'Qiymətlər',   href: '/pricing'      },
+    { label: 'FAQ',         href: '/faq'           },
   ]
+
+  const isActive = (href: string) => {
+    if (href.startsWith('/#')) return false
+    return pathname === href || pathname.startsWith(href + '/')
+  }
 
   return (
     <>
@@ -50,18 +58,24 @@ export default function Navbar() {
 
           {/* Desktop links — centred */}
           <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium transition-colors duration-150"
-                style={{ color: '#737599' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#0D0D1A')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#737599')}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map(link => {
+              const active = isActive(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="relative text-sm font-medium transition-colors duration-150"
+                  style={{ color: active ? '#0D0D1A' : '#737599' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#0D0D1A')}
+                  onMouseLeave={e => (e.currentTarget.style.color = active ? '#0D0D1A' : '#737599')}
+                >
+                  {link.label}
+                  {active && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full" style={{ background: '#7B6EF6' }} />
+                  )}
+                </Link>
+              )
+            })}
           </div>
 
           {/* Desktop CTAs */}
@@ -137,20 +151,24 @@ export default function Navbar() {
 
               {/* Links */}
               <div className="flex flex-col px-4 py-4 gap-1 flex-1">
-                {navLinks.map((link, i) => (
-                  <motion.div key={link.href} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.05 }}>
-                    <Link
-                      href={link.href}
-                      className="block px-4 py-3 rounded-xl text-sm font-medium transition-colors"
-                      style={{ color: '#737599' }}
-                      onClick={() => setMobileOpen(false)}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.04)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                ))}
+                {navLinks.map((link, i) => {
+                  const active = isActive(link.href)
+                  return (
+                    <motion.div key={link.href} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 + i * 0.05 }}>
+                      <Link
+                        href={link.href}
+                        className="block px-4 py-3 rounded-xl text-sm font-semibold transition-colors"
+                        style={{
+                          color: active ? '#7B6EF6' : '#737599',
+                          background: active ? 'rgba(123,110,246,0.06)' : 'transparent',
+                        }}
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  )
+                })}
               </div>
 
               {/* Bottom CTAs */}

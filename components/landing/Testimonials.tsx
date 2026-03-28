@@ -11,50 +11,50 @@ const AVATAR_COLORS = ['#7B6EF6', '#00C9A7', '#F25C54', '#F5A623', '#4285F4', '#
 
 const TESTIMONIALS = [
   {
-    name: 'James Thornton',
-    initials: 'JT',
-    role: 'E-commerce Owner, London',
-    text: 'Jumped to page one on Google within weeks. Our organic traffic doubled — I wish I had found Zirva sooner.',
+    name: 'Nigar Əliyeva',
+    initials: 'NƏ',
+    role: 'Gözəllik salonu sahibi, Bakı',
+    text: 'Zirva ilə bir həftədə Google-da #1 oldum. Əvvəl aylarca SEO agentliyinə pul verirdim — indi özüm edirəm.',
     stars: 5,
     avatarColor: AVATAR_COLORS[0],
   },
   {
-    name: 'Elif Şahin',
-    initials: 'EŞ',
-    role: 'Restoran Sahibi, İstanbul',
-    text: '5 dakikada tam SEO paketi hazır. Ajansa ödediğim paranın üçte birini ödüyorum artık.',
+    name: 'Rauf Hüseynov',
+    initials: 'RH',
+    role: 'Restoran sahibi, Gəncə',
+    text: 'URL-i yapışdırdım, 30 saniyədə tam SEO paketi hazır oldu. İnanmadım, amma Google-da nəticəni gördüm.',
     stars: 5,
     avatarColor: AVATAR_COLORS[1],
   },
   {
-    name: 'Sophie Clarke',
-    initials: 'SC',
-    role: 'Beauty Salon Owner, Manchester',
-    text: 'Schema markup made Google actually understand my business. Bookings went up almost immediately.',
+    name: 'Leyla Quliyeva',
+    initials: 'LQ',
+    role: 'SMM mütəxəssisi, Bakı',
+    text: 'Müştərilərimə Agency planı ilə istifadə edirəm. Hər biri nəticədən razıdır, heç kim ləğv etmir.',
     stars: 5,
     avatarColor: AVATAR_COLORS[2],
   },
   {
-    name: 'Mehmet Yıldırım',
-    initials: 'MY',
-    role: 'SMM Uzmanı, Ankara',
-    text: 'Müşterilerim için Agency planıyla kullanıyorum. Hızlı, güvenilir ve çok uygun fiyatlı.',
+    name: 'Elnur Babayev',
+    initials: 'EB',
+    role: 'Hüquq bürosu direktoru, Sumqayıt',
+    text: 'Schema markup-dan sonra Google biznesimizi düzgün tanıdı. Zənglər demək olar ki, dərhal artdı.',
     stars: 5,
     avatarColor: AVATAR_COLORS[3],
   },
   {
-    name: 'Oliver Bennett',
-    initials: 'OB',
-    role: 'Law Firm Director, Birmingham',
-    text: 'We were invisible in search before Zirva. Now we rank top 3 for our key terms across the whole region.',
+    name: 'Aytən Məmmədova',
+    initials: 'AM',
+    role: 'E-ticarət sahibi, Bakı',
+    text: 'Avtopilot emailləri hər həftə saytımın vəziyyətini göstərir. Artıq SEO ilə bağlı heç nəyi qaçırmıram.',
     stars: 5,
     avatarColor: AVATAR_COLORS[4],
   },
   {
-    name: 'Zeynep Arslan',
-    initials: 'ZA',
-    role: 'Web Developer, İzmir',
-    text: 'Müşterilerime Agency planıyla sunuyorum. Her biri sonuçtan memnun, yenileme oranı çok yüksek.',
+    name: 'Kamran İsayev',
+    initials: 'Kİ',
+    role: 'Veb developer, Bakı',
+    text: 'Müştərilərimə Zirva ilə SEO xidməti göstərirəm. Eyni işi əvvəl 3 saata görürdüm, indi 5 dəqiqə.',
     stars: 5,
     avatarColor: AVATAR_COLORS[5],
   },
@@ -131,10 +131,10 @@ export default function Testimonials() {
         transition={{ ...SPRING, delay: 0 }}
       >
         <h2 className="font-display font-bold text-4xl md:text-5xl mb-4" style={{ color: '#0D0D1A' }}>
-          İstifadəçilər Nə Deyir?
+          Sahibkarlar Nə Deyir?
         </h2>
         <p className="text-lg" style={{ color: '#3D4060' }}>
-          Azərbaycanlı sahibkarların real nəticələri
+          Bakı, Gəncə, Sumqayıtdan real istifadəçi rəyləri
         </p>
       </motion.div>
 

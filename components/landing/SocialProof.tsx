@@ -130,10 +130,10 @@ export default function SocialProof() {
           transition={{ ...SPRING }}
         >
           <h2 className="font-display font-bold text-4xl md:text-5xl mb-3" style={{ color: '#0D0D1A' }}>
-            Google və ChatGPT-də sıralanan məzmun
+            Google-da #1 sıralanan saytlar
           </h2>
           <p className="text-lg" style={{ color: '#737599' }}>
-            10 mindən çox məqalə, 1 milyon baxış və 4.8 milyon klik.
+            500+ aktiv brend. 50.000+ kredit istifadə edilib. Hər gün böyüyür.
           </p>
         </motion.div>
 

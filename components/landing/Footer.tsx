@@ -7,6 +7,27 @@ import { motion, useInView } from 'framer-motion'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
+function InstagramIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+    </svg>
+  )
+}
+
+function LinkedInIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" strokeWidth="2"/>
+      <path d="M7 10v7M7 7v.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M11 17v-3.5c0-1.5 1-2.5 2.5-2.5S16 11.5 16 13v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M11 10v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 export default function Footer() {
   const ref = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: '-50px' })
@@ -40,9 +61,32 @@ export default function Footer() {
             >
               Google-da da. ChatGPT-də də. İkisini birlikdə tutun.
             </p>
-            <p className="text-xs" style={{ color: '#737599' }}>
+            <p className="text-xs mb-5" style={{ color: '#737599' }}>
               Azərbaycan bazarı üçün hazırlanmış SEO həlli.
             </p>
+            {/* Social links */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://instagram.com/tryzirva"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 hover:scale-110"
+                style={{ background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}
+                aria-label="Instagram"
+              >
+                <InstagramIcon />
+              </a>
+              <a
+                href="https://linkedin.com/company/tryzirva"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 hover:scale-110"
+                style={{ background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}
+                aria-label="LinkedIn"
+              >
+                <LinkedInIcon />
+              </a>
+            </div>
           </div>
 
           {/* Col 3: Product */}
@@ -55,12 +99,13 @@ export default function Footer() {
             </div>
             <ul className="space-y-2.5">
               {[
-                { label: 'Necə işləyir', href: '#how-it-works' },
-                { label: 'Qiymətlər',   href: '#pricing' },
-                { label: 'FAQ',         href: '#faq' },
+                { label: 'Necə işləyir', href: '/how-it-works' },
+                { label: 'Qiymətlər',   href: '/pricing' },
+                { label: 'Haqqımızda',  href: '/about' },
+                { label: 'FAQ',         href: '/faq' },
               ].map(l => (
                 <li key={l.href}>
-                  <a
+                  <Link
                     href={l.href}
                     className="text-sm transition-colors duration-150"
                     style={{ color: '#3D4060' }}
@@ -68,7 +113,7 @@ export default function Footer() {
                     onMouseLeave={e => (e.currentTarget.style.color = '#3D4060')}
                   >
                     {l.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -84,8 +129,8 @@ export default function Footer() {
             </div>
             <ul className="space-y-2.5">
               {[
-                { label: 'Məxfilik Siyasəti', href: '/privacy', isLink: true },
-                { label: 'İstifadə Şərtləri', href: '/terms', isLink: true },
+                { label: 'Məxfilik Siyasəti', href: '/privacy' },
+                { label: 'İstifadə Şərtləri', href: '/terms' },
               ].map(l => (
                 <li key={l.href}>
                   <Link
@@ -120,7 +165,10 @@ export default function Footer() {
           style={{ borderColor: 'rgba(123,110,246,0.1)' }}
         >
           <p className="text-sm" style={{ color: '#737599' }}>
-            &copy; 2025 Zirva. Bütün hüquqlar qorunur.
+            &copy; 2026 Zirva. Bütün hüquqlar qorunur.
+          </p>
+          <p className="text-xs" style={{ color: '#B0B3CC' }}>
+            Azərbaycan bazarı üçün hazırlanmıb 🇦🇿
           </p>
         </div>
       </div>

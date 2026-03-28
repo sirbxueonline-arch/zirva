@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Globe, Cpu, Mail } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 260, damping: 28 }
 
@@ -121,17 +121,58 @@ export default function FeatureSpotlight() {
               Zirva arxa planda işləyir — saytınızı öyrənir, mükəmməl SEO teqlərini hazırlayır. Siz yalnız "Kopyala" düyməsini basırsınız.
             </p>
 
-            {/* Feature pill */}
-            <div
-              className="inline-flex items-center gap-4 px-5 py-4 rounded-2xl"
-              style={{ background: '#FFFFFF', border: '1.5px solid rgba(13,13,26,0.07)', boxShadow: '0 4px 16px rgba(13,13,26,0.06)' }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(0,201,167,0.1)' }}>
-                <Check size={20} style={{ color: '#00C9A7' }} strokeWidth={2.5} />
+            {/* Feature pills */}
+            <div className="flex flex-col gap-3">
+              <div
+                className="inline-flex items-center gap-4 px-5 py-4 rounded-2xl"
+                style={{ background: '#FFFFFF', border: '1.5px solid rgba(13,13,26,0.07)', boxShadow: '0 4px 16px rgba(13,13,26,0.06)' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(0,201,167,0.1)' }}>
+                  <Check size={20} style={{ color: '#00C9A7' }} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: '#737599' }}>Bir kliklə kopyala</p>
+                  <p className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>Teqlər hazırdır — yapışdır, bitdi.</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-semibold mb-0.5" style={{ color: '#737599' }}>Bir kliklə kopyala</p>
-                <p className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>Teqlər hazırdır — yapışdır, bitdi.</p>
+
+              <div
+                className="inline-flex items-center gap-4 px-5 py-4 rounded-2xl"
+                style={{ background: '#FFFFFF', border: '1.5px solid rgba(13,13,26,0.07)', boxShadow: '0 4px 16px rgba(13,13,26,0.06)' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(66,133,244,0.1)' }}>
+                  <Globe size={20} style={{ color: '#4285F4' }} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: '#737599' }}>Azərb + Rus + İngilis</p>
+                  <p className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>Üç dildə teqlər — hər bazarda görün.</p>
+                </div>
+              </div>
+
+              <div
+                className="inline-flex items-center gap-4 px-5 py-4 rounded-2xl"
+                style={{ background: '#FFFFFF', border: '1.5px solid rgba(13,13,26,0.07)', boxShadow: '0 4px 16px rgba(13,13,26,0.06)' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(123,110,246,0.1)' }}>
+                  <Cpu size={20} style={{ color: '#7B6EF6' }} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: '#737599' }}>GPT-4o ilə hazırlanır</p>
+                  <p className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>Ən güclü AI — hər teq optimal.</p>
+                </div>
+              </div>
+
+              <div
+                className="inline-flex items-center gap-4 px-5 py-4 rounded-2xl"
+                style={{ background: '#FFFFFF', border: '1.5px solid rgba(13,13,26,0.07)', boxShadow: '0 4px 16px rgba(13,13,26,0.06)' }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,166,35,0.1)' }}>
+                  <Mail size={20} style={{ color: '#F5A623' }} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: '#737599' }}>Avtopilot hesabatları</p>
+                  <p className="text-sm font-semibold" style={{ color: '#0D0D1A' }}>Həftəlik SEO məlumatı emaildə.</p>
+                </div>
               </div>
             </div>
           </motion.div>
