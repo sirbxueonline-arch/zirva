@@ -1,6 +1,6 @@
 import { createClient as supabaseAdmin, type SupabaseClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
-import { refreshAccessToken, getGSCData } from '@/lib/gsc'
+import { refreshAccessToken, getGSCData, listGSCSites } from '@/lib/gsc'
 import { resend } from '@/lib/resend'
 import React from 'react'
 import AutopilotReportEmail from '@/emails/AutopilotReport'
@@ -90,15 +90,31 @@ function extractDomain(raw: string): string {
   } catch { return raw.toLowerCase() }
 }
 
-async function getGSCDataForBrand(accessToken: string, websiteUrl: string, days: number): Promise<GSCData | null> {
+async function getGSCDataForBrand(accessToken: string, websiteUrl: string, days: number, verifiedSites: string[]): Promise<GSCData | null> {
   const domain = extractDomain(websiteUrl)
+
+  // 1. Try matching against the user's verified GSC properties (most reliable)
+  const match = verifiedSites.find(site => extractDomain(site) === domain)
+  if (match) {
+    try {
+      console.log(`[autopilot] Matched GSC property "${match}" for domain "${domain}"`)
+      return await getGSCData(accessToken, match, days)
+    } catch (err) {
+      console.error(`[autopilot] GSC query failed for matched property "${match}":`, err)
+    }
+  }
+
+  // 2. Fall back to manual URL candidates
   const candidates = [
     websiteUrl,
     `sc-domain:${domain}`,
     `https://${domain}/`,
     `http://${domain}/`,
+    `https://www.${domain}/`,
+    `http://www.${domain}/`,
   ]
   for (const url of candidates) {
+    if (url === match) continue // already tried above
     try {
       return await getGSCData(accessToken, url, days)
     } catch { continue }
@@ -199,6 +215,15 @@ export async function runAutopilotForUser(
 
   const days = user.autopilot_frequency === 'monthly' ? 30 : 7
 
+  // List verified GSC properties so we can match by domain exactly
+  let verifiedSites: string[] = []
+  try {
+    verifiedSites = await listGSCSites(accessToken)
+    console.log(`[autopilot] Verified GSC sites for user ${user.id}:`, verifiedSites)
+  } catch (err) {
+    console.error(`[autopilot] Could not list GSC sites:`, err)
+  }
+
   console.log(`[autopilot] Processing ${entriesToReport.length} entries for user ${user.id}:`, entriesToReport.map(e => `${e.name} (${e.id})`))
 
   for (const entry of entriesToReport) {
@@ -207,7 +232,7 @@ export async function runAutopilotForUser(
     // Try GSC data (works for primary site and any brand whose site is in GSC)
     if (entry.website_url) {
       try {
-        const gscData = await getGSCDataForBrand(accessToken, entry.website_url, days)
+        const gscData = await getGSCDataForBrand(accessToken, entry.website_url, days, verifiedSites)
         if (gscData) {
           console.log(`[autopilot] GSC data found for ${entry.name}, generating insights...`)
           let insights: AutopilotInsights
