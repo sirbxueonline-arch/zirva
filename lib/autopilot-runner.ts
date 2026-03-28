@@ -18,9 +18,13 @@ Heç bir izahat yazma. Heç bir markdown yazma. Yalnız bu JSON-u qaytar:
 
 {"seo_score":75,"score_change":5,"headline":"1 cümlə","summary":"2-3 cümlə","total_clicks":0,"total_clicks_change":"+10%","total_impressions":0,"total_impressions_change":"+5%","top_performers":[{"keyword":"string","clicks":0,"position":0.0,"change":"+2"},{"keyword":"string","clicks":0,"position":0.0,"change":"-1"},{"keyword":"string","clicks":0,"position":0.0,"change":"0"}],"improvements":[{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"}]}`
 
-const INSTAGRAM_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün Instagram marketinq ekspertisən. Brend məlumatlarına əsaslanaraq Azerbaycanca Instagram strategiyası hazırla. Heç bir izahat yazma. Heç bir markdown yazma. Yalnız bu JSON-u qaytar:
+const INSTAGRAM_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün Instagram analitika ekspertisən. Brend məlumatlarına əsaslanaraq bu dövrün Instagram performansını Azerbaycanca analiz et. Ümumi məsləhət vermə — konkret rəqəmlər və nəticələr yaz. Zirva-nın tövsiyələrinə əsaslanaraq bu brendin Instagram-da hansı nəticələr əldə etdiyi/edə biləcəyini göstər.
 
-{"headline":"string — 1 cümlə","summary":"string — 2-3 cümlə","content_ideas":[],"hashtags":[],"best_post_time":"","action_items":[]}`
+"highlights" — 3 ədəd konkret nəticə (kəşf çatışı, izləyici artımı, engagement, ən yaxşı kontent tipi və s.). Hər biri konkret rəqəm/faiz ehtiva etməlidir.
+
+Heç bir izahat yazma. Heç bir markdown yazma. Yalnız bu JSON-u qaytar:
+
+{"headline":"string — 1 cümlə","summary":"string — 2-3 cümlə","highlights":[{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"}],"content_ideas":[],"hashtags":[],"best_post_time":"","action_items":[]}`
 
 export async function generateInsights(gscData: GSCData, openai: OpenAI): Promise<AutopilotInsights> {
   const userPrompt = `Sayt: ${gscData.siteUrl}
@@ -56,14 +60,20 @@ ${gscData.declining.length > 0 ? `Düşən açar sözlər:\n${gscData.declining.
 export async function generateInstagramInsights(
   brand: { name: string; instagram_url?: string | null; category?: string | null; description?: string | null; city?: string | null },
   openai: OpenAI,
+  smoData?: { hashtags?: string[]; posting_schedule?: string; score?: number; content_pillars?: { name: string }[] } | null,
 ): Promise<InstagramInsights> {
   const userPrompt = `Brend adı: ${brand.name}
 ${brand.category ? `Kateqoriya: ${brand.category}` : ''}
 ${brand.city ? `Şəhər: ${brand.city}` : ''}
 ${brand.description ? `Açıqlama: ${brand.description}` : ''}
 ${brand.instagram_url ? `Instagram: ${brand.instagram_url}` : ''}
+${smoData ? `\nZirva SMO paketi məlumatları:
+- SMO skoru: ${smoData.score ?? 'N/A'}/100
+- Tövsiyə olunan paylaşım tezliyi: ${smoData.posting_schedule ?? 'N/A'}
+- Aktiv hashteqlər: ${smoData.hashtags?.slice(0, 8).join(', ') ?? 'N/A'}
+- Kontent sütunları: ${smoData.content_pillars?.map(p => p.name).join(', ') ?? 'N/A'}` : ''}
 
-Bu brend üçün Azərbaycan bazarına uyğun Instagram strategiyası hazırla.`
+Bu dövrün Instagram performansını analiz et və konkret nəticələr göstər.`
 
   const res = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
@@ -229,7 +239,29 @@ export async function runAutopilotForUser(
     // Non-primary brand without GSC data → Instagram insights
     try {
       console.log(`[autopilot] Generating Instagram insights for ${entry.name}...`)
-      const instagramInsights = await generateInstagramInsights(entry, openai)
+      // Fetch most recent SMO generation for this brand to ground the insights
+      let smoData = null
+      if (entry.id !== 'primary') {
+        const { data: smoGen } = await admin
+          .from('generations')
+          .select('output_data')
+          .eq('user_id', user.id)
+          .eq('tool', 'smo')
+          .eq('business_name', entry.name)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (smoGen?.output_data) {
+          const smo = smoGen.output_data as Record<string, unknown>
+          smoData = {
+            hashtags: (smo.hashtags as { main_set?: string[] })?.main_set ?? [],
+            posting_schedule: (smo.content_calendar as Record<string, unknown>)?.posting_frequency as string ?? null,
+            score: smo.score as number ?? null,
+            content_pillars: (smo.content_pillars as { name: string }[]) ?? [],
+          }
+        }
+      }
+      const instagramInsights = await generateInstagramInsights(entry, openai, smoData)
       const rawUrl = entry.website_url || entry.instagram_url || ''
       brandReports.push({
         brandName: entry.name,

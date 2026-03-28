@@ -112,13 +112,13 @@ export default function AutopilotReportEmail({
                               </td>
                             </tr>
                             <tr>
-                              <td style={{ padding: `0 28px ${isLast ? '28px' : '0'}` }}>
+                              <td style={{ padding: '0 28px' }}>
                                 {/* Headline */}
                                 <p style={{ margin: '0 0 14px', fontSize: '20px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.35' }}>
                                   {instagramInsights.headline}
                                 </p>
                                 {/* Summary */}
-                                <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: isLast ? '0' : '8px' }}>
+                                <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '16px' }}>
                                   <tbody><tr>
                                     <td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '16px', borderLeft: '3px solid #833AB4' }}>
                                       <p style={{ margin: 0, fontSize: '14px', color: '#2A2A3D', lineHeight: '1.7' }}>
@@ -127,8 +127,38 @@ export default function AutopilotReportEmail({
                                     </td>
                                   </tr></tbody>
                                 </table>
+                                {/* Highlights */}
+                                {instagramInsights.highlights && instagramInsights.highlights.length > 0 && (
+                                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: isLast ? '0' : '8px' }}>
+                                    <tbody>
+                                      <tr><td style={{ paddingBottom: '8px' }}>
+                                        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.6px' }}>📊 Bu dövrün nəticələri</p>
+                                      </td></tr>
+                                      {instagramInsights.highlights.map((item, i) => (
+                                        <tr key={i}><td style={{ paddingBottom: '6px' }}>
+                                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                                            <tbody><tr><td style={{ backgroundColor: i % 2 === 0 ? 'rgba(131,58,180,0.05)' : '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
+                                              <table width="100%" cellPadding={0} cellSpacing={0}>
+                                                <tbody><tr>
+                                                  <td style={{ paddingRight: '12px' }}>
+                                                    <p style={{ margin: '0 0 3px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>{item.metric}</p>
+                                                    <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A', lineHeight: '1.55' }}>{item.detail}</p>
+                                                  </td>
+                                                  <td style={{ whiteSpace: 'nowrap', verticalAlign: 'middle', textAlign: 'right' }}>
+                                                    <p style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#833AB4', lineHeight: '1' }}>{item.value}</p>
+                                                  </td>
+                                                </tr></tbody>
+                                              </table>
+                                            </td></tr></tbody>
+                                          </table>
+                                        </td></tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
                               </td>
                             </tr>
+                            <tr><td style={{ padding: isLast ? '16px 0 0' : '8px 0 0' }} /></tr>
                           </tbody>
                         </table>
                       )
