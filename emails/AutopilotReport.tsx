@@ -12,11 +12,19 @@ import {
 } from '@react-email/components'
 import type { AutopilotInsights, InstagramInsights } from '@/types'
 
+export interface SmoSummary {
+  score: number | null
+  posting_schedule: string | null
+  hashtags: string[]
+  content_pillars: string[]
+}
+
 export interface BrandReport {
   brandName: string
   siteUrl: string
   insights?: AutopilotInsights
   instagramInsights?: InstagramInsights
+  smoSummary?: SmoSummary | null
 }
 
 interface AutopilotReportEmailProps {
@@ -84,7 +92,7 @@ export default function AutopilotReportEmail({
                 <td style={{ backgroundColor: '#ffffff', padding: '0', borderRadius: '0 0 20px 20px' }}>
 
                   {brandReports.map((report, reportIdx) => {
-                    const { brandName, siteUrl, insights, instagramInsights } = report
+                    const { brandName, siteUrl, insights, instagramInsights, smoSummary } = report
                     const isLast = reportIdx === brandReports.length - 1
 
                     // ── Instagram report ──────────────────────────────
@@ -127,32 +135,62 @@ export default function AutopilotReportEmail({
                                     </td>
                                   </tr></tbody>
                                 </table>
-                                {/* Highlights */}
-                                {instagramInsights.highlights && instagramInsights.highlights.length > 0 && (
-                                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: isLast ? '0' : '8px' }}>
+                                {/* Real SMO data from DB */}
+                                {smoSummary && (
+                                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '8px' }}>
                                     <tbody>
                                       <tr><td style={{ paddingBottom: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.6px' }}>📊 Bu dövrün nəticələri</p>
+                                        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.6px' }}>📦 Zirva SMO Paketi</p>
                                       </td></tr>
-                                      {instagramInsights.highlights.map((item, i) => (
-                                        <tr key={i}><td style={{ paddingBottom: '6px' }}>
+                                      {smoSummary.score !== null && (
+                                        <tr><td style={{ paddingBottom: '6px' }}>
                                           <table width="100%" cellPadding={0} cellSpacing={0}>
-                                            <tbody><tr><td style={{ backgroundColor: i % 2 === 0 ? 'rgba(131,58,180,0.05)' : '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
+                                            <tbody><tr><td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
                                               <table width="100%" cellPadding={0} cellSpacing={0}>
                                                 <tbody><tr>
-                                                  <td style={{ paddingRight: '12px' }}>
-                                                    <p style={{ margin: '0 0 3px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>{item.metric}</p>
-                                                    <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A', lineHeight: '1.55' }}>{item.detail}</p>
+                                                  <td>
+                                                    <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>SMO Skoru</p>
+                                                    <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A' }}>Zirva-nın sosial media optimizasiya qiymətləndirməsi</p>
                                                   </td>
                                                   <td style={{ whiteSpace: 'nowrap', verticalAlign: 'middle', textAlign: 'right' }}>
-                                                    <p style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#833AB4', lineHeight: '1' }}>{item.value}</p>
+                                                    <p style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#833AB4', lineHeight: '1' }}>{smoSummary.score}<span style={{ fontSize: '12px' }}>/100</span></p>
                                                   </td>
                                                 </tr></tbody>
                                               </table>
                                             </td></tr></tbody>
                                           </table>
                                         </td></tr>
-                                      ))}
+                                      )}
+                                      {smoSummary.posting_schedule && (
+                                        <tr><td style={{ paddingBottom: '6px' }}>
+                                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                                            <tbody><tr><td style={{ backgroundColor: '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
+                                              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Tövsiyə olunan tezlik</p>
+                                              <p style={{ margin: 0, fontSize: '13px', color: '#833AB4', fontWeight: '600' }}>{smoSummary.posting_schedule}</p>
+                                            </td></tr></tbody>
+                                          </table>
+                                        </td></tr>
+                                      )}
+                                      {smoSummary.content_pillars.length > 0 && (
+                                        <tr><td style={{ paddingBottom: '6px' }}>
+                                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                                            <tbody><tr><td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
+                                              <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Kontent sütunları</p>
+                                              <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A' }}>{smoSummary.content_pillars.join(' · ')}</p>
+                                            </td></tr></tbody>
+                                          </table>
+                                        </td></tr>
+                                      )}
+                                      {smoSummary.hashtags.length > 0 && (
+                                        <tr><td>
+                                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                                            <tbody><tr><td style={{ backgroundColor: '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
+                                              <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Aktiv hashteqlər</p>
+                                              <p style={{ margin: 0, fontSize: '12px', color: '#833AB4', lineHeight: '1.7' }}>{smoSummary.hashtags.join(' ')}</p>
+                                            </td></tr></tbody>
+                                          </table>
+                                        </td></tr>
+                                      )}
                                     </tbody>
                                   </table>
                                 )}

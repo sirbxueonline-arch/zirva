@@ -85,7 +85,6 @@ export interface Profile {
 export interface InstagramInsights {
   headline: string
   summary: string
-  highlights: { metric: string; value: string; detail: string }[]
   content_ideas: string[]
   hashtags: string[]
   best_post_time: string
