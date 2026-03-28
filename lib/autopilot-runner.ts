@@ -90,7 +90,7 @@ function extractDomain(raw: string): string {
   } catch { return raw.toLowerCase() }
 }
 
-async function getGSCDataForBrand(accessToken: string, websiteUrl: string): Promise<GSCData | null> {
+async function getGSCDataForBrand(accessToken: string, websiteUrl: string, days: number): Promise<GSCData | null> {
   const domain = extractDomain(websiteUrl)
   const candidates = [
     websiteUrl,
@@ -100,7 +100,7 @@ async function getGSCDataForBrand(accessToken: string, websiteUrl: string): Prom
   ]
   for (const url of candidates) {
     try {
-      return await getGSCData(accessToken, url)
+      return await getGSCData(accessToken, url, days)
     } catch { continue }
   }
   return null
@@ -116,6 +116,7 @@ export interface AutopilotUser {
   autopilot_url: string | null
   autopilot_next_run: string | null
   autopilot_smo_enabled: boolean | null
+  autopilot_frequency: 'weekly' | 'monthly' | null
   autopilot_brand_ids: string[] | null
   gsc_access_token: string | null
   gsc_refresh_token: string | null
@@ -159,8 +160,8 @@ export async function runAutopilotForUser(
     return { status: 'error', error: 'GSC qoşulmayıb' }
   }
 
-  // Credit cost: 3 for primary + 0.5 per additional brand
-  const creditCost = 3 + Math.max(entriesToReport.length - 1, 0) * 0.5
+  // Credit cost: flat 10 for weekly, 35 for monthly
+  const creditCost = user.autopilot_frequency === 'monthly' ? 35 : 10
 
   // Check credits
   if ((user.credits_used ?? 0) + creditCost > (user.credits_limit ?? 25)) {
@@ -196,6 +197,8 @@ export async function runAutopilotForUser(
 
   const brandReports: BrandReport[] = []
 
+  const days = user.autopilot_frequency === 'monthly' ? 30 : 7
+
   console.log(`[autopilot] Processing ${entriesToReport.length} entries for user ${user.id}:`, entriesToReport.map(e => `${e.name} (${e.id})`))
 
   for (const entry of entriesToReport) {
@@ -204,7 +207,7 @@ export async function runAutopilotForUser(
     // Try GSC data (works for primary site and any brand whose site is in GSC)
     if (entry.website_url) {
       try {
-        const gscData = await getGSCDataForBrand(accessToken, entry.website_url)
+        const gscData = await getGSCDataForBrand(accessToken, entry.website_url, days)
         if (gscData) {
           console.log(`[autopilot] GSC data found for ${entry.name}, generating insights...`)
           const insights = await generateInsights(gscData, openai)
@@ -251,7 +254,7 @@ export async function runAutopilotForUser(
   // Build period string
   const today = new Date()
   const end = new Date(today); end.setDate(end.getDate() - 1)
-  const start = new Date(today); start.setDate(start.getDate() - 3)
+  const start = new Date(today); start.setDate(start.getDate() - days)
   const fmt = (d: Date) => d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'long' })
   const periodStr = `${fmt(start)} – ${fmt(end)}`
 
@@ -276,7 +279,7 @@ export async function runAutopilotForUser(
 
   // Deduct credits and update run times
   const nextRun = new Date()
-  nextRun.setDate(nextRun.getDate() + 3)
+  nextRun.setDate(nextRun.getDate() + days)
 
   await admin.from('profiles').update({
     credits_used: (user.credits_used ?? 0) + creditCost,

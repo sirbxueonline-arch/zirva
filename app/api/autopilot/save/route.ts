@@ -15,6 +15,7 @@ export async function PATCH(request: NextRequest) {
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (body.autopilot_enabled !== undefined) updates.autopilot_enabled = body.autopilot_enabled
   if (body.autopilot_smo_enabled !== undefined) updates.autopilot_smo_enabled = body.autopilot_smo_enabled
+  if (body.autopilot_frequency !== undefined) updates.autopilot_frequency = body.autopilot_frequency
   if (body.autopilot_brand_ids !== undefined) updates.autopilot_brand_ids = body.autopilot_brand_ids
   if (body.autopilot_url !== undefined) updates.autopilot_url = body.autopilot_url
 

@@ -67,7 +67,7 @@ export interface GSCData {
   declining: GSCKeyword[]
 }
 
-export async function getGSCData(accessToken: string, siteUrl: string): Promise<GSCData> {
+export async function getGSCData(accessToken: string, siteUrl: string, days = 7): Promise<GSCData> {
   const client = new google.auth.OAuth2()
   client.setCredentials({ access_token: accessToken })
   const webmasters = google.webmasters({ version: 'v3', auth: client })
@@ -76,9 +76,9 @@ export async function getGSCData(accessToken: string, siteUrl: string): Promise<
   const today = new Date()
 
   const currentEnd = new Date(today); currentEnd.setDate(currentEnd.getDate() - 1)
-  const currentStart = new Date(today); currentStart.setDate(currentStart.getDate() - 3)
-  const prevEnd = new Date(today); prevEnd.setDate(prevEnd.getDate() - 4)
-  const prevStart = new Date(today); prevStart.setDate(prevStart.getDate() - 6)
+  const currentStart = new Date(today); currentStart.setDate(currentStart.getDate() - days)
+  const prevEnd = new Date(today); prevEnd.setDate(prevEnd.getDate() - (days + 1))
+  const prevStart = new Date(today); prevStart.setDate(prevStart.getDate() - (days * 2))
 
   const [curResp, prevResp] = await Promise.all([
     webmasters.searchanalytics.query({

@@ -91,6 +91,7 @@ function AutopilotPageInner() {
 
   const [enabled, setEnabled] = useState(false)
   const [smoEnabled, setSmoEnabled] = useState(false)
+  const [frequency, setFrequency] = useState<'weekly' | 'monthly'>('weekly')
   const [brands, setBrands] = useState<Brand[]>([])
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([])
 
@@ -133,6 +134,7 @@ function AutopilotPageInner() {
         setProfile(data as Profile)
         setEnabled(data.autopilot_enabled ?? false)
         setSmoEnabled(data.autopilot_smo_enabled ?? false)
+        setFrequency((data as { autopilot_frequency?: 'weekly' | 'monthly' }).autopilot_frequency ?? 'weekly')
 
         // Load brands and match to saved autopilot_url
         const brandsRes = await fetch('/api/brands')
@@ -165,6 +167,25 @@ function AutopilotPageInner() {
       setProfile(p => p ? { ...p, autopilot_enabled: val } : p)
     } catch {
       setEnabled(!val)
+      showToast('Xəta baş verdi, yenidən cəhd edin', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleFrequencyChange(val: 'weekly' | 'monthly') {
+    setFrequency(val)
+    setSaving(true)
+    try {
+      const res = await fetch('/api/autopilot/save', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ autopilot_frequency: val }),
+      })
+      if (!res.ok) throw new Error()
+      setProfile(p => p ? { ...p, autopilot_frequency: val } : p)
+    } catch {
+      setFrequency(frequency)
       showToast('Xəta baş verdi, yenidən cəhd edin', 'error')
     } finally {
       setSaving(false)
@@ -252,6 +273,7 @@ function AutopilotPageInner() {
           autopilot_url: profile?.autopilot_url,
           autopilot_next_run: profile?.autopilot_next_run,
           autopilot_smo_enabled: profile?.autopilot_smo_enabled ?? false,
+          autopilot_frequency: frequency,
           autopilot_brand_ids: selectedBrandIds.length > 0 ? selectedBrandIds : null,
           gsc_access_token: profile?.gsc_access_token ?? null,
           gsc_refresh_token: profile?.gsc_refresh_token ?? null,
@@ -264,8 +286,8 @@ function AutopilotPageInner() {
       if (result?.status === 'sent') {
         showToast('Test emaili göndərildi! Inboxunu yoxla.', 'success')
         // Update credits display locally (runner already deducted in DB)
-        const creditCost = 3 + (selectedBrandIds.length - 1) * 0.5
-        const nextRun = new Date(); nextRun.setDate(nextRun.getDate() + 3)
+        const creditCost = frequency === 'monthly' ? 35 : 10
+        const nextRun = new Date(); nextRun.setDate(nextRun.getDate() + (frequency === 'monthly' ? 30 : 7))
         setProfile(p => p ? {
           ...p,
           credits_used: (p.credits_used ?? 0) + creditCost,
@@ -312,7 +334,7 @@ function AutopilotPageInner() {
           Avtopilot
         </h1>
         <p className="text-sm" style={{ color: '#9B9EBB' }}>
-          Google Search Console ilə avtomatik hesabatlar alın · <span style={{ color: '#7B6EF6', fontWeight: '600' }}>{selectedBrandIds.length > 0 ? (3 + (selectedBrandIds.length - 1) * 0.5).toFixed(1).replace('.0', '') : '3'} kredit/hesabat</span>
+          Google Search Console ilə avtomatik hesabatlar alın · <span style={{ color: '#7B6EF6', fontWeight: '600' }}>{frequency === 'monthly' ? '35' : '10'} kredit/hesabat</span>
         </p>
       </div>
 
@@ -370,27 +392,46 @@ function AutopilotPageInner() {
             </div>
           )}
 
-          {/* SEO Toggle card */}
+          {/* SEO + SMO Toggle cards */}
           <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
             style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>SEO Hesabatı</p>
-                <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Hər 3 gündə bir avtomatik SEO hesabatı</p>
-              </div>
+              <p className="font-bold text-sm sm:text-base" style={{ color: '#0D0D1A' }}>SEO Hesabatı</p>
               <Toggle checked={enabled} onChange={handleToggle} disabled={saving} />
             </div>
           </div>
 
-          {/* SMO Toggle card */}
           <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
             style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>SMO Tövsiyəsi</p>
-                <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Eyni emailə sosial media tövsiyələri əlavə edin</p>
-              </div>
+              <p className="font-bold text-sm sm:text-base" style={{ color: '#0D0D1A' }}>SMO Hesabatı</p>
               <Toggle checked={smoEnabled} onChange={handleSmoToggle} disabled={saving} />
+            </div>
+          </div>
+
+          {/* Frequency picker */}
+          <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+            style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+            <p className="font-bold text-sm sm:text-base mb-3" style={{ color: '#0D0D1A' }}>Hesabat Tezliyi</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { val: 'weekly' as const,  label: 'Həftəlik', sub: '10 kredit/hesabat' },
+                { val: 'monthly' as const, label: 'Aylıq',    sub: '35 kredit/hesabat' },
+              ]).map(({ val, label, sub }) => {
+                const active = frequency === val
+                return (
+                  <button key={val} onClick={() => !saving && handleFrequencyChange(val)} disabled={saving}
+                    className="rounded-xl py-3 px-4 text-left transition-all"
+                    style={{
+                      border: active ? '1.5px solid #7B6EF6' : '1px solid rgba(123,110,246,0.15)',
+                      backgroundColor: active ? 'rgba(123,110,246,0.07)' : '#F5F5FF',
+                      opacity: saving ? 0.6 : 1,
+                    }}>
+                    <p className="text-sm font-bold mb-0.5" style={{ color: active ? '#7B6EF6' : '#0D0D1A' }}>{label}</p>
+                    <p className="text-xs" style={{ color: '#9B9EBB' }}>{sub}</p>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -402,12 +443,10 @@ function AutopilotPageInner() {
                 <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>Brendlər</p>
                 <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Hansı saytlar üçün hesabat alırsınız</p>
               </div>
-              {selectedBrandIds.length > 0 && (
-                <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(123,110,246,0.1)', color: '#7B6EF6', border: '1px solid rgba(123,110,246,0.2)' }}>
-                  {(3 + (selectedBrandIds.length - 1) * 0.5).toFixed(1).replace('.0', '')} kredit
-                </span>
-              )}
+              <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
+                style={{ backgroundColor: 'rgba(123,110,246,0.1)', color: '#7B6EF6', border: '1px solid rgba(123,110,246,0.2)' }}>
+                {frequency === 'monthly' ? '35' : '10'} kredit
+              </span>
             </div>
 
             {brands.length === 0 ? (
@@ -417,17 +456,8 @@ function AutopilotPageInner() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {brands.map((b, idx) => {
+                {brands.map((b) => {
                   const isSelected = selectedBrandIds.includes(b.id)
-                  const selectionPos = selectedBrandIds.indexOf(b.id) // -1 if not selected
-                  // Cost label: if selected, first = '3 kredit'; others = '+0.5 kredit'
-                  // If not selected but there are already selections, show '+0.5'
-                  const costLabel = isSelected
-                    ? selectionPos === 0 ? '3 kredit' : '+0.5 kredit'
-                    : selectedBrandIds.length > 0 ? '+0.5 kredit' : '3 kredit'
-                  const costColor = isSelected
-                    ? selectionPos === 0 ? '#00C9A7' : '#F5A623'
-                    : '#C0C3D8'
 
                   return (
                     <button
@@ -479,9 +509,6 @@ function AutopilotPageInner() {
                         )}
                       </div>
 
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: costColor, flexShrink: 0 }}>
-                        {costLabel}
-                      </span>
                     </button>
                   )
                 })}

@@ -71,6 +71,7 @@ export interface Profile {
   updated_at:            string
   autopilot_enabled?:      boolean
   autopilot_smo_enabled?:  boolean
+  autopilot_frequency?:    'weekly' | 'monthly'
   autopilot_brand_ids?:    string[] | null
   autopilot_url?:          string | null
   autopilot_last_run?:     string | null

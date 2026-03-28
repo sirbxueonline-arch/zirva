@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     autopilot_url: body.autopilot_url ?? null,
     autopilot_next_run: body.autopilot_next_run ?? null,
     autopilot_smo_enabled: body.autopilot_smo_enabled ?? false,
+    autopilot_frequency: body.autopilot_frequency ?? 'weekly',
     autopilot_brand_ids: body.autopilot_brand_ids ?? null,
     gsc_access_token: body.gsc_access_token ?? null,
     gsc_refresh_token: body.gsc_refresh_token,

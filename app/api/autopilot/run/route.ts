@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   // Query eligible users
   const { data: users } = await admin
     .from('profiles')
-    .select('id, email, full_name, plan, credits_used, credits_limit, autopilot_url, autopilot_next_run, autopilot_smo_enabled, autopilot_brand_ids, gsc_access_token, gsc_refresh_token, gsc_site_url')
+    .select('id, email, full_name, plan, credits_used, credits_limit, autopilot_url, autopilot_next_run, autopilot_smo_enabled, autopilot_frequency, autopilot_brand_ids, gsc_access_token, gsc_refresh_token, gsc_site_url')
     .in('plan', ['pro', 'agency'])
     .eq('autopilot_enabled', true)
     .not('autopilot_url', 'is', null)
