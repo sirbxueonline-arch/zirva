@@ -169,7 +169,7 @@ export default function SettingsModal({ open, onClose }: Props) {
         {open && (
           <motion.div
             ref={overlayRef}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
             style={{ background: 'rgba(13,13,26,0.45)', backdropFilter: 'blur(4px)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -177,15 +177,15 @@ export default function SettingsModal({ open, onClose }: Props) {
             onClick={e => { if (e.target === overlayRef.current) onClose() }}
           >
             <motion.div
-              className="w-full max-w-4xl rounded-3xl overflow-hidden flex"
-              style={{ background: '#FFFFFF', boxShadow: '0 24px 80px rgba(13,13,26,0.2)', height: '700px' }}
+              className="w-full sm:max-w-4xl rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col sm:flex-row h-[100dvh] sm:h-[700px]"
+              style={{ background: '#FFFFFF', boxShadow: '0 24px 80px rgba(13,13,26,0.2)' }}
               initial={{ scale: 0.95, opacity: 0, y: 16 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 16 }}
               transition={{ ...SPRING }}
             >
               {/* Left nav */}
-              <div className="w-60 flex-shrink-0 border-r py-7 px-4 flex flex-col"
+              <div className="hidden sm:flex w-60 flex-shrink-0 border-r py-7 px-4 flex-col"
                 style={{ background: '#FAFAFE', borderColor: 'rgba(123,110,246,0.08)' }}
               >
                 <p className="text-xs font-bold uppercase tracking-widest px-3 mb-4" style={{ color: '#C0C3D8' }}>Parametrlər</p>
@@ -204,23 +204,43 @@ export default function SettingsModal({ open, onClose }: Props) {
               </div>
 
               {/* Right content */}
-              <div className="flex-1 overflow-y-auto relative">
-                {/* Close button */}
-                <button onClick={onClose}
-                  className="absolute top-4 right-4 z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-gray-100"
-                >
-                  <X size={16} strokeWidth={2} style={{ color: '#9B9EBB' }} />
-                </button>
+              <div className="flex-1 overflow-hidden flex flex-col">
+                {/* Top bar: mobile tabs + close button */}
+                <div className="relative flex-shrink-0">
+                  <button onClick={onClose}
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-colors hover:bg-gray-100"
+                  >
+                    <X size={16} strokeWidth={2} style={{ color: '#9B9EBB' }} />
+                  </button>
+                  <div className="flex sm:hidden border-b" style={{ borderColor: 'rgba(123,110,246,0.08)' }}>
+                    {TABS.map(t => {
+                      const active = tab === t.id
+                      return (
+                        <button key={t.id} onClick={() => setTab(t.id)}
+                          className="flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-semibold transition-colors relative"
+                          style={{ color: active ? '#7B6EF6' : '#9B9EBB' }}
+                        >
+                          <t.Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
+                          {t.label}
+                          {active && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: '#7B6EF6' }} />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
 
-                <div className="p-8 pt-6">
+                <div className="flex-1 overflow-y-auto">
+                <div className="p-4 sm:p-8 sm:pt-6">
 
                   {/* ── WORKSPACE ── */}
                   {tab === 'workspace' && (
                     <div>
-                      <h2 className="font-display font-bold text-2xl text-text-primary mb-7">İş sahəsi</h2>
+                      <h2 className="font-display font-bold text-xl sm:text-2xl text-text-primary mb-5 sm:mb-7">İş sahəsi</h2>
 
                       {/* Profile card */}
-                      <div className="flex items-center gap-5 p-5 rounded-2xl mb-7"
+                      <div className="flex flex-wrap items-center gap-4 p-4 sm:p-5 rounded-2xl mb-5 sm:mb-7"
                         style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.06) 0%, rgba(155,143,248,0.04) 100%)', border: '1px solid rgba(123,110,246,0.12)' }}
                       >
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white flex-shrink-0"
@@ -251,7 +271,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                       {(() => {
                         const gens = Math.floor(used / 5)
                         return (
-                          <div className="grid grid-cols-3 gap-4 mb-7">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-7">
                             <div className="rounded-2xl p-5" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
                               <div className="text-3xl font-bold mb-1" style={{ color: '#7B6EF6' }}>{gens}</div>
                               <div className="text-xs font-medium text-text-muted">Generasiya</div>
@@ -306,7 +326,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                   {/* ── INTEGRATIONS ── */}
                   {tab === 'integrations' && (
                     <div>
-                      <h2 className="font-display font-bold text-xl text-text-primary mb-2">Bütün inteqrasiyalar</h2>
+                      <h2 className="font-display font-bold text-xl text-text-primary mb-1.5 sm:mb-2">Bütün inteqrasiyalar</h2>
                       <p className="text-sm text-text-muted mb-6">Saytınıza birbaşa məqalə nəşr etmək üçün CMS-i bağlayın</p>
                       <div className="rounded-2xl overflow-hidden divide-y" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
 
@@ -446,13 +466,13 @@ export default function SettingsModal({ open, onClose }: Props) {
                   {/* ── BILLING ── */}
                   {tab === 'billing' && (
                     <div>
-                      <h2 className="font-display font-bold text-xl text-text-primary mb-6">Abunəlik</h2>
+                      <h2 className="font-display font-bold text-xl text-text-primary mb-4 sm:mb-6">Abunəlik</h2>
                       <div className="rounded-2xl p-5 mb-6 relative overflow-hidden"
                         style={{ background: '#FFFFFF', border: `1px solid ${planColor}25`, boxShadow: `0 4px 24px ${planColor}08` }}
                       >
                         <div className="absolute right-0 top-0 w-40 h-40 rounded-full pointer-events-none"
                           style={{ background: `${planColor}08`, filter: 'blur(40px)', transform: 'translate(30%,-30%)' }} />
-                        <div className="flex items-start justify-between mb-4 relative z-10">
+                        <div className="flex flex-wrap items-start justify-between gap-2 mb-4 relative z-10">
                           <div>
                             <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: '#9B9EBB' }}>Cari plan</p>
                             <div className="flex items-baseline gap-2">
@@ -547,7 +567,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                       )}
                       {plan === 'pro' && (
                         <>
-                          <div className="flex items-center justify-between mb-4 mt-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 mt-4">
                             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#C0C3D8' }}>Agency-ə Yüksəlt</p>
                             <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.12)' }}>
                               {([
@@ -600,7 +620,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                       {plan === 'free' && (
                         <>
                           {/* Period toggle */}
-                          <div className="flex items-center justify-between mb-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#C0C3D8' }}>Planı Yüksəlt</p>
                             <div className="flex items-center gap-0.5 p-1 rounded-xl" style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.12)' }}>
                               {([
@@ -627,7 +647,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {/* Pro */}
                             <div className="rounded-2xl overflow-hidden relative"
                               style={{ background: 'linear-gradient(160deg, #7B6EF6 0%, #9B8FF8 100%)', boxShadow: '0 8px 32px rgba(123,110,246,0.25)' }}
@@ -691,7 +711,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                   {/* ── ACCOUNT ── */}
                   {tab === 'account' && (
                     <div>
-                      <h2 className="font-display font-bold text-xl text-text-primary mb-6">Hesab</h2>
+                      <h2 className="font-display font-bold text-xl text-text-primary mb-4 sm:mb-6">Hesab</h2>
                       <div className="space-y-4 mb-8">
                         <div>
                           <label className="block text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#9B9EBB' }}>Ad Soyad</label>
@@ -739,6 +759,7 @@ export default function SettingsModal({ open, onClose }: Props) {
                     </div>
                   )}
 
+                </div>
                 </div>
               </div>
             </motion.div>

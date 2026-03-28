@@ -7,7 +7,7 @@ import type { Generation, Profile } from '@/types'
 import { PLAN_NAMES } from '@/types'
 import {
   Plus, ChevronRight, Zap, ArrowRight, FileText, TrendingUp,
-  BarChart3,
+  BarChart3, Search, Sparkles,
 } from 'lucide-react'
 
 import DashboardHero from '@/components/app/DashboardHero'
@@ -139,39 +139,45 @@ export default async function DashboardPage() {
         </div>
 
         {/* ── Tool shortcuts ── */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            {/* SEO */}
-            <div className="rounded-2xl p-5 flex items-center justify-between gap-3"
-              style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.12)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
-              <div className="min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: '#0D0D1A' }}>SEO Paketi</p>
-                <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Axtarış optimallaşdırması</p>
-              </div>
-              <Link href="/generate"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0 transition-all hover:scale-[1.02]"
-                style={{ background: '#7B6EF6', boxShadow: '0 2px 8px rgba(123,110,246,0.25)' }}>
-                SEO Yarat
-              </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {/* SEO */}
+          <Link href="/generate"
+            className="group rounded-2xl p-5 sm:p-6 flex items-start gap-4 transition-all hover:scale-[1.01]"
+            style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07) 0%, rgba(123,110,246,0.02) 100%)', border: '1px solid rgba(123,110,246,0.16)', boxShadow: '0 2px 16px rgba(13,13,26,0.04)' }}>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(123,110,246,0.12)' }}>
+              <Search size={20} strokeWidth={1.8} style={{ color: '#7B6EF6' }} />
             </div>
-            {/* SMO */}
-            <div className="rounded-2xl p-5 flex items-center justify-between gap-3"
-              style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.12)', boxShadow: '0 2px 16px rgba(13,13,26,0.05)' }}>
-              <div className="min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: '#0D0D1A' }}>SMO Paketi</p>
-                <p className="text-xs mt-0.5" style={{ color: '#9B9EBB' }}>Sosial media optimallaşdırması</p>
-              </div>
-              <Link href="/smo"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white flex-shrink-0 transition-all hover:scale-[1.02]"
-                style={{ background: '#00C9A7', boxShadow: '0 2px 8px rgba(0,201,167,0.25)' }}>
-                SMO Yarat
-              </Link>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-base mb-0.5" style={{ color: '#0D0D1A' }}>SEO Paketi</p>
+              <p className="text-xs mb-3 leading-relaxed" style={{ color: '#9B9EBB' }}>Google üçün başlıq, meta, açar söz, schema markup</p>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold" style={{ color: '#7B6EF6' }}>
+                Yarat <ArrowRight size={13} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
+              </span>
             </div>
-          </div>
+          </Link>
+          {/* SMO */}
+          <Link href="/smo"
+            className="group rounded-2xl p-5 sm:p-6 flex items-start gap-4 transition-all hover:scale-[1.01]"
+            style={{ background: 'linear-gradient(135deg, rgba(0,201,167,0.07) 0%, rgba(0,201,167,0.02) 100%)', border: '1px solid rgba(0,201,167,0.16)', boxShadow: '0 2px 16px rgba(13,13,26,0.04)' }}>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(0,201,167,0.12)' }}>
+              <Sparkles size={20} strokeWidth={1.8} style={{ color: '#00C9A7' }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-base mb-0.5" style={{ color: '#0D0D1A' }}>SMO Paketi</p>
+              <p className="text-xs mb-3 leading-relaxed" style={{ color: '#9B9EBB' }}>Instagram, TikTok, Facebook üçün sosial media strategiyası</p>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold" style={{ color: '#00C9A7' }}>
+                Yarat <ArrowRight size={13} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </div>
+          </Link>
+        </div>
 
         {/* ── Upgrade banner (free users) ── */}
         {p?.plan === 'free' && (
           <div
-            className="rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8 flex items-center justify-between gap-4 relative overflow-hidden"
+            className="rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8 flex flex-wrap items-center justify-between gap-3 sm:gap-4 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07) 0%, rgba(155,143,248,0.03) 100%)', border: '1px solid rgba(123,110,246,0.18)' }}
           >
             <div className="absolute right-0 top-0 w-48 h-48 rounded-full pointer-events-none opacity-50"

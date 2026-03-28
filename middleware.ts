@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect API routes — whitelist public endpoints
-  const publicApiPaths = ['/api/stripe/webhook', '/api/dodo/webhook', '/api/gsc/callback', '/api/autopilot/unsubscribe']
+  const publicApiPaths = ['/api/stripe/webhook', '/api/dodo/webhook', '/api/gsc/callback', '/api/autopilot/unsubscribe', '/api/autopilot/run']
   if (pathname.startsWith('/api/') &&
       !publicApiPaths.some(p => pathname.startsWith(p)) &&
       !user) {

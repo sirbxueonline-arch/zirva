@@ -4,7 +4,9 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/types'
+import type { Profile, Brand } from '@/types'
+import { ADMIN_EMAIL } from '@/types'
+import BrandAvatar from '@/components/app/BrandAvatar'
 
 // ─── Toast ───────────────────────────────────────────────────
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -85,10 +87,12 @@ function AutopilotPageInner() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
+  const [testSending, setTestSending] = useState(false)
 
   const [enabled, setEnabled] = useState(false)
-  const [url, setUrl] = useState('')
-  const [urlSaved, setUrlSaved] = useState(false)
+  const [smoEnabled, setSmoEnabled] = useState(false)
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([])
 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
@@ -103,7 +107,7 @@ function AutopilotPageInner() {
       showToast('Google Search Console uğurla qoşuldu!', 'success')
       router.replace('/autopilot')
     } else if (gsc === 'no-url') {
-      showToast('Əvvəlcə saytınızın URL-ini daxil edin və saxlayın.', 'error')
+      showToast('Əvvəlcə brend seçin və saxlayın.', 'error')
       router.replace('/autopilot')
     } else if (gsc === 'error') {
       const msg = searchParams.get('msg')
@@ -128,7 +132,19 @@ function AutopilotPageInner() {
       if (data) {
         setProfile(data as Profile)
         setEnabled(data.autopilot_enabled ?? false)
-        setUrl(data.autopilot_url ?? '')
+        setSmoEnabled(data.autopilot_smo_enabled ?? false)
+
+        // Load brands and match to saved autopilot_url
+        const brandsRes = await fetch('/api/brands')
+        const brandsData = brandsRes.ok ? await brandsRes.json() : null
+        const loadedBrands: Brand[] = brandsData?.brands ?? []
+        setBrands(loadedBrands)
+
+        if (loadedBrands.length > 0) {
+          const savedIds: string[] = (data as { autopilot_brand_ids?: string[] }).autopilot_brand_ids ?? []
+          const validIds = loadedBrands.filter(b => savedIds.includes(b.id)).map(b => b.id)
+          setSelectedBrandIds(validIds.length > 0 ? validIds : [loadedBrands[0].id])
+        }
       }
       setLoading(false)
     }
@@ -145,7 +161,7 @@ function AutopilotPageInner() {
         body: JSON.stringify({ autopilot_enabled: val }),
       })
       if (!res.ok) throw new Error()
-      showToast(val ? 'Avtopilot aktivləşdirildi' : 'Avtopilot söndürüldü', 'success')
+      showToast(val ? 'SEO hesabatı aktivləşdirildi' : 'SEO hesabatı söndürüldü', 'success')
       setProfile(p => p ? { ...p, autopilot_enabled: val } : p)
     } catch {
       setEnabled(!val)
@@ -155,21 +171,52 @@ function AutopilotPageInner() {
     }
   }
 
-  async function handleSaveUrl() {
+  async function handleSmoToggle(val: boolean) {
+    setSmoEnabled(val)
     setSaving(true)
     try {
       const res = await fetch('/api/autopilot/save', {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ autopilot_url: url }),
+        body: JSON.stringify({ autopilot_smo_enabled: val }),
       })
       if (!res.ok) throw new Error()
-      showToast('URL yadda saxlandı', 'success')
-      setUrlSaved(true)
-      setProfile(p => p ? { ...p, autopilot_url: url } : p)
-      setTimeout(() => setUrlSaved(false), 2000)
+      showToast(val ? 'SMO hesabatı aktivləşdirildi' : 'SMO hesabatı söndürüldü', 'success')
+      setProfile(p => p ? { ...p, autopilot_smo_enabled: val } : p)
     } catch {
-      showToast('URL saxlanılmadı, yenidən cəhd edin', 'error')
+      setSmoEnabled(!val)
+      showToast('Xəta baş verdi, yenidən cəhd edin', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleToggleBrand(brandId: string) {
+    const isSelected = selectedBrandIds.includes(brandId)
+    // Must keep at least one brand selected
+    if (isSelected && selectedBrandIds.length === 1) return
+
+    const newIds = isSelected
+      ? selectedBrandIds.filter(id => id !== brandId)
+      : [...selectedBrandIds, brandId]
+
+    setSelectedBrandIds(newIds)
+    setSaving(true)
+
+    const firstBrand = brands.find(b => b.id === newIds[0])
+    const firstUrl = firstBrand?.website_url ?? ''
+
+    try {
+      const res = await fetch('/api/autopilot/save', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ autopilot_brand_ids: newIds, autopilot_url: firstUrl }),
+      })
+      if (!res.ok) throw new Error()
+      setProfile(p => p ? { ...p, autopilot_url: firstUrl } : p)
+    } catch {
+      setSelectedBrandIds(selectedBrandIds)
+      showToast('Xəta baş verdi, yenidən cəhd edin', 'error')
     } finally {
       setSaving(false)
     }
@@ -191,6 +238,54 @@ function AutopilotPageInner() {
     }
   }
 
+  async function handleTestEmail() {
+    setTestSending(true)
+    try {
+      const res = await fetch('/api/autopilot/test', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          full_name: profile?.full_name,
+          plan: profile?.plan,
+          credits_used: profile?.credits_used,
+          credits_limit: profile?.credits_limit,
+          autopilot_url: profile?.autopilot_url,
+          autopilot_next_run: profile?.autopilot_next_run,
+          autopilot_smo_enabled: profile?.autopilot_smo_enabled ?? false,
+          autopilot_brand_ids: selectedBrandIds.length > 0 ? selectedBrandIds : null,
+          gsc_access_token: profile?.gsc_access_token ?? null,
+          gsc_refresh_token: profile?.gsc_refresh_token ?? null,
+          gsc_site_url: profile?.gsc_site_url ?? null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Xəta baş verdi')
+      const result = data.results?.[0]
+      if (result?.status === 'sent') {
+        showToast('Test emaili göndərildi! Inboxunu yoxla.', 'success')
+        // Update credits display locally (runner already deducted in DB)
+        const creditCost = 3 + (selectedBrandIds.length - 1) * 0.5
+        const nextRun = new Date(); nextRun.setDate(nextRun.getDate() + 3)
+        setProfile(p => p ? {
+          ...p,
+          credits_used: (p.credits_used ?? 0) + creditCost,
+          autopilot_last_run: new Date().toISOString(),
+          autopilot_next_run: nextRun.toISOString(),
+        } : p)
+      } else if (result?.status === 'skipped_low_credits') {
+        showToast('Kredit azdır, email göndərilmədi.', 'error')
+      } else if (result?.status === 'skipped_gsc_token_error') {
+        showToast('GSC token xətası, email göndərilmədi.', 'error')
+      } else {
+        showToast(result?.error || 'Email göndərilmədi — statusu yoxla.', 'error')
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Xəta baş verdi', 'error')
+    } finally {
+      setTestSending(false)
+    }
+  }
+
   function formatDate(iso: string | null | undefined) {
     if (!iso) return null
     const d = new Date(iso)
@@ -199,66 +294,45 @@ function AutopilotPageInner() {
 
   const isPaid = profile?.plan === 'pro' || profile?.plan === 'agency'
   const gscConnected = !!profile?.gsc_site_url
-  const isFullyConfigured = enabled && gscConnected && !!profile?.autopilot_url
+  const isFullyConfigured = (enabled || smoEnabled) && gscConnected && selectedBrandIds.length > 0
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '3px solid rgba(123,110,246,0.2)', borderTopColor: '#7B6EF6', animation: 'spin 0.8s linear infinite' }} />
+      <div className="flex items-center justify-center" style={{ minHeight: '300px' }}>
+        <div className="w-8 h-8 rounded-full border-[3px] border-transparent border-t-primary animate-spin" />
       </div>
     )
   }
 
   return (
-    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '32px 16px' }}>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Page header */}
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ margin: '0 0 6px', fontSize: '26px', fontWeight: '800', color: '#0D0D1A', letterSpacing: '-0.5px' }}>
+      <div className="mb-6 sm:mb-7">
+        <h1 className="font-display font-extrabold text-2xl sm:text-3xl mb-1.5" style={{ color: '#0D0D1A', letterSpacing: '-0.5px' }}>
           Avtopilot
         </h1>
-        <p style={{ margin: 0, fontSize: '14px', color: '#9B9EBB' }}>
-          Google Search Console ilə avtomatik SEO hesabatları alın
+        <p className="text-sm" style={{ color: '#9B9EBB' }}>
+          Google Search Console ilə avtomatik hesabatlar alın · <span style={{ color: '#7B6EF6', fontWeight: '600' }}>{selectedBrandIds.length > 0 ? (3 + (selectedBrandIds.length - 1) * 0.5).toFixed(1).replace('.0', '') : '3'} kredit/hesabat</span>
         </p>
       </div>
 
       {/* FREE USER: locked */}
       {!isPaid && (
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid rgba(123,110,246,0.15)',
-          borderRadius: '16px',
-          padding: '36px 32px',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '16px',
-            backgroundColor: 'rgba(123,110,246,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            fontSize: '28px',
-          }}>
+        <div className="rounded-2xl px-6 py-8 sm:py-10 text-center"
+          style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.15)' }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl"
+            style={{ backgroundColor: 'rgba(123,110,246,0.08)' }}>
             🔒
           </div>
-          <h2 style={{ margin: '0 0 10px', fontSize: '20px', fontWeight: '700', color: '#0D0D1A' }}>
+          <h2 className="font-bold text-xl mb-2.5" style={{ color: '#0D0D1A' }}>
             Pro xüsusiyyəti
           </h2>
-          <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#9B9EBB', lineHeight: '1.6', maxWidth: '380px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <p className="text-sm mb-6 mx-auto leading-relaxed" style={{ color: '#9B9EBB', maxWidth: '360px' }}>
             Bu xüsusiyyət Pro və Agency planlarında mövcuddur. Hər 3 gündə bir avtomatik SEO hesabatı alın.
           </p>
-          <Link href="/settings/billing" style={{
-            display: 'inline-block',
-            padding: '12px 28px',
-            backgroundColor: '#7B6EF6',
-            color: '#ffffff',
-            borderRadius: '12px',
-            fontWeight: '700',
-            fontSize: '15px',
-            textDecoration: 'none',
-          }}>
+          <Link href="/settings/billing"
+            className="inline-block px-7 py-3 rounded-xl font-bold text-sm text-white"
+            style={{ backgroundColor: '#7B6EF6' }}>
             Yüksəlt →
           </Link>
         </div>
@@ -270,19 +344,14 @@ function AutopilotPageInner() {
 
           {/* Active status banner */}
           {isFullyConfigured && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '14px 18px',
-              backgroundColor: 'rgba(0,201,167,0.08)',
-              border: '1px solid rgba(0,201,167,0.2)',
-              borderRadius: '12px',
-            }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00C9A7', flexShrink: 0 }} />
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#00C9A7' }}>Avtopilot aktivdir</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3.5 rounded-xl"
+              style={{ backgroundColor: 'rgba(0,201,167,0.08)', border: '1px solid rgba(0,201,167,0.2)' }}>
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: '#00C9A7' }} />
+                <span className="text-sm font-semibold" style={{ color: '#00C9A7' }}>Avtopilot aktivdir</span>
+              </div>
               {profile.autopilot_next_run && (
-                <span style={{ fontSize: '13px', color: '#9B9EBB', marginLeft: 'auto' }}>
+                <span className="text-xs" style={{ color: '#9B9EBB' }}>
                   Növbəti: {formatDate(profile.autopilot_next_run)}
                 </span>
               )}
@@ -290,178 +359,184 @@ function AutopilotPageInner() {
           )}
 
           {/* Missing requirements warning */}
-          {enabled && (!gscConnected || !profile?.autopilot_url) && (
-            <div style={{
-              padding: '14px 18px',
-              backgroundColor: 'rgba(245,166,35,0.08)',
-              border: '1px solid rgba(245,166,35,0.25)',
-              borderRadius: '12px',
-            }}>
-              <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '700', color: '#F5A623' }}>
-                Avtopilot hələ aktiv deyil
-              </p>
-              <ul style={{ margin: 0, padding: '0 0 0 16px', fontSize: '13px', color: '#5A5D7A', lineHeight: '1.7' }}>
-                {!profile?.autopilot_url && <li>Saytınızın URL-ini daxil edin</li>}
+          {(enabled || smoEnabled) && (!gscConnected || selectedBrandIds.length === 0) && (
+            <div className="px-4 py-3.5 rounded-xl"
+              style={{ backgroundColor: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.25)' }}>
+              <p className="text-sm font-bold mb-1.5" style={{ color: '#F5A623' }}>Avtopilot hələ aktiv deyil</p>
+              <ul className="text-sm pl-4 space-y-0.5" style={{ color: '#5A5D7A' }}>
+                {selectedBrandIds.length === 0 && <li>Ən azı bir brend seçin</li>}
                 {!gscConnected && <li>Google Search Console-u qoşun</li>}
               </ul>
             </div>
           )}
 
-          {/* Toggle card */}
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid rgba(123,110,246,0.12)',
-            borderRadius: '16px',
-            padding: '20px 24px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+          {/* SEO Toggle card */}
+          <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+            style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p style={{ margin: '0 0 3px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
-                  Avtomatik hesabat
-                </p>
-                <p style={{ margin: 0, fontSize: '13px', color: '#9B9EBB' }}>
-                  Hər 3 gündə bir email hesabat alın (5 kredit/hesabat)
-                </p>
+                <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>SEO Hesabatı</p>
+                <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Hər 3 gündə bir avtomatik SEO hesabatı</p>
               </div>
               <Toggle checked={enabled} onChange={handleToggle} disabled={saving} />
             </div>
           </div>
 
-          {/* Site URL card */}
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid rgba(123,110,246,0.12)',
-            borderRadius: '16px',
-            padding: '20px 24px',
-          }}>
-            <p style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
-              Saytınızın URL-i
-            </p>
-            <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#9B9EBB' }}>
-              Hesabatda göstəriləcək saytın ünvanı
-            </p>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <input
-                type="url"
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                placeholder="https://example.com"
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(123,110,246,0.2)',
-                  fontSize: '14px',
-                  color: '#0D0D1A',
-                  backgroundColor: '#F5F5FF',
-                  outline: 'none',
-                }}
-              />
-              <button
-                onClick={handleSaveUrl}
-                disabled={saving || !url.trim()}
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  backgroundColor: urlSaved ? '#00C9A7' : '#7B6EF6',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: saving || !url.trim() ? 'not-allowed' : 'pointer',
-                  opacity: saving || !url.trim() ? 0.6 : 1,
-                  transition: 'background-color 0.2s',
-                  whiteSpace: 'nowrap' as const,
-                }}
-              >
-                {urlSaved ? 'Saxlandı ✓' : 'Saxla'}
-              </button>
+          {/* SMO Toggle card */}
+          <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+            style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>SMO Tövsiyəsi</p>
+                <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Eyni emailə sosial media tövsiyələri əlavə edin</p>
+              </div>
+              <Toggle checked={smoEnabled} onChange={handleSmoToggle} disabled={saving} />
             </div>
           </div>
 
+          {/* Brand multi-select card */}
+          <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+            style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="font-bold text-sm sm:text-base mb-0.5" style={{ color: '#0D0D1A' }}>Brendlər</p>
+                <p className="text-xs sm:text-sm" style={{ color: '#9B9EBB' }}>Hansı saytlar üçün hesabat alırsınız</p>
+              </div>
+              {selectedBrandIds.length > 0 && (
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(123,110,246,0.1)', color: '#7B6EF6', border: '1px solid rgba(123,110,246,0.2)' }}>
+                  {(3 + (selectedBrandIds.length - 1) * 0.5).toFixed(1).replace('.0', '')} kredit
+                </span>
+              )}
+            </div>
+
+            {brands.length === 0 ? (
+              <div style={{ padding: '16px', borderRadius: '10px', backgroundColor: 'rgba(123,110,246,0.04)', border: '1px dashed rgba(123,110,246,0.2)', textAlign: 'center' as const }}>
+                <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '600', color: '#0D0D1A' }}>Hələ brend yoxdur</p>
+                <Link href="/brands" style={{ fontSize: '13px', color: '#7B6EF6', fontWeight: '600', textDecoration: 'none' }}>Brend yarat →</Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {brands.map((b, idx) => {
+                  const isSelected = selectedBrandIds.includes(b.id)
+                  const selectionPos = selectedBrandIds.indexOf(b.id) // -1 if not selected
+                  // Cost label: if selected, first = '3 kredit'; others = '+0.5 kredit'
+                  // If not selected but there are already selections, show '+0.5'
+                  const costLabel = isSelected
+                    ? selectionPos === 0 ? '3 kredit' : '+0.5 kredit'
+                    : selectedBrandIds.length > 0 ? '+0.5 kredit' : '3 kredit'
+                  const costColor = isSelected
+                    ? selectionPos === 0 ? '#00C9A7' : '#F5A623'
+                    : '#C0C3D8'
+
+                  return (
+                    <button
+                      key={b.id}
+                      onClick={() => handleToggleBrand(b.id)}
+                      disabled={saving}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 14px',
+                        borderRadius: '12px',
+                        border: isSelected ? '1.5px solid #7B6EF6' : '1px solid rgba(123,110,246,0.12)',
+                        backgroundColor: isSelected ? 'rgba(123,110,246,0.06)' : '#F5F5FF',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        textAlign: 'left' as const,
+                        width: '100%',
+                        transition: 'all 0.15s',
+                        opacity: saving ? 0.7 : 1,
+                      }}
+                    >
+                      {/* Checkbox */}
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '6px',
+                        border: isSelected ? 'none' : '2px solid rgba(123,110,246,0.25)',
+                        backgroundColor: isSelected ? '#7B6EF6' : 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                        {isSelected && (
+                          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+
+                      <BrandAvatar brand={b} size={28} />
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#0D0D1A' }}>{b.name}</p>
+                        {b.website_url && (
+                          <p style={{ margin: 0, fontSize: '12px', color: '#9B9EBB', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                            {b.website_url.replace(/^https?:\/\//, '')}
+                          </p>
+                        )}
+                      </div>
+
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: costColor, flexShrink: 0 }}>
+                        {costLabel}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
           {/* GSC card */}
-          <div style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid rgba(123,110,246,0.12)',
-            borderRadius: '16px',
-            padding: '20px 24px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' as const }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: '0 0 3px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
+          <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+            style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm sm:text-base mb-1" style={{ color: '#0D0D1A' }}>
                   Google Search Console
                 </p>
                 {gscConnected ? (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        backgroundColor: 'rgba(0,201,167,0.1)',
-                        color: '#00C9A7',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        border: '1px solid rgba(0,201,167,0.2)',
-                      }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00C9A7', display: 'inline-block' }} />
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                        style={{ backgroundColor: 'rgba(0,201,167,0.1)', color: '#00C9A7', border: '1px solid rgba(0,201,167,0.2)' }}>
+                        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: '#00C9A7' }} />
                         Qoşulub
                       </span>
                     </div>
-                    <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#9B9EBB' }}>
-                      {profile.gsc_site_url}
-                    </p>
+                    <p className="mt-2 text-xs sm:text-sm truncate" style={{ color: '#9B9EBB' }}>{profile.gsc_site_url}</p>
                     {profile.gsc_connected_at && (
-                      <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#C0C3D8' }}>
+                      <p className="mt-0.5 text-xs" style={{ color: '#C0C3D8' }}>
                         Qoşulma tarixi: {formatDate(profile.gsc_connected_at)}
                       </p>
                     )}
                   </>
                 ) : (
-                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#9B9EBB', lineHeight: '1.5' }}>
+                  <p className="mt-1 text-xs sm:text-sm leading-relaxed" style={{ color: '#9B9EBB' }}>
                     SEO məlumatlarını analiz etmək üçün GSC-yə qoşulun
                   </p>
                 )}
               </div>
 
-              <div style={{ flexShrink: 0 }}>
+              <div className="flex-shrink-0">
                 {gscConnected ? (
                   <button
                     onClick={handleDisconnectGSC}
                     disabled={disconnecting}
-                    style={{
-                      padding: '9px 16px',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(242,92,84,0.3)',
-                      backgroundColor: 'transparent',
-                      color: '#F25C54',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      cursor: disconnecting ? 'not-allowed' : 'pointer',
-                      opacity: disconnecting ? 0.6 : 1,
-                    }}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 w-full sm:w-auto"
+                    style={{ border: '1px solid rgba(242,92,84,0.3)', backgroundColor: 'transparent', color: '#F25C54' }}
                   >
                     {disconnecting ? 'Kəsilir...' : 'Bağlantını kəs'}
                   </button>
                 ) : profile?.autopilot_url ? (
                   <Link
                     href="/api/gsc/auth"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 18px',
-                      borderRadius: '10px',
-                      backgroundColor: '#7B6EF6',
-                      color: '#fff',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      textDecoration: 'none',
-                    }}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white w-full sm:w-auto"
+                    style={{ backgroundColor: '#7B6EF6' }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -470,16 +545,8 @@ function AutopilotPageInner() {
                     Google Search Console-u Qoş
                   </Link>
                 ) : (
-                  <div style={{
-                    padding: '10px 18px',
-                    borderRadius: '10px',
-                    backgroundColor: 'rgba(123,110,246,0.08)',
-                    color: '#9B9EBB',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    border: '1px dashed rgba(123,110,246,0.2)',
-                    textAlign: 'center' as const,
-                  }}>
+                  <div className="px-4 py-2.5 rounded-xl text-xs font-semibold text-center"
+                    style={{ backgroundColor: 'rgba(123,110,246,0.08)', color: '#9B9EBB', border: '1px dashed rgba(123,110,246,0.2)' }}>
                     Əvvəlcə URL daxil edin
                   </div>
                 )}
@@ -489,37 +556,46 @@ function AutopilotPageInner() {
 
           {/* Run info card */}
           {(profile?.autopilot_last_run || profile?.autopilot_next_run) && (
-            <div style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid rgba(123,110,246,0.12)',
-              borderRadius: '16px',
-              padding: '18px 24px',
-            }}>
-              <p style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: '700', color: '#0D0D1A' }}>
-                Hesabat Tarixi
-              </p>
-              <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' as const }}>
+            <div className="rounded-2xl px-4 sm:px-6 py-4 sm:py-5"
+              style={{ backgroundColor: '#ffffff', border: '1px solid rgba(123,110,246,0.12)' }}>
+              <p className="font-bold text-sm mb-3" style={{ color: '#0D0D1A' }}>Hesabat Tarixi</p>
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
                 {profile.autopilot_last_run && (
                   <div>
-                    <p style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '600', color: '#9B9EBB', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                      Son hesabat
-                    </p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', fontWeight: '500' }}>
-                      {formatDate(profile.autopilot_last_run)}
-                    </p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: '#9B9EBB' }}>Son hesabat</p>
+                    <p className="text-sm font-medium" style={{ color: '#0D0D1A' }}>{formatDate(profile.autopilot_last_run)}</p>
                   </div>
                 )}
                 {profile.autopilot_next_run && (
                   <div>
-                    <p style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '600', color: '#9B9EBB', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                      Növbəti hesabat
-                    </p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', fontWeight: '500' }}>
-                      {formatDate(profile.autopilot_next_run)}
-                    </p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: '#9B9EBB' }}>Növbəti hesabat</p>
+                    <p className="text-sm font-medium" style={{ color: '#0D0D1A' }}>{formatDate(profile.autopilot_next_run)}</p>
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Admin: test email button */}
+          {profile?.email === ADMIN_EMAIL && (
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4"
+              style={{ borderTop: '1px dashed rgba(123,110,246,0.15)' }}>
+              <div>
+                <p className="text-xs font-bold mb-0.5" style={{ color: '#9B9EBB' }}>Admin · Test</p>
+                <p className="text-xs" style={{ color: '#C0C3D8' }}>Bu düyməni basaraq özünə test emaili göndər</p>
+              </div>
+              <button
+                onClick={handleTestEmail}
+                disabled={testSending}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-70 flex-shrink-0"
+                style={{
+                  border: '1px dashed rgba(123,110,246,0.3)',
+                  backgroundColor: testSending ? 'rgba(123,110,246,0.06)' : 'rgba(123,110,246,0.08)',
+                  color: '#7B6EF6',
+                }}
+              >
+                {testSending ? 'Göndərilir...' : '📧 Test Emaili Göndər'}
+              </button>
             </div>
           )}
 
@@ -529,9 +605,6 @@ function AutopilotPageInner() {
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   )
 }
@@ -540,8 +613,8 @@ function AutopilotPageInner() {
 export default function AutopilotPage() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '3px solid rgba(123,110,246,0.2)', borderTopColor: '#7B6EF6', animation: 'spin 0.8s linear infinite' }} />
+      <div className="flex items-center justify-center" style={{ minHeight: '300px' }}>
+        <div className="w-8 h-8 rounded-full border-[3px] border-transparent border-t-primary animate-spin" />
       </div>
     }>
       <AutopilotPageInner />

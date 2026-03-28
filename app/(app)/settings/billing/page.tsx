@@ -157,7 +157,7 @@ export default function BillingPage() {
       >
         <div className="absolute right-0 top-0 w-48 h-48 rounded-full pointer-events-none" style={{ background: `${planColor}06`, filter: 'blur(40px)', transform: 'translate(30%,-30%)' }} />
 
-        <div className="flex items-start justify-between mb-5 relative z-10">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-5 relative z-10">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide mb-2" style={{ color: '#9B9EBB' }}>Cari plan</p>
             <div className="flex items-baseline gap-3">
@@ -193,7 +193,7 @@ export default function BillingPage() {
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-2 gap-1.5 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 relative z-10">
           {PLAN_FEATURES[plan]?.map(f => (
             <div key={f.text} className="flex items-center gap-2 text-sm py-1" style={{ color: f.locked ? '#C5C7D8' : undefined }}>
               <f.Icon size={15} strokeWidth={1.8} className="flex-shrink-0" style={{ color: f.locked ? '#D0D2E0' : planColor }} />
@@ -358,7 +358,7 @@ export default function BillingPage() {
           </div>
 
           {/* Billing period toggle */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <p className="text-xs font-semibold text-text-muted uppercase tracking-widest">Planı Yüksəlt</p>
             <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: 'rgba(123,110,246,0.07)', border: '1px solid rgba(123,110,246,0.12)' }}>
               {PERIODS.map(p => (

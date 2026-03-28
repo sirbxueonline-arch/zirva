@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import UpgradeModal from './UpgradeModal'
-import BrandModal from './BrandModal'
 import type { Profile, Brand } from '@/types'
-import { Globe, AlertTriangle, Check, ArrowRight, ChevronDown, Plus, ExternalLink } from 'lucide-react'
-import BrandAvatar from './BrandAvatar'
+import { Globe, AlertTriangle, ArrowRight, Tag, KeyRound, Code2, Share2 } from 'lucide-react'
 
 const SPRING = { type: 'spring' as const, stiffness: 280, damping: 28 }
 const LOADING_MESSAGES = ['Sayt analiz edilir...', 'SEO teqləri yaradılır...', 'Açar sözlər seçilir...', 'Tamamlanır...']
@@ -15,25 +13,18 @@ const LOADING_MESSAGES = ['Sayt analiz edilir...', 'SEO teqləri yaradılır...'
 export default function GenerateForm({ profile }: { profile: Profile | null }) {
   const router = useRouter()
 
-  const [loading,        setLoading]        = useState(false)
-  const [loadingMsgIdx,  setLoadingMsgIdx]  = useState(0)
-  const [error,          setError]          = useState('')
-  const [crawlWarning,   setCrawlWarning]   = useState(false)
-  const [showUpgrade,    setShowUpgrade]    = useState(false)
-  const [brands,         setBrands]         = useState<Brand[]>([])
-  const [selectedBrand,  setSelectedBrand]  = useState<Brand | null>(null)
-  const [dropOpen,       setDropOpen]       = useState(false)
-  const [brandModalOpen, setBrandModalOpen] = useState(false)
+  const [loading,       setLoading]       = useState(false)
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0)
+  const [error,         setError]         = useState('')
+  const [crawlWarning,  setCrawlWarning]  = useState(false)
+  const [showUpgrade,   setShowUpgrade]   = useState(false)
+  const [url,           setUrl]           = useState('')
+  const [firstBrand,    setFirstBrand]    = useState<Brand | null>(null)
 
+  // Silently load first brand for API context
   useEffect(() => {
     fetch('/api/brands').then(r => r.ok ? r.json() : null).then(d => {
-      if (!d?.brands) return
-      setBrands(d.brands)
-      if (d.brands.length > 0) {
-        const savedId = localStorage.getItem('zirva_active_brand')
-        const saved   = savedId ? d.brands.find((b: Brand) => b.id === savedId) : null
-        setSelectedBrand(saved ?? d.brands[0])
-      }
+      if (d?.brands?.length > 0) setFirstBrand(d.brands[0])
     })
   }, [])
 
@@ -48,16 +39,8 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
     return /^https?:\/\//i.test(t) ? t : `https://${t}`
   }
 
-  function selectBrand(b: Brand) {
-    setSelectedBrand(b); setDropOpen(false); setError('')
-    localStorage.setItem('zirva_active_brand', b.id)
-    window.dispatchEvent(new CustomEvent('zirva-brand-change', { detail: b }))
-  }
-
   async function handleGenerate() {
-    if (!selectedBrand) { setError('Brend seçin'); return }
-    const url = selectedBrand.website_url
-    if (!url) { setError('Seçilmiş brendin sayt URL-i yoxdur. Brendi redaktə edin.'); return }
+    if (!url.trim()) { setError('Saytın URL-ini daxil edin'); return }
     if (profile && (profile.credits_used + 5 > profile.credits_limit)) { setShowUpgrade(true); return }
 
     setLoading(true); setLoadingMsgIdx(0); setError(''); setCrawlWarning(false)
@@ -74,7 +57,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
     try {
       const res = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ flow_type: 'url', url: normalizedUrl, ...(crawl || {}), brand_id: selectedBrand.id }),
+        body: JSON.stringify({ flow_type: 'url', url: normalizedUrl, ...(crawl || {}), brand_id: firstBrand?.id }),
       })
       const data = await res.json()
       if (res.status === 403) { setShowUpgrade(true); setLoading(false); return }
@@ -92,8 +75,6 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
   return (
     <>
       <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
-      <BrandModal open={brandModalOpen} onClose={() => setBrandModalOpen(false)} initial={null}
-        onSaved={b => { setBrands(prev => [b, ...prev]); selectBrand(b) }} />
 
       {/* Loading overlay */}
       <AnimatePresence>
@@ -131,92 +112,29 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
             <Globe size={28} strokeWidth={1.6} style={{ color: '#7B6EF6' }} />
           </div>
           <h1 className="font-display font-bold text-2xl sm:text-4xl text-text-primary mb-2">SEO Paketi</h1>
-          <p className="text-text-muted text-base">Brendinizi seçin — Google üçün<br/>optimallaşdırılmış teqlər yaradırıq</p>
+          <p className="text-text-muted text-base">Saytınızın URL-ini daxil edin — Google üçün<br/>optimallaşdırılmış teqlər yaradırıq</p>
         </motion.div>
 
-        {/* Brand picker */}
-        <motion.div className="w-full mb-5 relative" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.04 }}>
-          <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Brend</label>
-
-          {brands.length === 0 ? (
-            <div className="w-full rounded-2xl p-5 text-center" style={{ background: 'rgba(123,110,246,0.04)', border: '2px dashed rgba(123,110,246,0.2)' }}>
-              <p className="text-sm font-semibold mb-1" style={{ color: '#0D0D1A' }}>Əvvəlcə brend yaradın</p>
-              <p className="text-xs mb-4" style={{ color: '#9B9EBB' }}>SEO paketi yaratmaq üçün ən azı bir brend tələb olunur.</p>
-              <div className="flex items-center justify-center gap-2 flex-wrap">
-                <button onClick={() => setBrandModalOpen(true)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
-                  style={{ background: '#7B6EF6' }}
-                >
-                  <Plus size={14} strokeWidth={2.5} /> Brend yarat
-                </button>
-                <a href="/brands"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-all hover:bg-gray-50"
-                  style={{ borderColor: 'rgba(123,110,246,0.2)', color: '#7B6EF6' }}
-                >
-                  Brendlər <ExternalLink size={12} strokeWidth={2} />
-                </a>
-              </div>
-            </div>
-          ) : (
-            <>
-              <button onClick={() => setDropOpen(v => !v)}
-                className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-medium text-left transition-all"
-                style={{ ...inputStyle, border: dropOpen ? '1px solid #7B6EF6' : '1px solid rgba(123,110,246,0.18)' }}
-              >
-                {selectedBrand ? (
-                  <>
-                    <BrandAvatar brand={selectedBrand} size={32} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-text-primary truncate">{selectedBrand.name}</div>
-                      {selectedBrand.website_url
-                        ? <div className="text-xs text-text-muted truncate">{selectedBrand.website_url.replace(/^https?:\/\//, '')}</div>
-                        : <div className="text-xs" style={{ color: '#F25C54' }}>Sayt URL-i yoxdur</div>
-                      }
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-text-muted flex-1">Brend seçin...</span>
-                )}
-                <ChevronDown size={16} strokeWidth={2} style={{ color: '#9B9EBB', transform: dropOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', flexShrink: 0 }} />
-              </button>
-
-              <AnimatePresence>
-                {dropOpen && (
-                  <motion.div className="absolute top-full left-0 right-0 mt-2 rounded-2xl border overflow-hidden z-20"
-                    style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.15)', boxShadow: '0 8px 32px rgba(13,13,26,0.12)' }}
-                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                    transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-                  >
-                    {brands.map(b => (
-                      <button key={b.id} onClick={() => selectBrand(b)}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-all hover:bg-gray-50"
-                        style={{ borderBottom: '1px solid rgba(123,110,246,0.06)' }}
-                      >
-                        <BrandAvatar brand={b} size={32} />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-text-primary truncate">{b.name}</div>
-                          {b.website_url
-                            ? <div className="text-xs text-text-muted truncate">{b.website_url.replace(/^https?:\/\//, '')}</div>
-                            : <div className="text-xs" style={{ color: '#F25C54' }}>Sayt URL-i yoxdur</div>
-                          }
-                        </div>
-                        {selectedBrand?.id === b.id && <Check size={14} strokeWidth={2.5} style={{ color: '#7B6EF6', flexShrink: 0 }} />}
-                      </button>
-                    ))}
-                    <button onClick={() => { setDropOpen(false); setBrandModalOpen(true) }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all hover:bg-gray-50"
-                      style={{ color: '#7B6EF6' }}
-                    >
-                      <div className="w-8 h-8 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0" style={{ borderColor: '#7B6EF6' }}>
-                        <Plus size={14} strokeWidth={2.5} />
-                      </div>
-                      Yeni brend əlavə et
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          )}
+        {/* URL input */}
+        <motion.div className="w-full mb-5" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.04 }}>
+          <label className="block text-xs font-bold uppercase tracking-widest text-left mb-2" style={{ color: '#9B9EBB' }}>Sayt URL-i</label>
+          <input
+            type="url"
+            value={url}
+            onChange={e => { setUrl(e.target.value); setError('') }}
+            onKeyDown={e => e.key === 'Enter' && handleGenerate()}
+            placeholder="https://example.com"
+            style={{
+              ...inputStyle,
+              width: '100%',
+              padding: '14px 18px',
+              borderRadius: '16px',
+              fontSize: '15px',
+              color: '#0D0D1A',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
         </motion.div>
 
         {/* What you'll get */}
@@ -227,16 +145,20 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#7B6EF6' }}>SEO Paketi nə verir</p>
           <div className="grid grid-cols-2 gap-2">
             {[
-              ['🏷️', 'Title + Meta teqlər', 'AZ + RU dilləri'],
-              ['🔑', '8 Açar söz', 'SEO optimized'],
-              ['🔗', 'Schema Markup', 'JSON-LD strukturu'],
-              ['📱', 'OG + Twitter Card', 'Sosial paylaşım teqləri'],
-            ].map(([icon, title, sub]) => (
-              <div key={title} className="flex items-start gap-2">
-                <span className="text-base mt-0.5">{icon}</span>
-                <div>
-                  <div className="text-xs font-semibold" style={{ color: '#0D0D1A' }}>{title}</div>
-                  <div className="text-xs" style={{ color: '#9B9EBB' }}>{sub}</div>
+              { Icon: Tag,      title: 'Title + Meta teqlər', sub: 'AZ + RU dilləri' },
+              { Icon: KeyRound, title: '8 Açar söz',          sub: 'SEO optimized' },
+              { Icon: Code2,    title: 'Schema Markup',       sub: 'JSON-LD strukturu' },
+              { Icon: Share2,   title: 'OG + Twitter Card',   sub: 'Sosial paylaşım teqləri' },
+            ].map(({ Icon, title, sub }) => (
+              <div key={title} className="flex items-center gap-2.5 rounded-xl p-2.5"
+                style={{ background: 'rgba(123,110,246,0.06)' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(123,110,246,0.14)' }}>
+                  <Icon size={13} strokeWidth={2} style={{ color: '#7B6EF6' }} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold leading-snug" style={{ color: '#0D0D1A' }}>{title}</div>
+                  <div className="text-[10px] leading-snug" style={{ color: '#9B9EBB' }}>{sub}</div>
                 </div>
               </div>
             ))}
@@ -272,7 +194,7 @@ export default function GenerateForm({ profile }: { profile: Profile | null }) {
           initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ ...SPRING, delay: 0.08 }}
         >
           <div className="relative">
-            <motion.button onClick={handleGenerate} disabled={loading || !selectedBrand}
+            <motion.button onClick={handleGenerate} disabled={loading || !url.trim()}
               className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all disabled:opacity-60"
               style={{ background: '#7B6EF6', boxShadow: '0 4px 20px rgba(123,110,246,0.25)' }}
               whileHover={{ scale: 1.02, boxShadow: '0 6px 28px rgba(123,110,246,0.35)' }}

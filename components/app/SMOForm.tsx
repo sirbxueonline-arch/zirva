@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import BrandModal from './BrandModal'
 import type { Profile, Brand } from '@/types'
-import { Sparkles, AlertTriangle, Check, ChevronDown, Plus, ExternalLink } from 'lucide-react'
+import { Sparkles, AlertTriangle, Check, ChevronDown, Plus, ExternalLink, Target, Hash, CalendarDays, FileEdit } from 'lucide-react'
 import BrandAvatar from './BrandAvatar'
 import UpgradeModal from './UpgradeModal'
 
@@ -216,16 +216,20 @@ export default function SMOForm({ profile }: { profile: Profile | null }) {
           <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#00C9A7' }}>SMO Paketi nə verir</p>
           <div className="grid grid-cols-2 gap-2">
             {[
-              ['🎯', 'Hədəf Auditoriya', 'Reklam hədəfləmə üçün'],
-              ['#', 'Hashteq Strategiyası', 'Əsas + Reels + Story'],
-              ['📅', 'Kontent Təqvimi', '4 həftəlik plan'],
-              ['✍️', 'Kontent Şablonları', '5+ hazır şablon'],
-            ].map(([icon, title, sub]) => (
-              <div key={title} className="flex items-start gap-2">
-                <span className="text-base mt-0.5">{icon}</span>
-                <div>
-                  <div className="text-xs font-semibold" style={{ color: '#0D0D1A' }}>{title}</div>
-                  <div className="text-xs" style={{ color: '#9B9EBB' }}>{sub}</div>
+              { Icon: Target,       title: 'Hədəf Auditoriya',    sub: 'Reklam hədəfləmə üçün' },
+              { Icon: Hash,         title: 'Hashteq Strategiyası', sub: 'Əsas + Reels + Story' },
+              { Icon: CalendarDays, title: 'Kontent Təqvimi',      sub: '4 həftəlik plan' },
+              { Icon: FileEdit,     title: 'Kontent Şablonları',   sub: '5+ hazır şablon' },
+            ].map(({ Icon, title, sub }) => (
+              <div key={title} className="flex items-center gap-2.5 rounded-xl p-2.5"
+                style={{ background: 'rgba(0,201,167,0.06)' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(0,201,167,0.14)' }}>
+                  <Icon size={13} strokeWidth={2} style={{ color: '#00C9A7' }} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold leading-snug" style={{ color: '#0D0D1A' }}>{title}</div>
+                  <div className="text-[10px] leading-snug" style={{ color: '#9B9EBB' }}>{sub}</div>
                 </div>
               </div>
             ))}

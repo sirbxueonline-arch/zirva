@@ -69,12 +69,25 @@ export interface Profile {
   current_period_end:    string | null
   created_at:            string
   updated_at:            string
-  autopilot_enabled?:    boolean
-  autopilot_url?:        string | null
-  autopilot_last_run?:   string | null
-  autopilot_next_run?:   string | null
-  gsc_site_url?:         string | null
-  gsc_connected_at?:     string | null
+  autopilot_enabled?:      boolean
+  autopilot_smo_enabled?:  boolean
+  autopilot_brand_ids?:    string[] | null
+  autopilot_url?:          string | null
+  autopilot_last_run?:     string | null
+  autopilot_next_run?:     string | null
+  gsc_site_url?:           string | null
+  gsc_connected_at?:       string | null
+  gsc_access_token?:       string | null
+  gsc_refresh_token?:      string | null
+}
+
+export interface InstagramInsights {
+  headline: string
+  summary: string
+  content_ideas: string[]
+  hashtags: string[]
+  best_post_time: string
+  action_items: string[]
 }
 
 export interface AutopilotInsights {
@@ -91,13 +104,7 @@ export interface AutopilotInsights {
   total_clicks_change: string
   total_impressions: number
   total_impressions_change: string
-  smo: {
-    headline: string
-    top_hashtags: string[]
-    content_ideas: string[]
-    best_platform: string
-    post_tip: string
-  }
+  improvements: { metric: string; value: string; detail: string }[]
 }
 
 export interface Brand {

@@ -10,511 +10,370 @@ import {
   Hr,
   Preview,
 } from '@react-email/components'
+import type { AutopilotInsights, InstagramInsights } from '@/types'
+
+export interface BrandReport {
+  brandName: string
+  siteUrl: string
+  insights?: AutopilotInsights
+  instagramInsights?: InstagramInsights
+}
 
 interface AutopilotReportEmailProps {
   userName: string
-  siteUrl: string
-  headline: string
-  summary: string
-  seoScore: number
-  scoreChange: number
-  totalClicks: number
-  totalClicksChange: string
-  totalImpressions: number
-  totalImpressionsChange: string
-  topPerformers: { keyword: string; clicks: number; position: number; change: string }[]
-  declining: { keyword: string; position_drop: number; reason: string }[]
-  actionItems: string[]
-  opportunity: string
-  warning: string
-  smo?: {
-    headline: string
-    top_hashtags: string[]
-    content_ideas: string[]
-    best_platform: string
-    post_tip: string
-  }
+  brandReports: BrandReport[]
+  showSmoUpsell?: boolean
   period: string
   unsubscribeUrl: string
 }
 
+function cleanUrl(raw: string): string {
+  return raw
+    .replace(/^sc-domain:/i, '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/, '')
+    .toLowerCase()
+}
+
 export default function AutopilotReportEmail({
   userName,
-  siteUrl,
-  headline,
-  summary,
-  seoScore,
-  scoreChange,
-  totalClicks,
-  totalClicksChange,
-  totalImpressions,
-  totalImpressionsChange,
-  topPerformers,
-  declining,
-  actionItems,
-  opportunity,
-  warning,
-  smo,
+  brandReports,
+  showSmoUpsell,
   period,
   unsubscribeUrl,
 }: AutopilotReportEmailProps) {
-  const scoreColor = seoScore >= 75 ? '#00C9A7' : seoScore >= 50 ? '#F5A623' : '#F25C54'
-  const changePositive = scoreChange >= 0
-  const changeColor = changePositive ? '#00C9A7' : '#F25C54'
+  const firstReport = brandReports[0]
+  const previewText = firstReport
+    ? brandReports.length > 1
+      ? `${brandReports.length} marka ucun Avtopilot hesabati`
+      : (firstReport.insights?.headline ?? firstReport.instagramInsights?.headline ?? 'Zirva Avtopilot Hesabati')
+    : 'Zirva Avtopilot Hesabati'
 
   return (
     <Html lang="az">
       <Head />
-      <Preview>{headline}</Preview>
-      <Body style={{ backgroundColor: '#F5F5FF', fontFamily: 'system-ui, -apple-system, sans-serif', margin: 0, padding: 0 }}>
-        <Container style={{ maxWidth: '600px', margin: '0 auto', padding: '24px 16px' }}>
+      <Preview>{previewText}</Preview>
+      <Body style={{ backgroundColor: '#EEEEF8', fontFamily: 'system-ui, -apple-system, sans-serif', margin: 0, padding: 0 }}>
+        <Container style={{ maxWidth: '600px', margin: '0 auto', padding: '32px 16px' }}>
 
           {/* Header */}
           <Section style={{
-            backgroundColor: '#ffffff',
+            background: 'linear-gradient(135deg, #7B6EF6 0%, #9B8FF8 100%)',
             borderRadius: '16px 16px 0 0',
-            padding: '28px 32px 20px',
-            borderBottom: '1px solid rgba(123,110,246,0.1)',
+            padding: '28px 32px 24px',
           }}>
             <table width="100%" cellPadding={0} cellSpacing={0}>
               <tbody>
                 <tr>
                   <td>
-                    <Text style={{ margin: 0, fontSize: '24px', fontWeight: '800', color: '#7B6EF6', letterSpacing: '-0.5px' }}>
+                    <Text style={{ margin: 0, fontSize: '26px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.5px' }}>
                       Zirva
                     </Text>
-                    <Text style={{ margin: '2px 0 0', fontSize: '13px', color: '#9B9EBB' }}>
-                      Avtopilot SEO Hesabatı
+                    <Text style={{ margin: '3px 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.75)', fontWeight: '500' }}>
+                      Avtopilot Hesabatı · {period}
                     </Text>
                   </td>
-                  <td style={{ textAlign: 'right', verticalAlign: 'top' }}>
-                    <Text style={{ margin: 0, fontSize: '12px', color: '#9B9EBB', lineHeight: '1.5' }}>
-                      {period}
-                    </Text>
-                    <Text style={{ margin: '2px 0 0', fontSize: '12px', color: '#9B9EBB' }}>
-                      {siteUrl}
-                    </Text>
+                  <td style={{ textAlign: 'right', verticalAlign: 'middle' }}>
+                    <div style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '10px', padding: '8px 14px' }}>
+                      <Text style={{ margin: 0, fontSize: '13px', color: '#ffffff', fontWeight: '600' }}>
+                        Salam, {userName} 👋
+                      </Text>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </Section>
 
-          {/* Main content */}
-          <Section style={{
-            backgroundColor: '#ffffff',
-            padding: '28px 32px',
-          }}>
-            {/* Greeting */}
-            <Text style={{ margin: '0 0 4px', fontSize: '14px', color: '#9B9EBB' }}>
-              Salam, {userName}
-            </Text>
+          {/* Brand Sections */}
+          {brandReports.map((report, reportIdx) => {
+            const { brandName, siteUrl, insights, instagramInsights } = report
+            const isLast = reportIdx === brandReports.length - 1
+            const isMulti = brandReports.length > 1
 
-            {/* Headline */}
-            <Text style={{ margin: '0 0 20px', fontSize: '22px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.3' }}>
-              {headline}
-            </Text>
-
-            {/* Stats row */}
-            <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '24px' }}>
-              <tbody>
-                <tr>
-                  {/* SEO Score */}
-                  <td width="25%" style={{ paddingRight: '8px' }}>
-                    <div style={{
-                      backgroundColor: '#F5F5FF',
-                      borderRadius: '12px',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: `1px solid ${scoreColor}30`,
-                    }}>
-                      <Text style={{ margin: '0 0 2px', fontSize: '26px', fontWeight: '800', color: scoreColor, lineHeight: '1' }}>
-                        {seoScore}
-                      </Text>
-                      <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                        SEO Skoru
-                      </Text>
-                      <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: changeColor }}>
-                        {changePositive ? '+' : ''}{scoreChange}
-                      </Text>
+            // ── Instagram-only report ──────────────────────────────
+            if (!insights && instagramInsights) {
+              return (
+                <Section key={reportIdx} style={{
+                  backgroundColor: '#ffffff',
+                  padding: reportIdx === 0 ? '28px 32px' : '0 32px 28px',
+                }}>
+                  {/* Brand divider for multi-brand */}
+                  {isMulti && (
+                    <div style={{ marginBottom: '20px' }}>
+                      {reportIdx > 0 && <Hr style={{ borderColor: 'rgba(123,110,246,0.1)', margin: '0 0 20px' }} />}
+                      <table width="100%" cellPadding={0} cellSpacing={0}>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <Text style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0D0D1A' }}>
+                                {brandName}
+                              </Text>
+                              <Text style={{ margin: '2px 0 0', fontSize: '12px', color: '#9B9EBB' }}>
+                                {cleanUrl(siteUrl)}
+                              </Text>
+                            </td>
+                            <td style={{ textAlign: 'right', verticalAlign: 'top' }}>
+                              <div style={{
+                                display: 'inline-block',
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                backgroundColor: 'rgba(131,58,180,0.08)',
+                                border: '1px solid rgba(131,58,180,0.2)',
+                              }}>
+                                <Text style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: '#833AB4' }}>Instagram</Text>
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                  </td>
+                  )}
 
-                  {/* Clicks */}
-                  <td width="25%" style={{ paddingRight: '8px', paddingLeft: '4px' }}>
+                  {/* Instagram header badge (single brand) */}
+                  {!isMulti && (
                     <div style={{
-                      backgroundColor: '#F5F5FF',
-                      borderRadius: '12px',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                    }}>
-                      <Text style={{ margin: '0 0 2px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>
-                        {totalClicks.toLocaleString()}
-                      </Text>
-                      <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                        Kliklər
-                      </Text>
-                      <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: totalClicksChange.startsWith('+') ? '#00C9A7' : '#F25C54' }}>
-                        {totalClicksChange}
-                      </Text>
-                    </div>
-                  </td>
-
-                  {/* Impressions */}
-                  <td width="25%" style={{ paddingRight: '4px', paddingLeft: '4px' }}>
-                    <div style={{
-                      backgroundColor: '#F5F5FF',
-                      borderRadius: '12px',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                    }}>
-                      <Text style={{ margin: '0 0 2px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>
-                        {totalImpressions >= 1000 ? `${(totalImpressions / 1000).toFixed(1)}K` : totalImpressions.toLocaleString()}
-                      </Text>
-                      <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                        İmpresiya
-                      </Text>
-                      <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: totalImpressionsChange.startsWith('+') ? '#00C9A7' : '#F25C54' }}>
-                        {totalImpressionsChange}
-                      </Text>
-                    </div>
-                  </td>
-
-                  {/* Period label */}
-                  <td width="25%" style={{ paddingLeft: '4px' }}>
-                    <div style={{
-                      backgroundColor: 'rgba(123,110,246,0.06)',
-                      borderRadius: '12px',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid rgba(123,110,246,0.12)',
-                    }}>
-                      <Text style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#7B6EF6', lineHeight: '1.3' }}>
-                        3 Günlük
-                      </Text>
-                      <Text style={{ margin: 0, fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                        Hesabat
-                      </Text>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Summary */}
-            <div style={{
-              backgroundColor: '#F5F5FF',
-              borderRadius: '12px',
-              padding: '16px 18px',
-              marginBottom: '24px',
-              borderLeft: '3px solid #7B6EF6',
-            }}>
-              <Text style={{ margin: 0, fontSize: '14px', color: '#0D0D1A', lineHeight: '1.6' }}>
-                {summary}
-              </Text>
-            </div>
-
-            {/* Top performers */}
-            {topPerformers && topPerformers.length > 0 && (
-              <div style={{ marginBottom: '24px' }}>
-                <Text style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
-                  Ən Yaxşı Açar Sözlər
-                </Text>
-                {topPerformers.slice(0, 3).map((kw, i) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '10px 14px',
-                    backgroundColor: i % 2 === 0 ? '#F5F5FF' : '#ffffff',
-                    borderRadius: '10px',
-                    marginBottom: '6px',
-                    border: '1px solid rgba(123,110,246,0.08)',
-                  }}>
-                    <table width="100%" cellPadding={0} cellSpacing={0}>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <Text style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#0D0D1A' }}>
-                              {kw.keyword}
-                            </Text>
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <Text style={{ margin: 0, fontSize: '12px', color: '#9B9EBB' }}>
-                              {kw.clicks} klik · #{kw.position.toFixed(1)} mövqe
-                              {' '}
-                              <span style={{ color: kw.change.startsWith('+') || kw.change.startsWith('↑') ? '#00C9A7' : '#F25C54', fontWeight: '600' }}>
-                                {kw.change}
-                              </span>
-                            </Text>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Action items */}
-            {actionItems && actionItems.length > 0 && (
-              <div style={{ marginBottom: '24px' }}>
-                <Text style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
-                  Bu Həftə Nə Etməli
-                </Text>
-                {actionItems.slice(0, 3).map((item, i) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    marginBottom: '8px',
-                  }}>
-                    <table width="100%" cellPadding={0} cellSpacing={0}>
-                      <tbody>
-                        <tr>
-                          <td width="28" style={{ verticalAlign: 'top', paddingTop: '1px' }}>
-                            <div style={{
-                              width: '22px',
-                              height: '22px',
-                              borderRadius: '50%',
-                              backgroundColor: '#7B6EF6',
-                              color: '#ffffff',
-                              fontSize: '11px',
-                              fontWeight: '700',
-                              textAlign: 'center',
-                              lineHeight: '22px',
-                              display: 'inline-block',
-                            }}>
-                              {i + 1}
-                            </div>
-                          </td>
-                          <td style={{ paddingLeft: '8px', verticalAlign: 'middle' }}>
-                            <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                              {item}
-                            </Text>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Opportunity */}
-            {opportunity && (
-              <div style={{
-                backgroundColor: 'rgba(0,201,167,0.06)',
-                border: '1px solid rgba(0,201,167,0.25)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                marginBottom: '12px',
-              }}>
-                <Text style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: '700', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                  İmkan
-                </Text>
-                <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                  {opportunity}
-                </Text>
-              </div>
-            )}
-
-            {/* Warning */}
-            {warning && (
-              <div style={{
-                backgroundColor: 'rgba(242,92,84,0.06)',
-                border: '1px solid rgba(242,92,84,0.25)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                marginBottom: '24px',
-              }}>
-                <Text style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: '700', color: '#F25C54', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
-                  Diqqət
-                </Text>
-                <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                  {warning}
-                </Text>
-              </div>
-            )}
-
-            {/* Declining keywords */}
-            {declining && declining.length > 0 && (
-              <div style={{ marginBottom: '24px' }}>
-                <Text style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: '700', color: '#0D0D1A' }}>
-                  Düşən Açar Sözlər
-                </Text>
-                {declining.map((kw, i) => (
-                  <div key={i} style={{
-                    padding: '10px 14px',
-                    backgroundColor: 'rgba(242,92,84,0.04)',
-                    borderRadius: '10px',
-                    marginBottom: '6px',
-                    border: '1px solid rgba(242,92,84,0.1)',
-                  }}>
-                    <table width="100%" cellPadding={0} cellSpacing={0}>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <Text style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '600', color: '#0D0D1A' }}>
-                              {kw.keyword}
-                            </Text>
-                            <Text style={{ margin: 0, fontSize: '12px', color: '#9B9EBB' }}>
-                              {kw.reason}
-                            </Text>
-                          </td>
-                          <td style={{ textAlign: 'right', verticalAlign: 'top' }}>
-                            <Text style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: '#F25C54' }}>
-                              -{kw.position_drop}
-                            </Text>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
-
-          {/* SMO Section */}
-          {smo && (
-            <Section style={{
-              backgroundColor: '#ffffff',
-              padding: '0 32px 28px',
-            }}>
-              <Hr style={{ borderColor: 'rgba(0,201,167,0.15)', margin: '0 0 24px' }} />
-
-              {/* SMO header */}
-              <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '16px' }}>
-                <tbody>
-                  <tr>
-                    <td>
-                      <Text style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.8px' }}>
-                        📱 SMO İnsaytları
-                      </Text>
-                      <Text style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: '700', color: '#0D0D1A' }}>
-                        {smo.headline}
-                      </Text>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Best platform */}
-              <div style={{
-                backgroundColor: 'rgba(0,201,167,0.06)',
-                border: '1px solid rgba(0,201,167,0.2)',
-                borderRadius: '10px',
-                padding: '12px 14px',
-                marginBottom: '16px',
-              }}>
-                <Text style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '700', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>
-                  Bu Həftənin Platforması
-                </Text>
-                <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                  {smo.best_platform}
-                </Text>
-              </div>
-
-              {/* Hashtags */}
-              {smo.top_hashtags && smo.top_hashtags.length > 0 && (
-                <div style={{ marginBottom: '16px' }}>
-                  <Text style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: '600', color: '#5A5D7A' }}>
-                    Tövsiyə olunan hashteqlər:
-                  </Text>
-                  <div>
-                    {smo.top_hashtags.map((tag, i) => (
-                      <span key={i} style={{
-                        display: 'inline-block',
-                        backgroundColor: 'rgba(0,201,167,0.08)',
-                        color: '#00C9A7',
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        marginRight: '6px',
-                        marginBottom: '6px',
-                        border: '1px solid rgba(0,201,167,0.2)',
-                      }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Content ideas */}
-              {smo.content_ideas && smo.content_ideas.length > 0 && (
-                <div style={{ marginBottom: '16px' }}>
-                  <Text style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '600', color: '#5A5D7A' }}>
-                    Kontent ideyaları:
-                  </Text>
-                  {smo.content_ideas.map((idea, i) => (
-                    <div key={i} style={{
-                      display: 'flex',
-                      padding: '9px 12px',
-                      backgroundColor: i % 2 === 0 ? '#F5F5FF' : '#ffffff',
-                      borderRadius: '8px',
-                      marginBottom: '5px',
-                      border: '1px solid rgba(123,110,246,0.06)',
+                      background: 'linear-gradient(135deg, rgba(131,58,180,0.07) 0%, rgba(131,58,180,0.03) 100%)',
+                      border: '1px solid rgba(131,58,180,0.18)',
+                      borderRadius: '14px',
+                      padding: '14px 18px',
+                      marginBottom: '24px',
                     }}>
                       <table width="100%" cellPadding={0} cellSpacing={0}>
                         <tbody>
                           <tr>
-                            <td width="20" style={{ verticalAlign: 'top', paddingTop: '1px' }}>
-                              <Text style={{ margin: 0, fontSize: '12px', fontWeight: '700', color: '#7B6EF6' }}>
-                                {i + 1}.
+                            <td>
+                              <div style={{ display: 'inline-block', backgroundColor: 'rgba(131,58,180,0.1)', borderRadius: '6px', padding: '2px 8px', marginBottom: '6px' }}>
+                                <Text style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                  📱 Instagram Strategiyası
+                                </Text>
+                              </div>
+                              <Text style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0D0D1A' }}>
+                                {brandName}
                               </Text>
-                            </td>
-                            <td style={{ paddingLeft: '6px' }}>
-                              <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                                {idea}
+                              <Text style={{ margin: '2px 0 0', fontSize: '12px', color: '#9B9EBB' }}>
+                                {cleanUrl(siteUrl)}
                               </Text>
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
-              {/* Post tip */}
-              {smo.post_tip && (
-                <div style={{
-                  backgroundColor: 'rgba(123,110,246,0.06)',
-                  border: '1px solid rgba(123,110,246,0.15)',
-                  borderRadius: '10px',
-                  padding: '12px 14px',
-                }}>
-                  <Text style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: '700', color: '#7B6EF6', textTransform: 'uppercase' as const, letterSpacing: '0.4px' }}>
-                    💡 Həftənin SMO Tövsiyəsi
+                  {/* Headline */}
+                  <Text style={{ margin: '0 0 12px', fontSize: isMulti ? '15px' : '20px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.3' }}>
+                    {instagramInsights.headline}
                   </Text>
-                  <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.5' }}>
-                    {smo.post_tip}
-                  </Text>
+
+                  {/* Summary */}
+                  <div style={{ backgroundColor: 'rgba(131,58,180,0.04)', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px', borderLeft: '3px solid #833AB4' }}>
+                    <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.6' }}>
+                      {instagramInsights.summary}
+                    </Text>
+                  </div>
+
+                </Section>
+              )
+            }
+
+            // ── SEO report (has insights) ─────────────────────────
+            if (!insights) return null
+            const scoreColor = insights.seo_score >= 75 ? '#00C9A7' : insights.seo_score >= 50 ? '#F5A623' : '#F25C54'
+            const changePositive = insights.score_change >= 0
+            const changeColor = changePositive ? '#00C9A7' : '#F25C54'
+
+            return (
+              <Section key={reportIdx} style={{
+                backgroundColor: '#ffffff',
+                padding: reportIdx === 0 ? '28px 32px' : '0 32px 28px',
+              }}>
+                {/* Brand divider (for multi-brand) */}
+                {isMulti && (
+                  <div style={{ marginBottom: '20px' }}>
+                    {reportIdx > 0 && <Hr style={{ borderColor: 'rgba(123,110,246,0.1)', margin: '0 0 20px' }} />}
+                    <table width="100%" cellPadding={0} cellSpacing={0}>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <Text style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0D0D1A' }}>
+                              {brandName}
+                            </Text>
+                            <Text style={{ margin: '2px 0 0', fontSize: '12px', color: '#9B9EBB' }}>
+                              {cleanUrl(siteUrl)}
+                            </Text>
+                          </td>
+                          <td style={{ textAlign: 'right', verticalAlign: 'top' }}>
+                            <div style={{
+                              display: 'inline-block',
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              backgroundColor: `${scoreColor}15`,
+                              border: `1px solid ${scoreColor}40`,
+                            }}>
+                              <Text style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: scoreColor, lineHeight: '1' }}>
+                                {insights.seo_score}
+                                <span style={{ fontSize: '11px', fontWeight: '600', color: changeColor, marginLeft: '4px' }}>
+                                  {changePositive ? '+' : ''}{insights.score_change}
+                                </span>
+                              </Text>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Stats row (single brand only) */}
+                {!isMulti && (
+                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '24px' }}>
+                    <tbody>
+                      <tr>
+                        <td width="25%" style={{ paddingRight: '8px' }}>
+                          <div style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: `1px solid ${scoreColor}30` }}>
+                            <Text style={{ margin: '0 0 2px', fontSize: '26px', fontWeight: '800', color: scoreColor, lineHeight: '1' }}>{insights.seo_score}</Text>
+                            <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>SEO Skoru</Text>
+                            <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: changeColor }}>{changePositive ? '+' : ''}{insights.score_change}</Text>
+                          </div>
+                        </td>
+                        <td width="25%" style={{ paddingRight: '8px', paddingLeft: '4px' }}>
+                          <div style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 12px', textAlign: 'center' }}>
+                            <Text style={{ margin: '0 0 2px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>{insights.total_clicks.toLocaleString()}</Text>
+                            <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Kliklər</Text>
+                            <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: insights.total_clicks_change.startsWith('+') ? '#00C9A7' : '#F25C54' }}>{insights.total_clicks_change}</Text>
+                          </div>
+                        </td>
+                        <td width="25%" style={{ paddingRight: '4px', paddingLeft: '4px' }}>
+                          <div style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 12px', textAlign: 'center' }}>
+                            <Text style={{ margin: '0 0 2px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>{insights.total_impressions >= 1000 ? `${(insights.total_impressions / 1000).toFixed(1)}K` : insights.total_impressions}</Text>
+                            <Text style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Impresiya</Text>
+                            <Text style={{ margin: 0, fontSize: '11px', fontWeight: '600', color: insights.total_impressions_change.startsWith('+') ? '#00C9A7' : '#F25C54' }}>{insights.total_impressions_change}</Text>
+                          </div>
+                        </td>
+                        <td width="25%" style={{ paddingLeft: '4px' }}>
+                          <div style={{ backgroundColor: 'rgba(123,110,246,0.06)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid rgba(123,110,246,0.12)' }}>
+                            <Text style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#7B6EF6', lineHeight: '1.3' }}>3 Gunluk</Text>
+                            <Text style={{ margin: 0, fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>Hesabat</Text>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                )}
+
+                {/* Compact stats for multi-brand */}
+                {isMulti && (
+                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '16px' }}>
+                    <tbody>
+                      <tr>
+                        <td width="33%" style={{ paddingRight: '6px' }}>
+                          <div style={{ backgroundColor: '#F5F5FF', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                            <Text style={{ margin: '0 0 1px', fontSize: '18px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>{insights.total_clicks}</Text>
+                            <Text style={{ margin: 0, fontSize: '10px', color: '#9B9EBB', fontWeight: '600' }}>Kliklər {insights.total_clicks_change}</Text>
+                          </div>
+                        </td>
+                        <td width="33%" style={{ paddingRight: '3px', paddingLeft: '3px' }}>
+                          <div style={{ backgroundColor: '#F5F5FF', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                            <Text style={{ margin: '0 0 1px', fontSize: '18px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>{insights.total_impressions >= 1000 ? `${(insights.total_impressions / 1000).toFixed(1)}K` : insights.total_impressions}</Text>
+                            <Text style={{ margin: 0, fontSize: '10px', color: '#9B9EBB', fontWeight: '600' }}>Impresiya {insights.total_impressions_change}</Text>
+                          </div>
+                        </td>
+                        <td width="33%" style={{ paddingLeft: '6px' }}>
+                          <div style={{ backgroundColor: 'rgba(123,110,246,0.06)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center', border: '1px solid rgba(123,110,246,0.1)' }}>
+                            <Text style={{ margin: '0 0 1px', fontSize: '12px', fontWeight: '700', color: '#7B6EF6' }}>{insights.seo_score}</Text>
+                            <Text style={{ margin: 0, fontSize: '10px', color: '#9B9EBB', fontWeight: '600' }}>SEO Skoru</Text>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                )}
+
+                {/* Headline */}
+                <Text style={{ margin: '0 0 12px', fontSize: isMulti ? '15px' : '20px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.3' }}>
+                  {insights.headline}
+                </Text>
+
+                {/* Summary */}
+                <div style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px', borderLeft: '3px solid #7B6EF6' }}>
+                  <Text style={{ margin: 0, fontSize: '13px', color: '#0D0D1A', lineHeight: '1.6' }}>{insights.summary}</Text>
                 </div>
-              )}
+
+                {/* Improvements — shown first, most prominent */}
+                {insights.improvements && insights.improvements.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'inline-block', backgroundColor: 'rgba(0,201,167,0.1)', borderRadius: '6px', padding: '2px 8px', marginBottom: '10px' }}>
+                      <Text style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#00C9A7', textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>
+                        ✅ Zirva ilə əldə edilən nəticələr
+                      </Text>
+                    </div>
+                    {insights.improvements.map((item, i) => (
+                      <div key={i} style={{ padding: '12px 14px', backgroundColor: 'rgba(0,201,167,0.05)', borderRadius: '10px', marginBottom: '6px', border: '1px solid rgba(0,201,167,0.15)' }}>
+                        <table width="100%" cellPadding={0} cellSpacing={0}>
+                          <tbody><tr>
+                            <td>
+                              <Text style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>{item.metric}</Text>
+                              <Text style={{ margin: 0, fontSize: '12px', color: '#5A5D7A', lineHeight: '1.5' }}>{item.detail}</Text>
+                            </td>
+                            <td style={{ textAlign: 'right', verticalAlign: 'middle', paddingLeft: '12px' }}>
+                              <Text style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#00C9A7', lineHeight: '1' }}>{item.value}</Text>
+                            </td>
+                          </tr></tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Top performing keywords */}
+                {insights.top_performers && insights.top_performers.length > 0 && (
+                  <div style={{ marginBottom: isMulti && !isLast ? '8px' : '20px' }}>
+                    <Text style={{ margin: '0 0 10px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Ən Yaxşı Açar Sözlər</Text>
+                    {insights.top_performers.slice(0, 3).map((kw, i) => (
+                      <div key={i} style={{ padding: '9px 12px', backgroundColor: i % 2 === 0 ? '#F5F5FF' : '#ffffff', borderRadius: '8px', marginBottom: '5px', border: '1px solid rgba(123,110,246,0.06)' }}>
+                        <table width="100%" cellPadding={0} cellSpacing={0}>
+                          <tbody><tr>
+                            <td><Text style={{ margin: 0, fontSize: '12px', fontWeight: '600', color: '#0D0D1A' }}>{kw.keyword}</Text></td>
+                            <td style={{ textAlign: 'right' }}>
+                              <Text style={{ margin: 0, fontSize: '11px', color: '#9B9EBB' }}>
+                                {kw.clicks} klik · #{kw.position.toFixed(1)}{' '}
+                                <span style={{ color: kw.change.startsWith('+') || kw.change.startsWith('↑') ? '#00C9A7' : '#F25C54', fontWeight: '700' }}>{kw.change}</span>
+                              </Text>
+                            </td>
+                          </tr></tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Section>
+            )
+          })}
+
+          {/* SMO Upsell */}
+          {showSmoUpsell && (
+            <Section style={{ backgroundColor: '#ffffff', padding: '0 32px 28px' }}>
+              <Hr style={{ borderColor: 'rgba(123,110,246,0.1)', margin: '0 0 20px' }} />
+              <div style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.08) 0%, rgba(0,201,167,0.06) 100%)', border: '1px solid rgba(123,110,246,0.18)', borderRadius: '14px', padding: '18px 20px', textAlign: 'center' as const }}>
+                <Text style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '800', color: '#0D0D1A' }}>Sosial Media da boyuyin</Text>
+                <Text style={{ margin: '0 0 14px', fontSize: '12px', color: '#5A5D7A', lineHeight: '1.6' }}>Instagram, TikTok ve Facebook ucun tam SMO paketi alin — hashteqler, kontent strategiyasi, auditoriya analizi.</Text>
+                <Link href="https://tryzirva.com/smo" style={{ display: 'inline-block', padding: '10px 24px', backgroundColor: '#7B6EF6', color: '#ffffff', borderRadius: '10px', fontWeight: '700', fontSize: '13px', textDecoration: 'none' }}>
+                  SMO Paketi Al - 5 kredit
+                </Link>
+              </div>
             </Section>
           )}
 
           {/* Footer */}
-          <Section style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '0 0 16px 16px',
-            padding: '16px 32px 24px',
-            borderTop: '1px solid rgba(123,110,246,0.1)',
-          }}>
-            <Hr style={{ borderColor: 'rgba(123,110,246,0.1)', margin: '0 0 16px' }} />
-            <Text style={{ margin: '0 0 6px', fontSize: '12px', color: '#9B9EBB', textAlign: 'center' as const }}>
-              Bu hesabat Zirva Avtopilot tərəfindən avtomatik göndərilib.
+          <Section style={{ backgroundColor: '#F5F5FF', borderRadius: '0 0 16px 16px', padding: '20px 32px 24px', borderTop: '1px solid rgba(123,110,246,0.1)' }}>
+            <Text style={{ margin: '0 0 4px', fontSize: '12px', color: '#9B9EBB', textAlign: 'center' as const, lineHeight: '1.6' }}>
+              Bu hesabat <span style={{ fontWeight: '600', color: '#7B6EF6' }}>Zirva Avtopilot</span> tərəfindən avtomatik göndərilib.
             </Text>
-            <Text style={{ margin: 0, fontSize: '12px', color: '#9B9EBB', textAlign: 'center' as const }}>
-              Artıq almaq istəmirsinizsə,{' '}
-              <Link href={unsubscribeUrl} style={{ color: '#7B6EF6', textDecoration: 'underline' }}>
-                abunəlikdən çıxın
-              </Link>
-              {' '}·{' '}
-              <Link href="https://tryzirva.com" style={{ color: '#7B6EF6', textDecoration: 'underline' }}>
-                tryzirva.com
-              </Link>
+            <Text style={{ margin: 0, fontSize: '11px', color: '#C0C3D8', textAlign: 'center' as const }}>
+              <Link href={unsubscribeUrl} style={{ color: '#9B9EBB', textDecoration: 'underline' }}>Abunəlikdən çıxın</Link>
+              {'  ·  '}
+              <Link href="https://tryzirva.com" style={{ color: '#9B9EBB', textDecoration: 'underline' }}>tryzirva.com</Link>
             </Text>
           </Section>
 

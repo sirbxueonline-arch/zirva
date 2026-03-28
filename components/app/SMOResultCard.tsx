@@ -92,11 +92,24 @@ export default function SMOResultCard({ generation }: { generation: Generation }
     <>
       <ToastContainer toasts={toasts} removeToast={id => setToasts(p => p.filter(t => t.id !== id))} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        {/* Mobile top nav */}
+        <div className="flex items-center justify-between mb-4 sm:hidden">
+          <Link href="/history" className="flex items-center gap-1.5 text-sm font-medium py-1"
+            style={{ color: '#00C9A7' }}>
+            <ChevronLeft size={15} strokeWidth={2.5} /> Tarixçəyə qayıt
+          </Link>
+          <button onClick={handleDelete}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+            style={{ color: '#F25C54', background: 'rgba(242,92,84,0.07)', border: '1px solid rgba(242,92,84,0.15)' }}>
+            Sil
+          </button>
+        </div>
 
         {/* Hero */}
         <motion.div
-          className="rounded-2xl p-6 mb-6 relative overflow-hidden"
+          className="rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F0FFF8 50%, #F5F5FF 100%)', border: '1px solid rgba(0,201,167,0.15)', boxShadow: '0 4px 24px rgba(0,201,167,0.08)' }}
           initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={SPRING}
         >
@@ -162,7 +175,7 @@ export default function SMOResultCard({ generation }: { generation: Generation }
         >
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-2 px-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap"
               style={{
                 background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
                 color: activeTab === tab.id ? '#00C9A7' : '#9B9EBB',

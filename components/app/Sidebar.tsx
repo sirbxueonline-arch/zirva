@@ -113,56 +113,6 @@ export default function Sidebar({ profile, onOpenSettings, mobileOpen = false, o
         </button>
       </div>
 
-      {/* Brand switcher */}
-      {brands.length > 0 && (
-        <div className="px-4 pt-3 pb-1 relative" ref={brandDropRef}>
-          <button
-            onClick={() => setBrandDropOpen(v => !v)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-gray-50"
-            style={{ border: '1px solid rgba(123,110,246,0.15)' }}
-          >
-            {activeBrand ? (
-              <>
-                <BrandAvatar brand={activeBrand} size={24} />
-                <span className="flex-1 text-xs font-semibold text-left truncate" style={{ color: '#0D0D1A' }}>{activeBrand.name}</span>
-              </>
-            ) : (
-              <span className="flex-1 text-xs text-left" style={{ color: '#9B9EBB' }}>Brend seçin</span>
-            )}
-            <ChevronDown size={12} strokeWidth={2.5} style={{ color: '#9B9EBB', transform: brandDropOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.15s', flexShrink: 0 }} />
-          </button>
-
-          <AnimatePresence>
-            {brandDropOpen && (
-              <motion.div
-                className="absolute left-4 right-4 top-full mt-1 rounded-xl border overflow-hidden z-50"
-                style={{ background: '#FFFFFF', borderColor: 'rgba(123,110,246,0.15)', boxShadow: '0 8px 24px rgba(13,13,26,0.12)' }}
-                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
-              >
-                {brands.map(b => (
-                  <button key={b.id} onClick={() => switchBrand(b)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-left transition-all hover:bg-gray-50"
-                    style={{ borderBottom: '1px solid rgba(123,110,246,0.06)', background: activeBrand?.id === b.id ? 'rgba(123,110,246,0.06)' : undefined }}
-                  >
-                    <BrandAvatar brand={b} size={24} />
-                    <span className="flex-1 font-semibold truncate" style={{ color: '#0D0D1A' }}>{b.name}</span>
-                    {activeBrand?.id === b.id && (
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#7B6EF6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    )}
-                  </button>
-                ))}
-                <Link href="/brands" onClick={() => setBrandDropOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold transition-all hover:bg-gray-50"
-                  style={{ color: '#7B6EF6' }}
-                >
-                  <Plus size={12} strokeWidth={2.5} /> Brend idarə et
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
 
       {/* New CTA */}
       <div className="px-4 py-3">
