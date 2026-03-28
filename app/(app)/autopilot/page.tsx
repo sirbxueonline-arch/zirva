@@ -311,7 +311,13 @@ function AutopilotPageInner() {
   function formatDate(iso: string | null | undefined) {
     if (!iso) return null
     const d = new Date(iso)
-    return d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const months = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr']
+    const day = d.getDate()
+    const month = months[d.getMonth()]
+    const year = d.getFullYear()
+    const h = String(d.getHours()).padStart(2, '0')
+    const m = String(d.getMinutes()).padStart(2, '0')
+    return `${day} ${month} ${year}, ${h}:${m}`
   }
 
   const isPaid = profile?.plan === 'pro' || profile?.plan === 'agency'

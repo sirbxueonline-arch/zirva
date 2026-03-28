@@ -255,7 +255,8 @@ export async function runAutopilotForUser(
   const today = new Date()
   const end = new Date(today); end.setDate(end.getDate() - 1)
   const start = new Date(today); start.setDate(start.getDate() - days)
-  const fmt = (d: Date) => d.toLocaleDateString('az-AZ', { day: 'numeric', month: 'long' })
+  const AZ_MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr']
+  const fmt = (d: Date) => `${d.getDate()} ${AZ_MONTHS[d.getMonth()]}`
   const periodStr = `${fmt(start)} – ${fmt(end)}`
 
   // Build subject from first report
