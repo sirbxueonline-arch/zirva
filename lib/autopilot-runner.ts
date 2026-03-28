@@ -90,37 +90,6 @@ function extractDomain(raw: string): string {
   } catch { return raw.toLowerCase() }
 }
 
-async function getGSCDataForBrand(accessToken: string, websiteUrl: string, days: number, verifiedSites: string[]): Promise<GSCData | null> {
-  const domain = extractDomain(websiteUrl)
-
-  // 1. Try matching against the user's verified GSC properties (most reliable)
-  const match = verifiedSites.find(site => extractDomain(site) === domain)
-  if (match) {
-    try {
-      console.log(`[autopilot] Matched GSC property "${match}" for domain "${domain}"`)
-      return await getGSCData(accessToken, match, days)
-    } catch (err) {
-      console.error(`[autopilot] GSC query failed for matched property "${match}":`, err)
-    }
-  }
-
-  // 2. Fall back to manual URL candidates
-  const candidates = [
-    websiteUrl,
-    `sc-domain:${domain}`,
-    `https://${domain}/`,
-    `http://${domain}/`,
-    `https://www.${domain}/`,
-    `http://www.${domain}/`,
-  ]
-  for (const url of candidates) {
-    if (url === match) continue // already tried above
-    try {
-      return await getGSCData(accessToken, url, days)
-    } catch { continue }
-  }
-  return null
-}
 
 export interface AutopilotUser {
   id: string
@@ -145,14 +114,12 @@ export async function runAutopilotForUser(
   admin: SupabaseClient<any, any, any>,
   openai: OpenAI,
 ): Promise<{ status: string; error?: string }> {
-  // Build the list of entries to report on
-  const primaryUrl = user.gsc_site_url ?? user.autopilot_url
+  // Load selected brands (for Instagram/SMO reports)
   const brandIds: string[] = user.autopilot_brand_ids?.length ? user.autopilot_brand_ids : []
 
-  type ReportEntry = { id: string; name: string; website_url: string; instagram_url?: string | null; category?: string | null; description?: string | null; city?: string | null }
+  type ReportEntry = { id: string; name: string; website_url: string | null; instagram_url?: string | null; category?: string | null; description?: string | null; city?: string | null }
   let entriesToReport: ReportEntry[] = []
 
-  // Load selected brands from DB
   if (brandIds.length > 0) {
     const { data } = await admin
       .from('brands')
@@ -162,18 +129,10 @@ export async function runAutopilotForUser(
     entriesToReport = (data ?? []).filter((b: ReportEntry) => b.name)
   }
 
-  // Always prepend the primary GSC site so it always gets an SEO report
-  if (primaryUrl) {
-    const primaryDomain = extractDomain(primaryUrl)
-    const alreadyCovered = entriesToReport.some(b => b.website_url && extractDomain(b.website_url) === primaryDomain)
-    if (!alreadyCovered) {
-      entriesToReport.unshift({ id: 'primary', name: primaryDomain, website_url: primaryUrl })
-    }
-  }
-
-  // If still nothing, abort
-  if (entriesToReport.length === 0) {
-    return { status: 'error', error: 'GSC qoşulmayıb' }
+  // Need at least a GSC connection or brands selected
+  const hasGsc = !!(user.gsc_refresh_token && (user.gsc_site_url || user.autopilot_url))
+  if (!hasGsc && entriesToReport.length === 0) {
+    return { status: 'error', error: 'GSC qoşulmayıb və heç bir marka seçilməyib' }
   }
 
   // Credit cost: flat 10 for weekly, 35 for monthly
@@ -215,76 +174,78 @@ export async function runAutopilotForUser(
 
   const days = user.autopilot_frequency === 'monthly' ? 30 : 7
 
-  // List verified GSC properties so we can match by domain exactly
-  let verifiedSites: string[] = []
+  // ── PHASE 1: SEO report for the primary GSC-connected site ──────────────
+  // Resolve the exact property URL to query: prefer listGSCSites (authoritative)
+  // then fall back to the stored gsc_site_url / autopilot_url
+  let gscPropertyUrl: string | null = null
   try {
-    verifiedSites = await listGSCSites(accessToken)
-    console.log(`[autopilot] Verified GSC sites for user ${user.id}:`, verifiedSites)
+    const sites = await listGSCSites(accessToken)
+    console.log(`[autopilot] Verified GSC sites:`, sites)
+    const primaryDomain = extractDomain(user.gsc_site_url ?? user.autopilot_url ?? '')
+    if (primaryDomain) {
+      gscPropertyUrl = sites.find(s => extractDomain(s) === primaryDomain) ?? sites[0] ?? null
+    } else {
+      gscPropertyUrl = sites[0] ?? null
+    }
+    if (gscPropertyUrl) console.log(`[autopilot] Using GSC property: ${gscPropertyUrl}`)
   } catch (err) {
-    console.error(`[autopilot] Could not list GSC sites:`, err)
+    console.error(`[autopilot] listGSCSites failed, falling back to stored URL:`, err)
+    gscPropertyUrl = user.gsc_site_url ?? user.autopilot_url ?? null
   }
 
-  console.log(`[autopilot] Processing ${entriesToReport.length} entries for user ${user.id}:`, entriesToReport.map(e => `${e.name} (${e.id})`))
+  if (gscPropertyUrl) {
+    try {
+      console.log(`[autopilot] Fetching GSC data for ${gscPropertyUrl}...`)
+      const gscData = await getGSCData(accessToken, gscPropertyUrl, days)
+      console.log(`[autopilot] GSC data: ${gscData.totalClicks} clicks, ${gscData.totalImpressions} impressions, ${gscData.top10.length} keywords`)
+
+      let insights: AutopilotInsights
+      try {
+        insights = await generateInsights(gscData, openai)
+      } catch (aiErr) {
+        console.error(`[autopilot] AI insights failed, using raw GSC fallback:`, aiErr)
+        const topKws = gscData.top10.slice(0, 3)
+        insights = {
+          seo_score: Math.min(90, Math.max(20, gscData.top10.length * 3 + (gscData.totalClicks > 100 ? 20 : gscData.totalClicks > 10 ? 10 : 0))),
+          score_change: 0,
+          headline: `${extractDomain(gscPropertyUrl)} saytı üçün ümumi göstəricilər`,
+          summary: `Son dövrdə ${gscData.totalClicks} klik (${gscData.totalClicksChange}) və ${gscData.totalImpressions} impresiya (${gscData.totalImpressionsChange}) qeydə alınıb. Orta mövqe: ${gscData.avgPosition}.`,
+          total_clicks: gscData.totalClicks,
+          total_clicks_change: gscData.totalClicksChange,
+          total_impressions: gscData.totalImpressions,
+          total_impressions_change: gscData.totalImpressionsChange,
+          top_performers: topKws.map(kw => ({
+            keyword: kw.query,
+            clicks: kw.clicks,
+            position: kw.position,
+            change: kw.positionChange > 0.1 ? `-${kw.positionChange.toFixed(0)}` : kw.positionChange < -0.1 ? `+${Math.abs(kw.positionChange).toFixed(0)}` : '0',
+          })),
+          improvements: [],
+          declining: [],
+          action_items: [],
+          opportunity: '',
+          warning: '',
+        }
+      }
+
+      brandReports.push({
+        brandName: extractDomain(gscPropertyUrl),
+        siteUrl: extractDomain(gscPropertyUrl),
+        insights,
+      })
+    } catch (err) {
+      console.error(`[autopilot] GSC data fetch failed for ${gscPropertyUrl}:`, err)
+    }
+  } else {
+    console.log(`[autopilot] No GSC property URL resolved — skipping SEO report`)
+  }
+
+  // ── PHASE 2: Instagram/SMO insights for every selected brand ────────────
+  console.log(`[autopilot] Processing ${entriesToReport.length} brands for Instagram insights`)
 
   for (const entry of entriesToReport) {
-    let hasSeoReport = false
-
-    // Try GSC data (works for primary site and any brand whose site is in GSC)
-    if (entry.website_url) {
-      try {
-        const gscData = await getGSCDataForBrand(accessToken, entry.website_url, days, verifiedSites)
-        if (gscData) {
-          console.log(`[autopilot] GSC data found for ${entry.name}, generating insights...`)
-          let insights: AutopilotInsights
-          try {
-            insights = await generateInsights(gscData, openai)
-          } catch (aiErr) {
-            console.error(`[autopilot] AI insights failed for ${entry.name}, using raw GSC fallback:`, aiErr)
-            // Build basic insights directly from GSC data without AI
-            const topKws = gscData.top10.slice(0, 3)
-            insights = {
-              seo_score: Math.min(90, Math.max(20, gscData.top10.length * 3 + (gscData.totalClicks > 100 ? 20 : gscData.totalClicks > 10 ? 10 : 0))),
-              score_change: 0,
-              headline: `${entry.name} saytı üçün ümumi göstəricilər`,
-              summary: `Son dövrdə ${gscData.totalClicks} klik (${gscData.totalClicksChange}) və ${gscData.totalImpressions} impresiya (${gscData.totalImpressionsChange}) qeydə alınıb. Orta mövqe: ${gscData.avgPosition}.`,
-              total_clicks: gscData.totalClicks,
-              total_clicks_change: gscData.totalClicksChange,
-              total_impressions: gscData.totalImpressions,
-              total_impressions_change: gscData.totalImpressionsChange,
-              top_performers: topKws.map(kw => ({
-                keyword: kw.query,
-                clicks: kw.clicks,
-                position: kw.position,
-                change: kw.positionChange > 0.1 ? `-${kw.positionChange.toFixed(0)}` : kw.positionChange < -0.1 ? `+${Math.abs(kw.positionChange).toFixed(0)}` : '0',
-              })),
-              improvements: [],
-              declining: [],
-              action_items: [],
-              opportunity: '',
-              warning: '',
-            }
-          }
-          brandReports.push({
-            brandName: entry.name,
-            siteUrl: extractDomain(entry.website_url),
-            insights,
-          })
-          hasSeoReport = true
-        } else {
-          console.log(`[autopilot] No GSC data for ${entry.name}`)
-        }
-      } catch (err) {
-        console.error(`[autopilot] GSC fetch failed for ${entry.name}:`, err)
-      }
-    }
-
-    if (hasSeoReport) continue
-    if (entry.id === 'primary') continue  // primary site without GSC data: skip, no Instagram fallback
-
-    // Non-primary brand without GSC data → Instagram insights
     try {
       console.log(`[autopilot] Generating Instagram insights for ${entry.name}...`)
-      // Fetch most recent SMO generation for this brand (real data, displayed directly in email)
       let smoSummary: SmoSummary | null = null
       const { data: smoGen } = await admin
         .from('generations')
