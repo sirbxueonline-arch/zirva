@@ -233,6 +233,10 @@ export async function runAutopilotForUser(
                 change: kw.positionChange > 0.1 ? `-${kw.positionChange.toFixed(0)}` : kw.positionChange < -0.1 ? `+${Math.abs(kw.positionChange).toFixed(0)}` : '0',
               })),
               improvements: [],
+              declining: [],
+              action_items: [],
+              opportunity: '',
+              warning: '',
             }
           }
           brandReports.push({
