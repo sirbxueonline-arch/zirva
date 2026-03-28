@@ -4,11 +4,8 @@ import {
   Head,
   Body,
   Container,
-  Section,
-  Text,
-  Link,
-  Hr,
   Preview,
+  Link,
 } from '@react-email/components'
 import type { AutopilotInsights, InstagramInsights } from '@/types'
 
@@ -36,11 +33,16 @@ interface AutopilotReportEmailProps {
 }
 
 function cleanUrl(raw: string): string {
-  return raw
-    .replace(/^sc-domain:/i, '')
-    .replace(/^https?:\/\//i, '')
-    .replace(/\/+$/, '')
-    .toLowerCase()
+  return raw.replace(/^sc-domain:/i, '').replace(/^https?:\/\//i, '').replace(/\/+$/, '').toLowerCase()
+}
+
+const font = 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+
+// Reusable row cell
+function Row({ children, pad = '0 32px' }: { children: React.ReactNode; pad?: string }) {
+  return (
+    <tr><td style={{ padding: pad }}>{children}</td></tr>
+  )
 }
 
 export default function AutopilotReportEmail({
@@ -53,7 +55,7 @@ export default function AutopilotReportEmail({
   const firstReport = brandReports[0]
   const previewText = firstReport
     ? brandReports.length > 1
-      ? `${brandReports.length} marka üçün Avtopilot hesabatı`
+      ? `${brandReports.length} marka üçün Avtopilot hesabatı — ${period}`
       : (firstReport.insights?.headline ?? firstReport.instagramInsights?.headline ?? 'Zirva Avtopilot Hesabatı')
     : 'Zirva Avtopilot Hesabatı'
 
@@ -61,327 +63,358 @@ export default function AutopilotReportEmail({
     <Html lang="az">
       <Head />
       <Preview>{previewText}</Preview>
-      <Body style={{ backgroundColor: '#EEEEF8', fontFamily: 'system-ui, -apple-system, sans-serif', margin: 0, padding: 0 }}>
-        <Container style={{ maxWidth: '580px', margin: '0 auto', padding: '24px 12px' }}>
-
-          {/* ── Outer card ── */}
-          <table width="100%" cellPadding={0} cellSpacing={0} style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 2px 24px rgba(13,13,26,0.08)' }}>
+      <Body style={{ backgroundColor: '#E8E8F4', margin: 0, padding: 0, fontFamily: font }}>
+        <Container style={{ maxWidth: '600px', margin: '0 auto', padding: '28px 16px' }}>
+          <table width="100%" cellPadding={0} cellSpacing={0} style={{ backgroundColor: '#ffffff', borderRadius: '24px', overflow: 'hidden' }}>
             <tbody>
 
-              {/* Header row */}
+              {/* ── HEADER ── */}
               <tr>
-                <td style={{ background: 'linear-gradient(135deg, #6C5FF5 0%, #8B7FF7 100%)', padding: '28px 28px 24px', borderRadius: '20px 20px 0 0' }}>
+                <td style={{ background: 'linear-gradient(160deg, #5D50E8 0%, #7B6EF6 50%, #9B8FF8 100%)', padding: '32px 32px 28px' }}>
                   <table width="100%" cellPadding={0} cellSpacing={0}>
-                    <tbody><tr>
-                      <td>
-                        <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.5px' }}>Zirva</p>
-                        <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>Avtopilot Hesabatı · {period}</p>
-                      </td>
-                      <td style={{ textAlign: 'right', verticalAlign: 'middle' }}>
-                        <span style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px', padding: '8px 16px', fontSize: '13px', color: '#ffffff', fontWeight: '700' }}>
-                          Salam, {userName} 👋
-                        </span>
-                      </td>
-                    </tr></tbody>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <p style={{ margin: '0 0 20px', fontSize: '28px', fontWeight: '900', color: '#fff', letterSpacing: '-0.5px', fontFamily: font }}>Zirva</p>
+                          <p style={{ margin: '0 0 6px', fontSize: '22px', fontWeight: '700', color: '#fff', letterSpacing: '-0.3px', fontFamily: font }}>Salam, {userName} 👋</p>
+                          <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.72)', fontFamily: font }}>{period} dövrü üçün avtopilot hesabatınız hazırdır.</p>
+                        </td>
+                        <td style={{ verticalAlign: 'bottom', textAlign: 'right' }}>
+                          <span style={{ display: 'inline-block', backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '12px', padding: '10px 16px' }}>
+                            <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>Hesabat dövrü</p>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#fff', fontWeight: '800', fontFamily: font }}>{period}</p>
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
                   </table>
                 </td>
               </tr>
 
-              {/* Content row — single white cell */}
-              <tr>
-                <td style={{ backgroundColor: '#ffffff', padding: '0', borderRadius: '0 0 20px 20px' }}>
+              {/* ── BRAND REPORTS ── */}
+              {brandReports.map((report, idx) => {
+                const { brandName, siteUrl, insights, instagramInsights, smoSummary } = report
+                const isLast = idx === brandReports.length - 1
+                const topPad = idx === 0 ? '32px 32px 0' : '0 32px'
 
-                  {brandReports.map((report, reportIdx) => {
-                    const { brandName, siteUrl, insights, instagramInsights, smoSummary } = report
-                    const isLast = reportIdx === brandReports.length - 1
-
-                    // ── Instagram report ──────────────────────────────
-                    if (!insights && instagramInsights) {
-                      return (
-                        <table key={reportIdx} width="100%" cellPadding={0} cellSpacing={0}>
-                          <tbody>
-                            {reportIdx > 0 && (
-                              <tr><td style={{ padding: '0 28px' }}><hr style={{ border: 'none', borderTop: '1px solid #EEEEF8', margin: 0 }} /></td></tr>
-                            )}
-                            <tr>
-                              <td style={{ padding: reportIdx === 0 ? '28px 28px 0' : '24px 28px 0' }}>
-                                {/* Brand label */}
-                                <table width="100%" cellPadding={0} cellSpacing={0}>
-                                  <tbody><tr>
-                                    <td>
-                                      <span style={{ display: 'inline-block', backgroundColor: 'rgba(131,58,180,0.1)', borderRadius: '6px', padding: '3px 10px', fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                                        📱 Instagram
-                                      </span>
-                                    </td>
-                                  </tr></tbody>
-                                </table>
-                                <p style={{ margin: '10px 0 2px', fontSize: '18px', fontWeight: '800', color: '#0D0D1A' }}>{brandName}</p>
-                                <p style={{ margin: '0 0 20px', fontSize: '12px', color: '#9B9EBB' }}>{cleanUrl(siteUrl)}</p>
+                // ── INSTAGRAM ────────────────────────────────────────
+                if (!insights && instagramInsights) {
+                  return (
+                    <React.Fragment key={idx}>
+                      {idx > 0 && (
+                        <tr><td style={{ padding: '0 32px' }}><div style={{ height: '1px', backgroundColor: '#F0F0F8', margin: '28px 0' }} /></td></tr>
+                      )}
+                      {/* Brand header */}
+                      <tr>
+                        <td style={{ padding: topPad }}>
+                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                            <tbody><tr>
+                              <td>
+                                <span style={{ display: 'inline-block', backgroundColor: 'rgba(131,58,180,0.12)', borderRadius: '8px', padding: '4px 12px', fontSize: '11px', fontWeight: '800', color: '#6D28A4', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px', fontFamily: font }}>
+                                  📱 Instagram
+                                </span>
+                                <p style={{ margin: '0 0 3px', fontSize: '20px', fontWeight: '800', color: '#0D0D1A', fontFamily: font }}>{brandName}</p>
+                                <p style={{ margin: 0, fontSize: '13px', color: '#9B9EBB', fontFamily: font }}>{cleanUrl(siteUrl)}</p>
                               </td>
-                            </tr>
-                            <tr>
-                              <td style={{ padding: '0 28px' }}>
-                                {/* Headline */}
-                                <p style={{ margin: '0 0 14px', fontSize: '20px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.35' }}>
-                                  {instagramInsights.headline}
-                                </p>
-                                {/* Summary */}
-                                <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '16px' }}>
-                                  <tbody><tr>
-                                    <td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '16px', borderLeft: '3px solid #833AB4' }}>
-                                      <p style={{ margin: 0, fontSize: '14px', color: '#2A2A3D', lineHeight: '1.7' }}>
-                                        {instagramInsights.summary}
-                                      </p>
+                            </tr></tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      {/* Headline */}
+                      <tr>
+                        <td style={{ padding: '20px 32px 0' }}>
+                          <p style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.35', fontFamily: font }}>
+                            {instagramInsights.headline}
+                          </p>
+                        </td>
+                      </tr>
+
+                      {/* Summary */}
+                      <tr>
+                        <td style={{ padding: '14px 32px 0' }}>
+                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                            <tbody><tr><td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '14px', padding: '18px 20px', borderLeft: '4px solid #833AB4' }}>
+                              <p style={{ margin: 0, fontSize: '14px', color: '#2A2A3D', lineHeight: '1.75', fontFamily: font }}>{instagramInsights.summary}</p>
+                            </td></tr></tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      {/* SMO Package data */}
+                      {smoSummary && (
+                        <tr>
+                          <td style={{ padding: '20px 32px 0' }}>
+                            <p style={{ margin: '0 0 12px', fontSize: '11px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.7px', fontFamily: font }}>
+                              Zirva SMO Paketi
+                            </p>
+                            <table width="100%" cellPadding={0} cellSpacing={0}>
+                              <tbody>
+                                {/* Score + schedule side by side */}
+                                <tr>
+                                  {smoSummary.score !== null && (
+                                    <td width="50%" style={{ paddingRight: '6px', paddingBottom: '8px', verticalAlign: 'top' }}>
+                                      <table width="100%" cellPadding={0} cellSpacing={0}>
+                                        <tbody><tr><td style={{ backgroundColor: '#FAF5FF', borderRadius: '14px', padding: '16px', textAlign: 'center', border: '1px solid rgba(131,58,180,0.14)' }}>
+                                          <p style={{ margin: '0 0 3px', fontSize: '32px', fontWeight: '900', color: '#833AB4', lineHeight: '1', fontFamily: font }}>{smoSummary.score}</p>
+                                          <p style={{ margin: '0 0 2px', fontSize: '10px', fontWeight: '700', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>SMO Skoru</p>
+                                          <p style={{ margin: 0, fontSize: '10px', color: '#C0C3D8', fontFamily: font }}>/100</p>
+                                        </td></tr></tbody>
+                                      </table>
                                     </td>
-                                  </tr></tbody>
-                                </table>
-                                {/* Real SMO data from DB */}
-                                {smoSummary && (
-                                  <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '8px' }}>
-                                    <tbody>
-                                      <tr><td style={{ paddingBottom: '8px' }}>
-                                        <p style={{ margin: 0, fontSize: '10px', fontWeight: '800', color: '#833AB4', textTransform: 'uppercase', letterSpacing: '0.6px' }}>📦 Zirva SMO Paketi</p>
-                                      </td></tr>
-                                      {smoSummary.score !== null && (
-                                        <tr><td style={{ paddingBottom: '6px' }}>
-                                          <table width="100%" cellPadding={0} cellSpacing={0}>
-                                            <tbody><tr><td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
-                                              <table width="100%" cellPadding={0} cellSpacing={0}>
-                                                <tbody><tr>
-                                                  <td>
-                                                    <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>SMO Skoru</p>
-                                                    <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A' }}>Zirva-nın sosial media optimizasiya qiymətləndirməsi</p>
-                                                  </td>
-                                                  <td style={{ whiteSpace: 'nowrap', verticalAlign: 'middle', textAlign: 'right' }}>
-                                                    <p style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#833AB4', lineHeight: '1' }}>{smoSummary.score}<span style={{ fontSize: '12px' }}>/100</span></p>
-                                                  </td>
-                                                </tr></tbody>
-                                              </table>
-                                            </td></tr></tbody>
-                                          </table>
-                                        </td></tr>
-                                      )}
-                                      {smoSummary.posting_schedule && (
-                                        <tr><td style={{ paddingBottom: '6px' }}>
-                                          <table width="100%" cellPadding={0} cellSpacing={0}>
-                                            <tbody><tr><td style={{ backgroundColor: '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
-                                              <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Tövsiyə olunan tezlik</p>
-                                              <p style={{ margin: 0, fontSize: '13px', color: '#833AB4', fontWeight: '600' }}>{smoSummary.posting_schedule}</p>
-                                            </td></tr></tbody>
-                                          </table>
-                                        </td></tr>
-                                      )}
-                                      {smoSummary.content_pillars.length > 0 && (
-                                        <tr><td style={{ paddingBottom: '6px' }}>
-                                          <table width="100%" cellPadding={0} cellSpacing={0}>
-                                            <tbody><tr><td style={{ backgroundColor: 'rgba(131,58,180,0.05)', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
-                                              <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Kontent sütunları</p>
-                                              <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A' }}>{smoSummary.content_pillars.join(' · ')}</p>
-                                            </td></tr></tbody>
-                                          </table>
-                                        </td></tr>
-                                      )}
-                                      {smoSummary.hashtags.length > 0 && (
-                                        <tr><td>
-                                          <table width="100%" cellPadding={0} cellSpacing={0}>
-                                            <tbody><tr><td style={{ backgroundColor: '#FDF9FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(131,58,180,0.12)' }}>
-                                              <p style={{ margin: '0 0 6px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>Aktiv hashteqlər</p>
-                                              <p style={{ margin: 0, fontSize: '12px', color: '#833AB4', lineHeight: '1.7' }}>{smoSummary.hashtags.join(' ')}</p>
-                                            </td></tr></tbody>
-                                          </table>
-                                        </td></tr>
-                                      )}
-                                    </tbody>
-                                  </table>
+                                  )}
+                                  {smoSummary.posting_schedule && (
+                                    <td width={smoSummary.score !== null ? '50%' : '100%'} style={{ paddingLeft: smoSummary.score !== null ? '6px' : '0', paddingBottom: '8px', verticalAlign: 'top' }}>
+                                      <table width="100%" cellPadding={0} cellSpacing={0}>
+                                        <tbody><tr><td style={{ backgroundColor: '#FAF5FF', borderRadius: '14px', padding: '16px', border: '1px solid rgba(131,58,180,0.14)' }}>
+                                          <p style={{ margin: '0 0 6px', fontSize: '10px', fontWeight: '700', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>Tövsiyə olunan tezlik</p>
+                                          <p style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#6D28A4', lineHeight: '1.3', fontFamily: font }}>{smoSummary.posting_schedule}</p>
+                                        </td></tr></tbody>
+                                      </table>
+                                    </td>
+                                  )}
+                                </tr>
+                                {/* Content pillars */}
+                                {smoSummary.content_pillars.length > 0 && (
+                                  <tr><td colSpan={2} style={{ paddingBottom: '8px' }}>
+                                    <table width="100%" cellPadding={0} cellSpacing={0}>
+                                      <tbody><tr><td style={{ backgroundColor: '#FAF5FF', borderRadius: '14px', padding: '14px 16px', border: '1px solid rgba(131,58,180,0.14)' }}>
+                                        <p style={{ margin: '0 0 8px', fontSize: '10px', fontWeight: '700', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>Kontent sütunları</p>
+                                        <p style={{ margin: 0, fontSize: '13px', color: '#2A2A3D', fontFamily: font }}>{smoSummary.content_pillars.join('  ·  ')}</p>
+                                      </td></tr></tbody>
+                                    </table>
+                                  </td></tr>
                                 )}
-                              </td>
-                            </tr>
-                            <tr><td style={{ padding: isLast ? '16px 0 0' : '8px 0 0' }} /></tr>
-                          </tbody>
+                                {/* Hashtags */}
+                                {smoSummary.hashtags.length > 0 && (
+                                  <tr><td colSpan={2}>
+                                    <table width="100%" cellPadding={0} cellSpacing={0}>
+                                      <tbody><tr><td style={{ backgroundColor: '#FAF5FF', borderRadius: '14px', padding: '14px 16px', border: '1px solid rgba(131,58,180,0.14)' }}>
+                                        <p style={{ margin: '0 0 8px', fontSize: '10px', fontWeight: '700', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>Aktiv hashteqlər</p>
+                                        <p style={{ margin: 0, fontSize: '12px', color: '#833AB4', lineHeight: '1.8', fontFamily: font }}>{smoSummary.hashtags.join('  ')}</p>
+                                      </td></tr></tbody>
+                                    </table>
+                                  </td></tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      )}
+
+                      <tr><td style={{ height: isLast ? '32px' : '0' }} /></tr>
+                    </React.Fragment>
+                  )
+                }
+
+                // ── SEO ──────────────────────────────────────────────
+                if (!insights) return null
+                const sc = insights.seo_score >= 75 ? '#00C9A7' : insights.seo_score >= 50 ? '#F5A623' : '#F25C54'
+                const chg = insights.score_change >= 0
+                const chgLabel = `${chg ? '+' : ''}${insights.score_change}`
+
+                return (
+                  <React.Fragment key={idx}>
+                    {idx > 0 && (
+                      <tr><td style={{ padding: '0 32px' }}><div style={{ height: '1px', backgroundColor: '#F0F0F8', margin: '28px 0' }} /></td></tr>
+                    )}
+
+                    {/* Brand header */}
+                    <tr>
+                      <td style={{ padding: topPad }}>
+                        <table width="100%" cellPadding={0} cellSpacing={0}>
+                          <tbody><tr>
+                            <td style={{ verticalAlign: 'middle' }}>
+                              <span style={{ display: 'inline-block', backgroundColor: 'rgba(123,110,246,0.12)', borderRadius: '8px', padding: '4px 12px', fontSize: '11px', fontWeight: '800', color: '#5D50E8', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px', fontFamily: font }}>
+                                🔍 SEO Hesabatı
+                              </span>
+                              <p style={{ margin: '0 0 3px', fontSize: '20px', fontWeight: '800', color: '#0D0D1A', fontFamily: font }}>{brandName}</p>
+                              <p style={{ margin: 0, fontSize: '13px', color: '#9B9EBB', fontFamily: font }}>{cleanUrl(siteUrl)}</p>
+                            </td>
+                            <td style={{ textAlign: 'right', verticalAlign: 'middle' }}>
+                              <span style={{ display: 'inline-block', backgroundColor: `${sc}14`, border: `2px solid ${sc}40`, borderRadius: '16px', padding: '12px 18px', textAlign: 'center' }}>
+                                <p style={{ margin: '0 0 2px', fontSize: '30px', fontWeight: '900', color: sc, lineHeight: '1', fontFamily: font }}>{insights.seo_score}</p>
+                                <p style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: chg ? '#00C9A7' : '#F25C54', fontFamily: font }}>{chgLabel}</p>
+                              </span>
+                            </td>
+                          </tr></tbody>
                         </table>
-                      )
-                    }
+                      </td>
+                    </tr>
 
-                    // ── SEO report ──────────────────────────────────────
-                    if (!insights) return null
-                    const scoreColor = insights.seo_score >= 75 ? '#00C9A7' : insights.seo_score >= 50 ? '#F5A623' : '#F25C54'
-                    const changePositive = insights.score_change >= 0
-                    const changeColor = changePositive ? '#00C9A7' : '#F25C54'
-                    const changeLabel = `${changePositive ? '+' : ''}${insights.score_change}`
-
-                    return (
-                      <table key={reportIdx} width="100%" cellPadding={0} cellSpacing={0}>
-                        <tbody>
-                          {reportIdx > 0 && (
-                            <tr><td style={{ padding: '0 28px' }}><hr style={{ border: 'none', borderTop: '1px solid #EEEEF8', margin: 0 }} /></td></tr>
-                          )}
-                          {/* Brand label + score */}
-                          <tr>
-                            <td style={{ padding: reportIdx === 0 ? '28px 28px 0' : '24px 28px 0' }}>
+                    {/* Stats: 3 cells */}
+                    <tr>
+                      <td style={{ padding: '20px 32px 0' }}>
+                        <table width="100%" cellPadding={0} cellSpacing={0}>
+                          <tbody><tr>
+                            <td width="33%" style={{ paddingRight: '5px' }}>
                               <table width="100%" cellPadding={0} cellSpacing={0}>
-                                <tbody><tr>
-                                  <td>
-                                    <span style={{ display: 'inline-block', backgroundColor: 'rgba(123,110,246,0.1)', borderRadius: '6px', padding: '3px 10px', fontSize: '10px', fontWeight: '800', color: '#7B6EF6', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-                                      🔍 SEO Hesabatı
-                                    </span>
-                                    <p style={{ margin: '10px 0 2px', fontSize: '18px', fontWeight: '800', color: '#0D0D1A' }}>{brandName}</p>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#9B9EBB' }}>{cleanUrl(siteUrl)}</p>
-                                  </td>
-                                  <td style={{ textAlign: 'right', verticalAlign: 'top' }}>
-                                    <span style={{ display: 'inline-block', backgroundColor: `${scoreColor}18`, border: `1.5px solid ${scoreColor}50`, borderRadius: '12px', padding: '10px 16px', textAlign: 'center' }}>
-                                      <p style={{ margin: '0 0 2px', fontSize: '26px', fontWeight: '900', color: scoreColor, lineHeight: '1' }}>{insights.seo_score}</p>
-                                      <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: changeColor }}>{changeLabel}</p>
-                                    </span>
-                                  </td>
-                                </tr></tbody>
-                              </table>
-                            </td>
-                          </tr>
-
-                          {/* Stats 2×2 */}
-                          <tr>
-                            <td style={{ padding: '16px 28px 0' }}>
-                              <table width="100%" cellPadding={0} cellSpacing={0}>
-                                <tbody>
-                                  <tr>
-                                    <td width="50%" style={{ paddingRight: '5px', paddingBottom: '6px' }}>
-                                      <table width="100%" cellPadding={0} cellSpacing={0}>
-                                        <tbody><tr><td style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 12px', textAlign: 'center' }}>
-                                          <p style={{ margin: '0 0 3px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>{insights.total_clicks.toLocaleString()}</p>
-                                          <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Kliklər</p>
-                                          <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: insights.total_clicks_change.startsWith('+') ? '#00C9A7' : '#F25C54' }}>{insights.total_clicks_change}</p>
-                                        </td></tr></tbody>
-                                      </table>
-                                    </td>
-                                    <td width="50%" style={{ paddingLeft: '5px', paddingBottom: '6px' }}>
-                                      <table width="100%" cellPadding={0} cellSpacing={0}>
-                                        <tbody><tr><td style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '14px 12px', textAlign: 'center' }}>
-                                          <p style={{ margin: '0 0 3px', fontSize: '22px', fontWeight: '800', color: '#0D0D1A', lineHeight: '1' }}>
-                                            {insights.total_impressions >= 1000 ? `${(insights.total_impressions / 1000).toFixed(1)}K` : insights.total_impressions}
-                                          </p>
-                                          <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#9B9EBB', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>İmpresiya</p>
-                                          <p style={{ margin: 0, fontSize: '11px', fontWeight: '700', color: insights.total_impressions_change.startsWith('+') ? '#00C9A7' : '#F25C54' }}>{insights.total_impressions_change}</p>
-                                        </td></tr></tbody>
-                                      </table>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </td>
-                          </tr>
-
-                          {/* Headline + summary */}
-                          <tr>
-                            <td style={{ padding: '20px 28px 0' }}>
-                              <p style={{ margin: '0 0 14px', fontSize: '20px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.35' }}>
-                                {insights.headline}
-                              </p>
-                              <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '20px' }}>
-                                <tbody><tr><td style={{ backgroundColor: '#F5F5FF', borderRadius: '12px', padding: '16px', borderLeft: '3px solid #7B6EF6' }}>
-                                  <p style={{ margin: 0, fontSize: '14px', color: '#2A2A3D', lineHeight: '1.7' }}>{insights.summary}</p>
+                                <tbody><tr><td style={{ backgroundColor: '#F7F7FF', borderRadius: '14px', padding: '16px 12px', textAlign: 'center' }}>
+                                  <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '900', color: '#0D0D1A', lineHeight: '1', fontFamily: font }}>{insights.total_clicks.toLocaleString()}</p>
+                                  <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>Kliklər</p>
+                                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: insights.total_clicks_change.startsWith('+') ? '#00C9A7' : '#F25C54', fontFamily: font }}>{insights.total_clicks_change}</p>
                                 </td></tr></tbody>
                               </table>
                             </td>
-                          </tr>
+                            <td width="33%" style={{ paddingRight: '5px', paddingLeft: '5px' }}>
+                              <table width="100%" cellPadding={0} cellSpacing={0}>
+                                <tbody><tr><td style={{ backgroundColor: '#F7F7FF', borderRadius: '14px', padding: '16px 12px', textAlign: 'center' }}>
+                                  <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '900', color: '#0D0D1A', lineHeight: '1', fontFamily: font }}>
+                                    {insights.total_impressions >= 1000 ? `${(insights.total_impressions / 1000).toFixed(1)}K` : insights.total_impressions}
+                                  </p>
+                                  <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>İmpresiya</p>
+                                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: insights.total_impressions_change.startsWith('+') ? '#00C9A7' : '#F25C54', fontFamily: font }}>{insights.total_impressions_change}</p>
+                                </td></tr></tbody>
+                              </table>
+                            </td>
+                            <td width="34%" style={{ paddingLeft: '5px' }}>
+                              <table width="100%" cellPadding={0} cellSpacing={0}>
+                                <tbody><tr><td style={{ backgroundColor: `${sc}10`, borderRadius: '14px', padding: '16px 12px', textAlign: 'center', border: `1px solid ${sc}30` }}>
+                                  <p style={{ margin: '0 0 4px', fontSize: '24px', fontWeight: '900', color: sc, lineHeight: '1', fontFamily: font }}>{insights.seo_score}</p>
+                                  <p style={{ margin: '0 0 4px', fontSize: '10px', color: '#9B9EBB', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: font }}>SEO Skoru</p>
+                                  <p style={{ margin: 0, fontSize: '12px', fontWeight: '800', color: chg ? '#00C9A7' : '#F25C54', fontFamily: font }}>{chgLabel}</p>
+                                </td></tr></tbody>
+                              </table>
+                            </td>
+                          </tr></tbody>
+                        </table>
+                      </td>
+                    </tr>
 
-                          {/* Improvements */}
-                          {insights.improvements && insights.improvements.length > 0 && (
-                            <tr>
-                              <td style={{ padding: '0 28px' }}>
-                                <p style={{ margin: '0 0 10px', fontSize: '10px', fontWeight: '800', color: '#00A88A', textTransform: 'uppercase', letterSpacing: '0.6px' }}>✅ Zirva ilə əldə edilən nəticələr</p>
-                                {insights.improvements.map((item, i) => (
-                                  <table key={i} width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '6px' }}>
-                                    <tbody><tr><td style={{ backgroundColor: i % 2 === 0 ? 'rgba(0,201,167,0.06)' : '#F9FFF9', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(0,201,167,0.15)' }}>
+                    {/* Headline */}
+                    <tr>
+                      <td style={{ padding: '24px 32px 0' }}>
+                        <p style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#0D0D1A', lineHeight: '1.35', fontFamily: font }}>
+                          {insights.headline}
+                        </p>
+                      </td>
+                    </tr>
+
+                    {/* Summary */}
+                    <tr>
+                      <td style={{ padding: '14px 32px 0' }}>
+                        <table width="100%" cellPadding={0} cellSpacing={0}>
+                          <tbody><tr><td style={{ backgroundColor: '#F7F7FF', borderRadius: '14px', padding: '18px 20px', borderLeft: '4px solid #7B6EF6' }}>
+                            <p style={{ margin: 0, fontSize: '14px', color: '#2A2A3D', lineHeight: '1.75', fontFamily: font }}>{insights.summary}</p>
+                          </td></tr></tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    {/* Improvements */}
+                    {insights.improvements && insights.improvements.length > 0 && (
+                      <tr>
+                        <td style={{ padding: '24px 32px 0' }}>
+                          <p style={{ margin: '0 0 12px', fontSize: '11px', fontWeight: '800', color: '#00A88A', textTransform: 'uppercase', letterSpacing: '0.7px', fontFamily: font }}>
+                            ✅ Zirva ilə əldə edilən nəticələr
+                          </p>
+                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                            <tbody>
+                              {insights.improvements.map((item, i) => (
+                                <tr key={i}><td style={{ paddingBottom: i < insights.improvements.length - 1 ? '8px' : '0' }}>
+                                  <table width="100%" cellPadding={0} cellSpacing={0}>
+                                    <tbody><tr><td style={{ backgroundColor: '#F0FDF9', borderRadius: '14px', padding: '14px 16px', border: '1px solid rgba(0,201,167,0.18)' }}>
                                       <table width="100%" cellPadding={0} cellSpacing={0}>
                                         <tbody><tr>
-                                          <td style={{ paddingRight: '12px' }}>
-                                            <p style={{ margin: '0 0 3px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A' }}>{item.metric}</p>
-                                            <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A', lineHeight: '1.55' }}>{item.detail}</p>
+                                          <td style={{ paddingRight: '16px' }}>
+                                            <p style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '700', color: '#0D0D1A', fontFamily: font }}>{item.metric}</p>
+                                            <p style={{ margin: 0, fontSize: '12px', color: '#5A5D7A', lineHeight: '1.55', fontFamily: font }}>{item.detail}</p>
                                           </td>
                                           <td style={{ whiteSpace: 'nowrap', verticalAlign: 'middle', textAlign: 'right' }}>
-                                            <p style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#00C9A7', lineHeight: '1' }}>{item.value}</p>
+                                            <p style={{ margin: 0, fontSize: '22px', fontWeight: '900', color: '#00C9A7', lineHeight: '1', fontFamily: font }}>{item.value}</p>
                                           </td>
                                         </tr></tbody>
                                       </table>
                                     </td></tr></tbody>
                                   </table>
-                                ))}
-                              </td>
-                            </tr>
-                          )}
+                                </td></tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    )}
 
-                          {/* Top keywords */}
-                          {insights.top_performers && insights.top_performers.length > 0 && (
-                            <tr>
-                              <td style={{ padding: `16px 28px ${isLast && !showSmoUpsell ? '28px' : '8px'}` }}>
-                                <p style={{ margin: '0 0 10px', fontSize: '10px', fontWeight: '800', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Ən Yaxşı Açar Sözlər</p>
-                                {insights.top_performers.slice(0, 3).map((kw, i) => (
-                                  <table key={i} width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: '5px' }}>
-                                    <tbody><tr><td style={{ backgroundColor: i % 2 === 0 ? '#F5F5FF' : '#ffffff', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(123,110,246,0.08)' }}>
+                    {/* Top keywords */}
+                    {insights.top_performers && insights.top_performers.length > 0 && (
+                      <tr>
+                        <td style={{ padding: '24px 32px 0' }}>
+                          <p style={{ margin: '0 0 12px', fontSize: '11px', fontWeight: '800', color: '#9B9EBB', textTransform: 'uppercase', letterSpacing: '0.7px', fontFamily: font }}>
+                            Ən Yaxşı Açar Sözlər
+                          </p>
+                          <table width="100%" cellPadding={0} cellSpacing={0}>
+                            <tbody>
+                              {insights.top_performers.slice(0, 3).map((kw, i) => (
+                                <tr key={i}><td style={{ paddingBottom: i < 2 ? '6px' : '0' }}>
+                                  <table width="100%" cellPadding={0} cellSpacing={0}>
+                                    <tbody><tr><td style={{ backgroundColor: '#F7F7FF', borderRadius: '12px', padding: '12px 14px', border: '1px solid rgba(123,110,246,0.1)' }}>
                                       <table width="100%" cellPadding={0} cellSpacing={0}>
                                         <tbody><tr>
-                                          <td><p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#0D0D1A' }}>{kw.keyword}</p></td>
-                                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                            <p style={{ margin: 0, fontSize: '12px', color: '#9B9EBB' }}>
-                                              {kw.clicks} klik · <span style={{ color: '#7B6EF6', fontWeight: '600' }}>#{kw.position.toFixed(0)}</span>{' '}
-                                              <span style={{ color: kw.change.startsWith('+') || kw.change.startsWith('↑') ? '#00C9A7' : '#F25C54', fontWeight: '700' }}>{kw.change}</span>
+                                          <td>
+                                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#0D0D1A', fontFamily: font }}>{kw.keyword}</p>
+                                          </td>
+                                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap', paddingLeft: '12px' }}>
+                                            <p style={{ margin: 0, fontSize: '12px', color: '#9B9EBB', fontFamily: font }}>
+                                              <span style={{ fontWeight: '700', color: '#0D0D1A' }}>{kw.clicks}</span> klik
+                                              {'  '}
+                                              <span style={{ color: '#7B6EF6', fontWeight: '700' }}>#{kw.position.toFixed(0)}</span>
+                                              {'  '}
+                                              <span style={{ fontWeight: '800', color: (kw.change.startsWith('+') || kw.change.startsWith('↑')) ? '#00C9A7' : '#F25C54' }}>{kw.change}</span>
                                             </p>
                                           </td>
                                         </tr></tbody>
                                       </table>
                                     </td></tr></tbody>
                                   </table>
-                                ))}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    )
-                  })}
+                                </td></tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    )}
 
-                  {/* SMO Upsell */}
-                  {showSmoUpsell && (
+                    <tr><td style={{ height: isLast && !showSmoUpsell ? '32px' : '0' }} /></tr>
+                  </React.Fragment>
+                )
+              })}
+
+              {/* ── SMO UPSELL ── */}
+              {showSmoUpsell && (
+                <tr>
+                  <td style={{ padding: '0 32px 32px' }}>
+                    <div style={{ height: '1px', backgroundColor: '#F0F0F8', margin: '0 0 24px' }} />
                     <table width="100%" cellPadding={0} cellSpacing={0}>
-                      <tbody>
-                        <tr><td style={{ padding: '0 28px' }}><hr style={{ border: 'none', borderTop: '1px solid #EEEEF8', margin: 0 }} /></td></tr>
-                        <tr>
-                          <td style={{ padding: '20px 28px 28px' }}>
-                            <table width="100%" cellPadding={0} cellSpacing={0}>
-                              <tbody><tr><td style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07) 0%, rgba(0,201,167,0.05) 100%)', border: '1px solid rgba(123,110,246,0.15)', borderRadius: '14px', padding: '20px', textAlign: 'center' }}>
-                                <p style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: '800', color: '#0D0D1A' }}>Sosial mediada da böyüyün</p>
-                                <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#5A5D7A', lineHeight: '1.6' }}>Instagram, TikTok və Facebook üçün tam SMO paketi alın.</p>
-                                <Link href="https://tryzirva.com/smo" style={{ display: 'inline-block', padding: '11px 28px', backgroundColor: '#7B6EF6', color: '#ffffff', borderRadius: '10px', fontWeight: '700', fontSize: '13px', textDecoration: 'none' }}>
-                                  SMO Paketi Al — 5 kredit
-                                </Link>
-                              </td></tr></tbody>
-                            </table>
-                          </td>
-                        </tr>
-                      </tbody>
+                      <tbody><tr><td style={{ background: 'linear-gradient(135deg, rgba(123,110,246,0.07) 0%, rgba(0,201,167,0.06) 100%)', border: '1px solid rgba(123,110,246,0.16)', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
+                        <p style={{ margin: '0 0 8px', fontSize: '17px', fontWeight: '800', color: '#0D0D1A', fontFamily: font }}>Sosial mediada da böyüyün</p>
+                        <p style={{ margin: '0 0 18px', fontSize: '13px', color: '#5A5D7A', lineHeight: '1.6', fontFamily: font }}>
+                          Instagram, TikTok və Facebook üçün tam SMO paketi alın — hashteqlər, kontent strategiyası, auditoriya analizi.
+                        </p>
+                        <Link href="https://tryzirva.com/smo" style={{ display: 'inline-block', padding: '12px 32px', backgroundColor: '#7B6EF6', color: '#ffffff', borderRadius: '12px', fontWeight: '800', fontSize: '14px', textDecoration: 'none', fontFamily: font }}>
+                          SMO Paketi Al — 5 kredit
+                        </Link>
+                      </td></tr></tbody>
                     </table>
-                  )}
+                  </td>
+                </tr>
+              )}
 
-                </td>
-              </tr>
-
-              {/* Footer row */}
+              {/* ── FOOTER ── */}
               <tr>
-                <td style={{ backgroundColor: '#F0F0FA', borderTop: '1px solid rgba(123,110,246,0.1)', padding: '18px 28px 22px', borderRadius: '0 0 20px 20px', textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 5px', fontSize: '12px', color: '#9B9EBB', lineHeight: '1.6' }}>
-                    Bu hesabat <span style={{ fontWeight: '700', color: '#7B6EF6' }}>Zirva Avtopilot</span> tərəfindən avtomatik göndərilib.
+                <td style={{ backgroundColor: '#F5F5FF', borderTop: '1px solid #ECEDF8', padding: '20px 32px 24px', textAlign: 'center' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#9B9EBB', lineHeight: '1.6', fontFamily: font }}>
+                    Bu hesabat <span style={{ fontWeight: '800', color: '#7B6EF6' }}>Zirva Avtopilot</span> tərəfindən göndərilib.
                   </p>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#C0C3D8' }}>
-                    <Link href={unsubscribeUrl} style={{ color: '#9B9EBB', textDecoration: 'underline' }}>Abunəlikdən çıxın</Link>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#C0C3D8', fontFamily: font }}>
+                    <Link href={unsubscribeUrl} style={{ color: '#B0B3CC', textDecoration: 'underline' }}>Abunəlikdən çıxın</Link>
                     {' · '}
-                    <Link href="https://tryzirva.com" style={{ color: '#9B9EBB', textDecoration: 'underline' }}>tryzirva.com</Link>
+                    <Link href="https://tryzirva.com" style={{ color: '#B0B3CC', textDecoration: 'underline' }}>tryzirva.com</Link>
                   </p>
                 </td>
               </tr>
 
             </tbody>
           </table>
-
         </Container>
       </Body>
     </Html>
