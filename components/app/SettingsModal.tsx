@@ -64,7 +64,7 @@ export default function SettingsModal({ open, onClose }: Props) {
   const [tab, setTab]               = useState('workspace')
   const [profile, setProfile]       = useState<Profile | null>(null)
   const [fullName, setFullName]     = useState('')
-  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [genCount, setGenCount]     = useState(0)
   const [saving, setSaving]         = useState(false)
   const [upgrading, setUpgrading]   = useState(false)
   const [period, setPeriod]         = useState<BillingPeriod>('monthly')
@@ -90,7 +90,9 @@ export default function SettingsModal({ open, onClose }: Props) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) { setProfile(data as Profile); setFullName(data.full_name || ''); setWebsiteUrl(data.website_url || '') }
+      if (data) { setProfile(data as Profile); setFullName(data.full_name || '') }
+      const { count } = await supabase.from('generations').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+      setGenCount(count ?? 0)
       const res = await fetch('/api/cms')
       if (res.ok) {
         const { connections } = await res.json()
@@ -116,7 +118,7 @@ export default function SettingsModal({ open, onClose }: Props) {
     if (!profile) return
     setSaving(true)
     const { error } = await supabase.from('profiles')
-      .update({ full_name: fullName, website_url: websiteUrl, updated_at: new Date().toISOString() })
+      .update({ full_name: fullName, updated_at: new Date().toISOString() })
       .eq('id', profile.id)
     addToast(error ? 'Xəta baş verdi' : 'Saxlandı!', error ? 'error' : 'success')
     setSaving(false)
@@ -268,41 +270,23 @@ export default function SettingsModal({ open, onClose }: Props) {
                       </div>
 
                       {/* Stats */}
-                      {(() => {
-                        const gens = Math.floor(used / 5)
-                        return (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-7">
-                            <div className="rounded-2xl p-5" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
-                              <div className="text-3xl font-bold mb-1" style={{ color: '#7B6EF6' }}>{gens}</div>
-                              <div className="text-xs font-medium text-text-muted">Generasiya</div>
-                            </div>
-                            <div className="rounded-2xl p-5" style={{ background: '#EEF6FF', border: '1px solid rgba(59,130,246,0.12)' }}>
-                              <div className="text-3xl font-bold mb-1" style={{ color: '#3B82F6' }}>{gens * 2}<span className="text-base ml-1 font-semibold">saat</span></div>
-                              <div className="text-xs font-medium text-text-muted">Qənaət olunan vaxt</div>
-                            </div>
-                            <div className="rounded-2xl p-5" style={{ background: '#FFF0F8', border: '1px solid rgba(236,72,153,0.12)' }}>
-                              <div className="text-3xl font-bold mb-1" style={{ color: '#EC4899' }}>₼{gens * 40}</div>
-                              <div className="text-xs font-medium text-text-muted">Qənaət olunan pul</div>
-                            </div>
-                          </div>
-                        )
-                      })()}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-7">
+                        <div className="rounded-2xl p-5" style={{ background: '#F8F8FF', border: '1px solid rgba(123,110,246,0.1)' }}>
+                          <div className="text-3xl font-bold mb-1" style={{ color: '#7B6EF6' }}>{genCount}</div>
+                          <div className="text-xs font-medium text-text-muted">Generasiya</div>
+                        </div>
+                        <div className="rounded-2xl p-5" style={{ background: '#EEF6FF', border: '1px solid rgba(59,130,246,0.12)' }}>
+                          <div className="text-3xl font-bold mb-1" style={{ color: '#3B82F6' }}>{genCount * 2}<span className="text-base ml-1 font-semibold">saat</span></div>
+                          <div className="text-xs font-medium text-text-muted">Qənaət olunan vaxt</div>
+                        </div>
+                        <div className="rounded-2xl p-5" style={{ background: '#FFF0F8', border: '1px solid rgba(236,72,153,0.12)' }}>
+                          <div className="text-3xl font-bold mb-1" style={{ color: '#EC4899' }}>₼{genCount * 40}</div>
+                          <div className="text-xs font-medium text-text-muted">Qənaət olunan pul</div>
+                        </div>
+                      </div>
 
                       {/* Form */}
                       <div className="space-y-4">
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#9B9EBB' }}>Sayt URL-i</label>
-                          <div className="relative">
-                            <Globe size={15} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: '#9B9EBB' }} />
-                            <input type="url" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)}
-                              placeholder="https://saytiniz.az"
-                              className="w-full rounded-xl pl-10 pr-4 py-3.5 text-sm outline-none transition-all"
-                              style={inputStyle}
-                              onFocus={e => (e.target.style.borderColor = '#7B6EF6')}
-                              onBlur={e  => (e.target.style.borderColor = 'rgba(123,110,246,0.15)')}
-                            />
-                          </div>
-                        </div>
                         <div>
                           <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#9B9EBB' }}>Ad Soyad</label>
                           <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
