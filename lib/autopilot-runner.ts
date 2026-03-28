@@ -210,7 +210,31 @@ export async function runAutopilotForUser(
         const gscData = await getGSCDataForBrand(accessToken, entry.website_url, days)
         if (gscData) {
           console.log(`[autopilot] GSC data found for ${entry.name}, generating insights...`)
-          const insights = await generateInsights(gscData, openai)
+          let insights: AutopilotInsights
+          try {
+            insights = await generateInsights(gscData, openai)
+          } catch (aiErr) {
+            console.error(`[autopilot] AI insights failed for ${entry.name}, using raw GSC fallback:`, aiErr)
+            // Build basic insights directly from GSC data without AI
+            const topKws = gscData.top10.slice(0, 3)
+            insights = {
+              seo_score: Math.min(90, Math.max(20, gscData.top10.length * 3 + (gscData.totalClicks > 100 ? 20 : gscData.totalClicks > 10 ? 10 : 0))),
+              score_change: 0,
+              headline: `${entry.name} saytı üçün ümumi göstəricilər`,
+              summary: `Son dövrdə ${gscData.totalClicks} klik (${gscData.totalClicksChange}) və ${gscData.totalImpressions} impresiya (${gscData.totalImpressionsChange}) qeydə alınıb. Orta mövqe: ${gscData.avgPosition}.`,
+              total_clicks: gscData.totalClicks,
+              total_clicks_change: gscData.totalClicksChange,
+              total_impressions: gscData.totalImpressions,
+              total_impressions_change: gscData.totalImpressionsChange,
+              top_performers: topKws.map(kw => ({
+                keyword: kw.query,
+                clicks: kw.clicks,
+                position: kw.position,
+                change: kw.positionChange > 0.1 ? `-${kw.positionChange.toFixed(0)}` : kw.positionChange < -0.1 ? `+${Math.abs(kw.positionChange).toFixed(0)}` : '0',
+              })),
+              improvements: [],
+            }
+          }
           brandReports.push({
             brandName: entry.name,
             siteUrl: extractDomain(entry.website_url),
@@ -221,7 +245,7 @@ export async function runAutopilotForUser(
           console.log(`[autopilot] No GSC data for ${entry.name}`)
         }
       } catch (err) {
-        console.error(`[autopilot] GSC/AI failed for ${entry.name}:`, err)
+        console.error(`[autopilot] GSC fetch failed for ${entry.name}:`, err)
       }
     }
 
