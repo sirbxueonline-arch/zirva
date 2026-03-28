@@ -10,19 +10,17 @@ import ReconnectGSCEmail from '@/emails/ReconnectGSC'
 import type { AutopilotInsights, InstagramInsights } from '@/types'
 import type { GSCData } from '@/lib/gsc'
 
-const AUTOPILOT_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün rəqəmsal marketinq analitika ekspertisən. Hər 3 gündə bir istifadəçiyə Google Search Console məlumatlarına əsaslanan Azerbaycanca SEO hesabatı hazırlayırsan. Hər hesabat fərqli olmalıdır çünki məlumatlar dəyişir. Eyni məlumatı iki dəfə yazma. Həmişə konkret rəqəmlərə əsaslan. Ümumi fikirlər yazma. Bu saytın bu dövrdə nə dəyişdiyinə fokuslan.
+const AUTOPILOT_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün SEO analitika ekspertisən. Google Search Console məlumatlarına əsaslanan Azerbaycanca hesabat hazırlayırsan. Həmişə konkret rəqəmlərə əsaslan.
 
-Sənə aşağıdakı məlumatlar veriləcək. Cari dövrün məlumatları son 3 gündür. Əvvəlki dövrün məlumatları bundan əvvəlki 3 gündür.
+"improvements" — bu dövrün REAL nəticələri (3 ədəd, həmişə konkret rəqəm). "top_performers" — ən çox klik alan açar sözlər (maksimum 3 ədəd).
 
-"improvements" sahəsi ən vacib hissədir. Burada yalnız bu dövrdə əldə edilən REAL nəticələri göstər — kliklər nə qədər artdı, mövqelər necə yaxşılaşdı, yeni açar sözlər top 10-a düşdümi, CTR dəyişdimi. Bunlar Zirva-nın istifadəçiyə gətirdiyi dəyərdir. Mütləq 3 improvements yaz, hətta kiçik dəyişikliklər olsa belə. Rəqəm yoxdursa "Sabit qaldı" yazma — həmişə konkret rəqəm tap.
+Heç bir izahat yazma. Heç bir markdown yazma. Yalnız bu JSON-u qaytar:
 
-Bu məlumatları analiz et və aşağıdakı JSON strukturunu qaytar. Heç bir izahat yazma. Heç bir markdown yazma. Yalnız xam JSON:
+{"seo_score":75,"score_change":5,"headline":"1 cümlə","summary":"2-3 cümlə","total_clicks":0,"total_clicks_change":"+10%","total_impressions":0,"total_impressions_change":"+5%","top_performers":[{"keyword":"string","clicks":0,"position":0.0,"change":"+2"},{"keyword":"string","clicks":0,"position":0.0,"change":"-1"},{"keyword":"string","clicks":0,"position":0.0,"change":"0"}],"improvements":[{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"}]}`
 
-{"seo_score":75,"score_change":5,"headline":"string — bu dövrün ən vacib məlumatı, 1 cümlə","summary":"string — 2-3 cümləlik Azerbaycanca analiz","top_performers":[{"keyword":"string","clicks":0,"position":0.0,"change":"string"}],"declining":[{"keyword":"string","position_drop":0,"reason":"string — 1 cümlə"}],"action_items":[],"opportunity":"string","warning":"string","total_clicks":0,"total_clicks_change":"string","total_impressions":0,"total_impressions_change":"string","improvements":[{"metric":"string — nə yaxşılaşdı","value":"string — konkret rəqəm","detail":"string — 1 cümlə, bu nailiyyətin əhəmiyyəti"},{"metric":"string","value":"string","detail":"string"},{"metric":"string","value":"string","detail":"string"}]}`
+const INSTAGRAM_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün Instagram marketinq ekspertisən. Brend məlumatlarına əsaslanaraq Azerbaycanca Instagram strategiyası hazırla. Heç bir izahat yazma. Heç bir markdown yazma. Yalnız bu JSON-u qaytar:
 
-const INSTAGRAM_SYSTEM_PROMPT = `Sən Azərbaycan bazarı üçün Instagram marketinq ekspertisən. Aşağıdakı brend məlumatlarına əsaslanaraq konkret Instagram strategiyası hazırla. Heç bir izahat yazma. Heç bir markdown yazma. Yalnız xam JSON:
-
-{"headline":"string — 1 cümlə, ən vacib Instagram tövsiyəsi","summary":"string — 2-3 cümlə Instagram strategiyası Azərbaycanca","content_ideas":["string — kontent ideyası","string — kontent ideyası","string — kontent ideyası"],"hashtags":["#hashtag","#hashtag","#hashtag","#hashtag","#hashtag","#hashtag","#hashtag","#hashtag"],"best_post_time":"string — məsələn: Axşam 19:00-21:00 arası","action_items":["string — konkret addım","string — konkret addım","string — konkret addım"]}`
+{"headline":"string — 1 cümlə","summary":"string — 2-3 cümlə","content_ideas":[],"hashtags":[],"best_post_time":"","action_items":[]}`
 
 export async function generateInsights(gscData: GSCData, openai: OpenAI): Promise<AutopilotInsights> {
   const userPrompt = `Sayt: ${gscData.siteUrl}
