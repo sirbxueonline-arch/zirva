@@ -17,7 +17,7 @@ import BrandAvatar from './BrandAvatar'
 const SPRING = { type: 'spring' as const, stiffness: 400, damping: 30 }
 const SPRING_MENU = { type: 'spring' as const, stiffness: 320, damping: 26 }
 
-const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; activeColor?: string; activeBg?: string; activeBorder?: string }[] = [
+const NAV_ITEMS: { label: string; href: string; Icon: LucideIcon; activeColor?: string; activeBg?: string; activeBorder?: string; badge?: string }[] = [
   { label: 'Dashboard',  href: '/dashboard', Icon: LayoutDashboard },
   { label: 'SEO Paketi', href: '/generate',  Icon: Globe },
   { label: 'SMO Paketi', href: '/smo',       Icon: Share2,    activeColor: '#00C9A7', activeBg: 'rgba(0,201,167,0.12)', activeBorder: 'rgba(0,201,167,0.2)' },
@@ -138,12 +138,35 @@ export default function Sidebar({ profile, onOpenSettings, mobileOpen = false, o
                 style={{ background: bg, color, border }}
               >
                 <item.Icon size={16} strokeWidth={active ? 2.2 : 1.8} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.badge && !active && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                    style={{ background: '#F5A623', color: '#fff' }}>{item.badge}</span>
+                )}
               </Link>
             </motion.div>
           )
         })}
       </nav>
+
+      {/* Credit bar */}
+      {profile && (() => {
+        const used  = (profile as unknown as Record<string, unknown>).credits_used  as number ?? 0
+        const limit = (profile as unknown as Record<string, unknown>).credits_limit as number ?? 25
+        const pct   = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+        const color = pct >= 90 ? '#F25C54' : pct >= 70 ? '#F5A623' : '#7B6EF6'
+        return (
+          <div className="px-4 pb-2 pt-1 border-t" style={{ borderColor: 'rgba(123,110,246,0.08)' }}>
+            <div className="flex justify-between mb-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#C0C3D8' }}>Kredit</span>
+              <span className="text-[10px] font-bold" style={{ color }}>{used}<span style={{ color: '#C0C3D8' }}>/{limit}</span></span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(123,110,246,0.08)' }}>
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Bottom user section with dropdown */}
       <div className="border-t px-3 py-3 relative" style={{ borderColor: 'rgba(123,110,246,0.12)' }} ref={menuRef}>

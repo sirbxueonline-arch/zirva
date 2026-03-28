@@ -96,6 +96,32 @@ const TABS: { label: string; value: Interval }[] = [
   { label: 'İllik',   value: 'yearly'    },
 ]
 
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div
+      className="rounded-2xl overflow-hidden cursor-pointer"
+      style={{ border: '1.5px solid rgba(123,110,246,0.12)', background: '#FFFFFF' }}
+      onClick={() => setOpen(v => !v)}
+    >
+      <div className="flex items-center justify-between px-5 py-4 gap-3">
+        <p className="font-semibold text-sm" style={{ color: '#0D0D1A' }}>{q}</p>
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B9EBB" strokeWidth="2" strokeLinecap="round"
+          style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </div>
+      {open && (
+        <div className="px-5 pb-4">
+          <p className="text-sm leading-relaxed" style={{ color: '#5A5D7A' }}>{a}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Pricing() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-60px' })
@@ -369,6 +395,42 @@ export default function Pricing() {
             )
           })}
         </div>
+
+        {/* FAQ */}
+        <motion.div
+          className="mt-16 max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ ...SPRING, delay: 0.4 }}
+        >
+          <h3 className="text-center font-display font-bold text-2xl mb-8" style={{ color: '#0D0D1A' }}>Tez-tez verilən suallar</h3>
+          <div className="space-y-3">
+            {[
+              {
+                q: 'Kredit nədir?',
+                a: 'Hər SEO və ya SMO paketi generasiyası 5 kredit xərcləyir. Avtopilot həftəlik email 10 kredit, aylıq 35 kredit xərcləyir. Kredit hər ayın 1-i sıfırlanır.',
+              },
+              {
+                q: 'Pulsuz planda nə var?',
+                a: '1 brend profili, 25 kredit/ay (5 generasiya), əsas SEO teqləri Azərbaycan dilində. Rəqib analizi, Rusca teqlər və ixrac yoxdur.',
+              },
+              {
+                q: 'İstənilən vaxt ləğv edə bilərəmmi?',
+                a: 'Bəli. Heç bir müqavilə yoxdur. Ləğv etdikdə mövcud dövr bitənə qədər giriş davam edəcək.',
+              },
+              {
+                q: 'Avtopilot nədir?',
+                a: 'Zirva avtomatik olaraq seçilmiş brendlər üçün SEO + SMO hesabatı hazırlayır və email göndərir. Google Search Console bağlanmalıdır.',
+              },
+              {
+                q: 'Rüblük və illik planı necə işləyir?',
+                a: 'Rüblük seçsəniz 3 aylıq məbləğ bir dəfə tutulur və 15% endirimdən yararlanırsınız. İllik seçsəniz 25% endirimlə ödəyirsiniz.',
+              },
+            ].map((item, i) => (
+              <FAQItem key={i} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </motion.div>
 
         {/* Bottom note */}
         <motion.p

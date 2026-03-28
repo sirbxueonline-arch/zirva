@@ -7,7 +7,7 @@ import HistoryTable from '@/components/app/HistoryTable'
 import { SkeletonTable } from '@/components/shared/SkeletonCard'
 import { ToastContainer } from '@/components/shared/Toast'
 import type { Generation } from '@/types'
-import { Globe, Smartphone, PenLine, Sparkles, ChevronLeft, ChevronRight, Download, Loader2, FileText } from 'lucide-react'
+import { Globe, Smartphone, PenLine, Sparkles, ChevronLeft, ChevronRight, Download, Loader2, FileText, Search, X } from 'lucide-react'
 
 const FLOW_FILTERS = [
   { id: 'all',    label: 'Hamısı',  Icon: null },
@@ -27,6 +27,8 @@ export default function HistoryPage() {
   const [page, setPage]         = useState(0)
   const [hasMore, setHasMore]   = useState(false)
   const [toasts, setToasts]     = useState<ToastItem[]>([])
+  const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const supabase = createClient()
 
   function addToast(message: string, type: ToastItem['type'] = 'success') {
@@ -42,6 +44,10 @@ export default function HistoryPage() {
       .order('created_at', { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
+    if (search.trim()) {
+      query = query.ilike('business_name', `%${search.trim()}%`)
+    }
+
     if (flowFilter === 'smo') {
       query = query.eq('tool', 'smo')
     } else if (flowFilter !== 'all') {
@@ -53,7 +59,7 @@ export default function HistoryPage() {
     setGenerations(data as Generation[] || [])
     setHasMore((count ?? 0) > (page + 1) * PAGE_SIZE)
     setLoading(false)
-  }, [flowFilter, page])
+  }, [flowFilter, page, search])
 
   useEffect(() => {
     fetchGenerations()
@@ -106,6 +112,39 @@ export default function HistoryPage() {
           <span className="sm:hidden">CSV</span>
         </button>
       </div>
+
+        {/* Search bar */}
+        <div className="relative mb-4">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#9B9EBB' }} />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { setSearch(searchInput); setPage(0) } }}
+            placeholder="Brend adına görə axtar..."
+            className="w-full rounded-xl pl-9 pr-10 py-2.5 text-sm outline-none transition-all"
+            style={{ background: '#FFFFFF', border: '1px solid rgba(123,110,246,0.15)', color: '#0D0D1A' }}
+            onFocus={e => (e.target.style.borderColor = '#7B6EF6')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(123,110,246,0.15)')}
+          />
+          {searchInput && (
+            <button
+              onClick={() => { setSearchInput(''); setSearch(''); setPage(0) }}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              <X size={14} style={{ color: '#9B9EBB' }} />
+            </button>
+          )}
+          {searchInput && (
+            <button
+              onClick={() => { setSearch(searchInput); setPage(0) }}
+              className="absolute right-8 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 rounded-lg"
+              style={{ color: '#7B6EF6' }}
+            >
+              Axtar
+            </button>
+          )}
+        </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-6">

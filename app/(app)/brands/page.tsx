@@ -147,52 +147,71 @@ export default function BrandsPage() {
             {brands.map((b, i) => (
               <motion.div key={b.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ ...SPRING, delay: i * 0.04 }}
-                className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl border bg-white transition-all hover:shadow-sm"
+                className="rounded-2xl border bg-white transition-all hover:shadow-sm overflow-hidden"
                 style={{ borderColor: 'rgba(123,110,246,0.12)' }}
               >
-                <BrandAvatar brand={b} size={48} />
+                {/* Main row */}
+                <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5">
+                  <BrandAvatar brand={b} size={48} />
 
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-text-primary truncate">{b.name}</div>
-                  <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    {b.website_url && (
-                      <a href={b.website_url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors">
-                        <Globe size={11} strokeWidth={1.8} /> {b.website_url.replace(/^https?:\/\//, '')}
-                      </a>
-                    )}
-                    {b.instagram_url && (
-                      <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
-                      </span>
-                    )}
-                    {b.tiktok_url && (
-                      <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>
-                        TikTok
-                      </span>
-                    )}
-                    {b.facebook_url && (
-                      <span className="flex items-center gap-1 text-xs text-text-muted">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
-                      </span>
-                    )}
-                    {b.category && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}>{b.category}</span>}
-                    {b.city && <span className="text-xs text-text-muted">{b.city}</span>}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-text-primary truncate">{b.name}</div>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {b.website_url && (
+                        <a href={b.website_url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors">
+                          <Globe size={11} strokeWidth={1.8} /> {b.website_url.replace(/^https?:\/\//, '')}
+                        </a>
+                      )}
+                      {b.instagram_url && (
+                        <span className="flex items-center gap-1 text-xs text-text-muted">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
+                        </span>
+                      )}
+                      {b.tiktok_url && (
+                        <span className="flex items-center gap-1 text-xs text-text-muted">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/></svg>
+                          TikTok
+                        </span>
+                      )}
+                      {b.facebook_url && (
+                        <span className="flex items-center gap-1 text-xs text-text-muted">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
+                        </span>
+                      )}
+                      {b.category && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}>{b.category}</span>}
+                      {b.city && <span className="text-xs text-text-muted">{b.city}</span>}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => openEdit(b)}
+                      className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-gray-100"
+                      title="Redaktə et">
+                      <Pencil size={14} strokeWidth={1.8} style={{ color: '#9B9EBB' }} />
+                    </button>
+                    <button onClick={() => setConfirmId(b.id)}
+                      className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50"
+                      title="Sil">
+                      <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button onClick={() => openEdit(b)}
-                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-gray-100"
-                    title="Redaktə et">
-                    <Pencil size={14} strokeWidth={1.8} style={{ color: '#9B9EBB' }} />
-                  </button>
-                  <button onClick={() => setConfirmId(b.id)}
-                    className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all hover:bg-red-50"
-                    title="Sil">
-                    <Trash2 size={14} strokeWidth={1.8} style={{ color: '#F25C54' }} />
-                  </button>
+                {/* Quick action bar */}
+                <div className="flex items-center gap-2 px-4 sm:px-5 pb-3 pt-0 border-t" style={{ borderColor: 'rgba(123,110,246,0.06)', background: 'rgba(123,110,246,0.02)' }}>
+                  <a href={`/generate?brand=${b.id}`}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:bg-white"
+                    style={{ color: '#7B6EF6' }}>
+                    <Globe size={11} strokeWidth={2} /> SEO Yarat
+                  </a>
+                  <div className="w-px h-3" style={{ background: 'rgba(123,110,246,0.12)' }} />
+                  <a href={`/smo?brand=${b.id}`}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:bg-white"
+                    style={{ color: '#00C9A7' }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                    SMO Yarat
+                  </a>
                 </div>
               </motion.div>
             ))}

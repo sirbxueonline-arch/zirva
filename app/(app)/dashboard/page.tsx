@@ -12,6 +12,7 @@ import {
 
 import DashboardHero from '@/components/app/DashboardHero'
 import CreditBar from '@/components/app/CreditBar'
+import OnboardingChecklist from '@/components/app/OnboardingChecklist'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -42,6 +43,9 @@ export default async function DashboardPage() {
   const firstName = p?.full_name?.split(' ')[0] || 'İstifadəçi'
 
   const hasBrand = (brandCount ?? 0) > 0
+  const hasGeneration = total > 0
+  const autopilotEnabled = !!(p as unknown as Record<string, unknown>)?.autopilot_enabled
+  const showChecklist = !hasBrand || !hasGeneration || !autopilotEnabled
 
   const avgScore = gens.filter(g => g.seo_score !== null).length > 0
     ? Math.round(gens.filter(g => g.seo_score !== null).reduce((s, g) => s + (g.seo_score ?? 0), 0) / gens.filter(g => g.seo_score !== null).length)
@@ -70,6 +74,15 @@ export default async function DashboardPage() {
 
         {/* ── Hero ── */}
         {!hasBrand && <DashboardHero />}
+
+        {/* ── Onboarding checklist ── */}
+        {showChecklist && (
+          <OnboardingChecklist
+            hasBrand={hasBrand}
+            hasGeneration={hasGeneration}
+            autopilotEnabled={autopilotEnabled}
+          />
+        )}
 
         {/* ── Stats row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">

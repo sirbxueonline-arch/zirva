@@ -299,6 +299,20 @@ export default function BillingPage() {
             </div>
           </div>
 
+          {/* Agency savings callout */}
+          {period !== 'monthly' && (
+            <div className="mb-4 px-4 py-3 rounded-xl flex items-center gap-2"
+              style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.18)' }}>
+              <span className="text-lg">🎉</span>
+              <p className="text-sm font-bold" style={{ color: '#00A37A' }}>
+                {period === 'yearly'
+                  ? `İllik planla Agency üçün ₼${(Number(PLAN_PERIOD_PRICES.agency.monthly.perMonth) * 12 - Number(PLAN_PERIOD_PRICES.agency.yearly.total)).toFixed(2)} qənaət edirsiniz!`
+                  : `Rüblük planla Agency üçün ₼${(Number(PLAN_PERIOD_PRICES.agency.monthly.perMonth) * 3 - Number(PLAN_PERIOD_PRICES.agency.quarterly.total)).toFixed(2)} qənaət edirsiniz!`
+                }
+              </p>
+            </div>
+          )}
+
           <div className="rounded-2xl p-6 mb-8"
             style={{ background: '#FFFFFF', border: '1px solid rgba(0,201,167,0.25)', boxShadow: '0 4px 20px rgba(0,201,167,0.08)' }}
           >
@@ -385,6 +399,25 @@ export default function BillingPage() {
               ))}
             </div>
           </div>
+
+          {/* Savings callout */}
+          {period !== 'monthly' && (
+            <div className="mb-4 px-4 py-3 rounded-xl flex items-center gap-2"
+              style={{ background: 'rgba(0,201,167,0.07)', border: '1px solid rgba(0,201,167,0.18)' }}>
+              <span className="text-lg">🎉</span>
+              <div>
+                <p className="text-sm font-bold" style={{ color: '#00A37A' }}>
+                  {period === 'yearly'
+                    ? `İllik planla Pro üçün ₼${(Number(PLAN_PERIOD_PRICES.pro.monthly.perMonth) * 12 - Number(PLAN_PERIOD_PRICES.pro.yearly.total)).toFixed(2)} qənaət edirsiniz!`
+                    : `Rüblük planla Pro üçün ₼${(Number(PLAN_PERIOD_PRICES.pro.monthly.perMonth) * 3 - Number(PLAN_PERIOD_PRICES.pro.quarterly.total)).toFixed(2)} qənaət edirsiniz!`
+                  }
+                </p>
+                <p className="text-xs" style={{ color: '#9B9EBB' }}>
+                  {period === 'yearly' ? 'Aylıq ilə müqayisədə' : 'Aylıq ilə müqayisədə'}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4">
 

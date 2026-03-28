@@ -1,9 +1,11 @@
 'use client'
-// v3 — mobile responsive
+// v4 — mobile bottom nav + low-credit banner
 
 import { useState } from 'react'
+import Link from 'next/link'
 import Sidebar from './Sidebar'
 import SettingsModal from './SettingsModal'
+import MobileBottomNav from './MobileBottomNav'
 import type { Profile } from '@/types'
 import { Menu } from 'lucide-react'
 
@@ -15,6 +17,17 @@ interface Props {
 export default function AppShell({ profile, children }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const creditsUsed  = (profile as unknown as Record<string, unknown>)?.credits_used  as number ?? 0
+  const creditsLimit = (profile as unknown as Record<string, unknown>)?.credits_limit as number ?? 25
+  const creditPct    = creditsLimit > 0 ? Math.min(100, Math.round((creditsUsed / creditsLimit) * 100)) : 0
+  const creditsLeft  = Math.max(0, creditsLimit - creditsUsed)
+  const showWarning  = creditPct >= 85
+
+  const warningBg     = creditPct >= 95 ? '#FEF2F2' : '#FFFBEB'
+  const warningBorder = creditPct >= 95 ? '#FCA5A5' : '#FDE68A'
+  const warningText   = creditPct >= 95 ? '#DC2626'  : '#D97706'
+  const warningBtn    = creditPct >= 95 ? '#DC2626'  : '#D97706'
 
   return (
     <>
@@ -47,7 +60,34 @@ export default function AppShell({ profile, children }: Props) {
         onMobileClose={() => setSidebarOpen(false)}
       />
 
-      <main className="md:ml-60 min-h-screen pt-14 md:pt-0">{children}</main>
+      {/* Low-credit sticky banner */}
+      {showWarning && (
+        <div
+          className="fixed left-0 md:left-60 right-0 z-30 flex items-center justify-between px-4 py-2.5 gap-3"
+          style={{
+            top: '56px',
+            background: warningBg,
+            borderBottom: `1px solid ${warningBorder}`,
+          }}
+        >
+          <p className="text-xs sm:text-sm font-semibold" style={{ color: warningText }}>
+            {creditPct >= 95 ? '🚨' : '⚠️'} Yalnız <strong>{creditsLeft} kredit</strong> qaldı — generasiyalar dayanacaq
+          </p>
+          <Link
+            href="/settings/billing"
+            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90"
+            style={{ background: warningBtn }}
+          >
+            Kredit al
+          </Link>
+        </div>
+      )}
+
+      <main className={`md:ml-60 min-h-screen pt-14 md:pt-0 pb-20 md:pb-0${showWarning ? ' pt-[calc(56px+44px)] md:pt-[44px]' : ''}`}>
+        {children}
+      </main>
+
+      <MobileBottomNav />
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
