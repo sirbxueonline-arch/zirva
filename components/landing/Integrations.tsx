@@ -137,12 +137,12 @@ export default function Integrations() {
             </p>
           </motion.div>
 
-          {/* Row 1 — 5 platforms */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4">
+          {/* Row 1 — 5 platforms: 3-col on mobile, 5-col on sm+ */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-3">
             {PLATFORMS_R1.map((p, i) => (
               <motion.div
                 key={p.name}
-                className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
+                className="flex flex-col items-center gap-2 sm:gap-3 py-4 sm:py-7 px-2 sm:px-3 rounded-2xl cursor-default"
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid rgba(13,13,26,0.07)',
@@ -157,18 +157,18 @@ export default function Integrations() {
                 <img
                   src={p.icon}
                   alt={p.name}
-                  width={40}
-                  height={40}
-                  style={{ width: 40, height: 40, objectFit: 'contain' }}
+                  width={36}
+                  height={36}
+                  style={{ width: 36, height: 36, objectFit: 'contain' }}
                 />
-                <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight" style={{ color: '#3D4060' }}>{p.name}</span>
               </motion.div>
             ))}
           </div>
 
           {/* GSC highlight banner */}
           <motion.div
-            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 rounded-2xl px-6 py-5 mb-4"
+            className="flex flex-row items-center gap-3 sm:gap-6 rounded-2xl px-4 sm:px-6 py-4 sm:py-5 mb-3"
             style={{
               background: 'linear-gradient(135deg, #F0F4FF 0%, #E8FDF8 100%)',
               border: '1.5px solid rgba(66,133,244,0.18)',
@@ -177,25 +177,28 @@ export default function Integrations() {
             animate={inView ? { y: 0, opacity: 1 } : {}}
             transition={{ ...SPRING, delay: 0.3 }}
           >
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {GSC_ICON}
-              <div>
-                <div className="font-semibold text-sm" style={{ color: '#0D0D1A' }}>Google Search Console</div>
-                <div className="text-xs" style={{ color: '#737599' }}>Rəsmi inteqrasiya</div>
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="flex-shrink-0">
+                {GSC_ICON}
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold text-xs sm:text-sm" style={{ color: '#0D0D1A' }}>Google Search Console</div>
+                <div className="text-[10px] sm:text-xs" style={{ color: '#737599' }}>Rəsmi inteqrasiya</div>
               </div>
             </div>
-            <div className="h-px sm:h-10 sm:w-px w-full" style={{ background: 'rgba(66,133,244,0.15)' }} />
-            <p className="text-sm text-center sm:text-left" style={{ color: '#5A5D7A', lineHeight: 1.6 }}>
-              Zirva, istifadəçilərin razılığı ilə Google Search Console API-sinə qoşulur — saytın keyword performansını analiz edib hər 3 gündə bir Azərbaycanca SEO hesabatı göndərir. Məlumatlar yalnız sizindir, heç kimlə paylaşılmır.
+            <div className="hidden sm:block h-10 w-px flex-shrink-0" style={{ background: 'rgba(66,133,244,0.15)' }} />
+            <p className="text-xs sm:text-sm" style={{ color: '#5A5D7A', lineHeight: 1.5 }}>
+              <span className="hidden sm:inline">Zirva, istifadəçilərin razılığı ilə Google Search Console API-sinə qoşulur — saytın keyword performansını analiz edib hər 3 gündə bir Azərbaycanca SEO hesabatı göndərir. Məlumatlar yalnız sizindir, heç kimlə paylaşılmır.</span>
+              <span className="sm:hidden">GSC API ilə bağlanır — həftəlik SEO hesabatı emaildə. Məlumatlar yalnız sizindir.</span>
             </p>
           </motion.div>
 
-          {/* Row 2 — 4 platforms + 100+ */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          {/* Row 2 — 4 platforms + 100+: 3-col on mobile (3+2 layout), 5-col on sm+ */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {PLATFORMS_R2.map((p, i) => (
               <motion.div
                 key={p.name}
-                className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
+                className="flex flex-col items-center gap-2 sm:gap-3 py-4 sm:py-7 px-2 sm:px-3 rounded-2xl cursor-default"
                 style={{
                   background: '#FFFFFF',
                   border: '1px solid rgba(13,13,26,0.07)',
@@ -210,17 +213,17 @@ export default function Integrations() {
                 <img
                   src={p.icon}
                   alt={p.name}
-                  width={40}
-                  height={40}
-                  style={{ width: 40, height: 40, objectFit: 'contain' }}
+                  width={36}
+                  height={36}
+                  style={{ width: 36, height: 36, objectFit: 'contain' }}
                 />
-                <span className="text-xs font-semibold text-center" style={{ color: '#3D4060' }}>{p.name}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-center leading-tight" style={{ color: '#3D4060' }}>{p.name}</span>
               </motion.div>
             ))}
 
-            {/* 100+ tile in same row */}
+            {/* 100+ tile — spans 2 cols on mobile so it centers in the last row slot */}
             <motion.div
-              className="flex flex-col items-center gap-3 py-7 px-3 rounded-2xl cursor-default"
+              className="col-span-2 sm:col-span-1 flex flex-col items-center gap-2 sm:gap-3 py-4 sm:py-7 px-2 sm:px-3 rounded-2xl cursor-default"
               style={{
                 background: '#FFFFFF',
                 border: '1.5px dashed rgba(123,110,246,0.28)',
@@ -232,12 +235,12 @@ export default function Integrations() {
               whileHover={{ y: -3 }}
             >
               <div
-                className="w-13 h-13 flex items-center justify-center font-display font-bold text-sm"
-                style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}
+                className="flex items-center justify-center font-display font-bold text-sm"
+                style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(123,110,246,0.08)', color: '#7B6EF6' }}
               >
                 100+
               </div>
-              <span className="text-xs font-semibold text-center" style={{ color: '#737599' }}>Digər alətlər</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-center" style={{ color: '#737599' }}>Digər alətlər</span>
             </motion.div>
           </div>
         </div>
